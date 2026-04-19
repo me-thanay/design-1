@@ -1,61 +1,51 @@
 "use client";
 
-import { Sparkles } from "lucide-react";
-import { LogoCloud } from "@/components/ui/logo-cloud-3";
-import type { LogoCloudLogo } from "@/components/ui/logo-cloud-3";
+import type { LucideIcon } from "lucide-react";
+import {
+  Gem,
+  Leaf,
+  Ruler,
+  Scissors,
+  ShieldCheck,
+  Sparkles,
+  Truck,
+  Palette,
+} from "lucide-react";
+import { InfiniteSlider } from "@/components/ui/infinite-slider";
 import { cn } from "@/lib/utils";
 
-/** Wide fabric / craft detail crops — read as “texture & quality” rather than third-party brands */
-const TRUST_LOGOS: LogoCloudLogo[] = [
-  {
-    src: "https://images.unsplash.com/photo-1617032215657-7b9559e8a10e?auto=format&fit=crop&w=320&h=120&q=70",
-    alt: "Silk weave detail",
-    width: 200,
-    height: 72,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1584990347449-a8b291f50c00?auto=format&fit=crop&w=320&h=120&q=70",
-    alt: "Handloom cotton texture",
-    width: 200,
-    height: 72,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1558171813-4c088753af8f?auto=format&fit=crop&w=320&h=120&q=70",
-    alt: "Embroidery and threadwork",
-    width: 200,
-    height: 72,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1594938298603-c8148c4dae35?auto=format&fit=crop&w=320&h=120&q=70",
-    alt: "Linen and natural fibres",
-    width: 200,
-    height: 72,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1562157873-818bc0726f68?auto=format&fit=crop&w=320&h=120&q=70",
-    alt: "Drape and pleats",
-    width: 200,
-    height: 72,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1583496661160-fb5886b0aa0a?auto=format&fit=crop&w=320&h=120&q=70",
-    alt: "Festive colour palette",
-    width: 200,
-    height: 72,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1598550476439-684778247f2d?auto=format&fit=crop&w=320&h=120&q=70",
-    alt: "Zari and metallic accents",
-    width: 200,
-    height: 72,
-  },
-  {
-    src: "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?auto=format&fit=crop&w=320&h=120&q=70",
-    alt: "Tailored finishing",
-    width: 200,
-    height: 72,
-  },
+type FabricFeature = { icon: LucideIcon; label: string; sub: string };
+
+const FEATURES: FabricFeature[] = [
+  { icon: Gem, label: "Premium fabrics", sub: "Silk · linen · georgette" },
+  { icon: Scissors, label: "Thoughtful tailoring", sub: "Blouses & fits" },
+  { icon: Leaf, label: "Breathable weaves", sub: "All-day comfort" },
+  { icon: Palette, label: "True-to-tone colours", sub: "Honest photography" },
+  { icon: Truck, label: "Reliable dispatch", sub: "Tracked delivery" },
+  { icon: ShieldCheck, label: "Quality first", sub: "Curated, not fast fashion" },
+  { icon: Ruler, label: "Consistent sizing", sub: "Clear size notes" },
+  { icon: Sparkles, label: "Occasion-ready", sub: "Work to wedding" },
 ];
+
+function FeaturePill({ item }: { item: FabricFeature }) {
+  const Icon = item.icon;
+  return (
+    <div
+      className={cn(
+        "flex shrink-0 items-center gap-3 rounded-2xl border border-black/10 bg-white/95 px-4 py-3 shadow-sm ring-1 ring-black/[0.04]",
+        "transition-[transform,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-md",
+      )}
+    >
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-neutral-900/5 text-neutral-800">
+        <Icon className="h-5 w-5" aria-hidden />
+      </span>
+      <span className="min-w-0 text-left">
+        <span className="block text-xs font-semibold tracking-tight text-neutral-900">{item.label}</span>
+        <span className="mt-0.5 block text-[11px] text-neutral-500">{item.sub}</span>
+      </span>
+    </div>
+  );
+}
 
 export function HomeTrustLogoCloud() {
   return (
@@ -75,27 +65,33 @@ export function HomeTrustLogoCloud() {
         <div className="mb-4 flex justify-center">
           <span className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/90 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-600 shadow-sm">
             <Sparkles className="h-3.5 w-3.5 text-amber-600/90" aria-hidden />
-            Craft & quality
+            Fabric & quality
           </span>
         </div>
 
         <h2
           id="trust-marquee-heading"
-          className="text-center text-lg font-semibold tracking-tight text-neutral-900 sm:text-xl md:text-2xl"
+          className="text-center font-serif text-lg font-semibold tracking-tight text-neutral-900 sm:text-xl md:text-2xl"
         >
           <span className="text-neutral-600">Rooted in fabric-first design.</span>
           <br />
           <span className="text-neutral-900">Worn by customers who care how it feels.</span>
         </h2>
 
-        <p className="mx-auto mt-3 max-w-lg text-center text-sm text-neutral-600">
-          From Banarasi zari to breathable linen—every drop is photographed honestly and finished for
-          real wardrobes, weddings, and work weeks.
+        <p className="mx-auto mt-3 max-w-lg text-center font-serif text-sm leading-relaxed text-neutral-600 sm:text-base">
+          From Banarasi zari to breathable linen—every piece is photographed honestly and finished for real
+          wardrobes, weddings, and work weeks.
         </p>
 
         <div className="mx-auto my-5 h-px max-w-sm bg-black/10 [mask-image:linear-gradient(to_right,transparent,black,transparent)]" />
 
-        <LogoCloud logos={TRUST_LOGOS} gap={36} reverse duration={46} durationOnHover={24} />
+        <div className="[mask-image:linear-gradient(to_right,transparent,black,transparent)]">
+          <InfiniteSlider gap={20} reverse duration={48} durationOnHover={26}>
+            {FEATURES.map((item) => (
+              <FeaturePill key={item.label} item={item} />
+            ))}
+          </InfiniteSlider>
+        </div>
 
         <div className="mx-auto mt-5 h-px max-w-sm bg-black/10 [mask-image:linear-gradient(to_right,transparent,black,transparent)]" />
       </div>

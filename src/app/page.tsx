@@ -1,6 +1,7 @@
 import { HeroLanding } from "@/components/ui/hero-1";
 import type { HeroLandingProps } from "@/components/ui/hero-1";
 import { HomeTrustLogoCloud } from "@/components/home/home-trust-logo-cloud";
+import { HomeAboutSawbhagya } from "@/components/home/home-about-sawbhagya";
 import { HomeBestSellersSection } from "@/components/home/home-best-sellers-section";
 import { HomeTestimonialsMarquee } from "@/components/home/home-testimonials-marquee";
 import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
@@ -201,6 +202,8 @@ export default async function Home({ searchParams }: HomeProps) {
           </ScrollRevealGroup>
         </div>
       </section>
+
+      <HomeAboutSawbhagya />
 
       <ScrollReveal y={36}>
         <Slideshow className="surface-texture pb-16 pt-2" />

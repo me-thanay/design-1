@@ -103,7 +103,7 @@ export function FloatingHeader() {
           <img
             src={SITE_LOGO_SRC}
             alt={SITE_LOGO_ALT}
-            className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14 md:h-16 md:w-16"
+            className="h-14 w-14 shrink-0 object-contain sm:h-16 sm:w-16 md:h-[4.5rem] md:w-[4.5rem]"
           />
           <span className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-700 sm:text-xs">
             {SITE_BRAND_NAME}

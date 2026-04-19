@@ -426,7 +426,7 @@ export function HeroLanding(props: HeroLandingProps) {
                 <img
                   alt={logo?.alt}
                   src={logo?.src}
-                  className="h-10 w-auto rounded-sm sm:h-12 md:h-14"
+                  className="h-14 w-auto rounded-sm sm:h-[4.25rem] md:h-[4.75rem]"
                   style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
                 />
               </a>
