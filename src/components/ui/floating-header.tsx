@@ -90,7 +90,7 @@ export function FloatingHeader() {
   return (
     <header className="w-full">
       <motion.nav
-        className="mx-auto mt-2 flex max-w-6xl items-center justify-between rounded-full bg-white px-2.5 py-1.5 text-[11px] font-medium text-zinc-900 shadow-sm ring-1 ring-zinc-200 md:px-4 md:py-2"
+        className="mx-auto mt-2 flex max-w-6xl items-center justify-between rounded-full bg-white px-2 py-1 text-[10px] font-medium text-zinc-900 shadow-sm ring-1 ring-zinc-200 md:px-3 md:py-1.5"
         initial={reduceMotion ? false : { opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -103,7 +103,7 @@ export function FloatingHeader() {
           <img
             src={SITE_LOGO_SRC}
             alt={SITE_LOGO_ALT}
-            className="h-16 w-16 shrink-0 object-contain sm:h-[4.5rem] sm:w-[4.5rem] md:h-24 md:w-24"
+            className="h-12 w-12 shrink-0 object-contain sm:h-14 sm:w-14 md:h-16 md:w-16"
           />
           <span className="truncate text-[10px] font-semibold uppercase tracking-[0.18em] text-zinc-700 sm:text-xs">
             {SITE_BRAND_NAME}

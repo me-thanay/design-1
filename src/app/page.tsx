@@ -1,6 +1,8 @@
 import { HeroLanding } from "@/components/ui/hero-1";
 import type { HeroLandingProps } from "@/components/ui/hero-1";
+import { HomeTrustLogoCloud } from "@/components/home/home-trust-logo-cloud";
 import { HomeBestSellersSection } from "@/components/home/home-best-sellers-section";
+import { HomeTestimonialsMarquee } from "@/components/home/home-testimonials-marquee";
 import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import { Footer } from "@/components/ui/footer";
 import Slideshow from "@/components/ui/slideshow";
@@ -17,7 +19,7 @@ import {
   isCategoryOnlyQuery,
   type ClothingCategory,
 } from "@/lib/products";
-import { SITE_BRAND_NAME, SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
+import { SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
 
 const heroProps: HeroLandingProps = buildHeroThemeProps({
@@ -113,6 +115,7 @@ export default async function Home({ searchParams }: HomeProps) {
   return (
     <main>
       <HeroLanding {...heroProps} />
+      <HomeTrustLogoCloud />
       <section id="categories" className="surface-texture scroll-mt-24 border-b border-black/5 pb-12 pt-2">
         <div className="mx-auto w-full max-w-6xl px-4">
           <ScrollRevealGroup stagger={0.09} delayChildren={0.02} variant="fade-up" y={24}>
@@ -225,6 +228,8 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
         </div>
       </section>
+
+      <HomeTestimonialsMarquee />
 
       <Footer
         logo={

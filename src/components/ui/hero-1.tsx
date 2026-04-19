@@ -418,15 +418,15 @@ export function HeroLanding(props: HeroLandingProps) {
         <header className="absolute inset-x-0 top-0 z-20">
           <nav
             aria-label="Global"
-            className="flex min-h-0 items-center justify-between bg-white px-3 py-2 shadow-sm ring-1 ring-black/5 sm:px-4 sm:py-2.5 lg:px-6"
+            className="flex min-h-0 items-center justify-between bg-white px-2 py-1.5 shadow-sm ring-1 ring-black/5 sm:px-3 sm:py-2 lg:px-5"
           >
             <div className="flex lg:flex-1">
-              <a href="/" className="-m-1 p-1">
+              <a href="/" className="-m-0.5 p-0.5">
                 <span className="sr-only">{logo?.companyName}</span>
                 <img
                   alt={logo?.alt}
                   src={logo?.src}
-                  className="h-[4.25rem] w-auto rounded-sm sm:h-[5.25rem] md:h-28"
+                  className="h-10 w-auto rounded-sm sm:h-12 md:h-14"
                   style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
                 />
               </a>
@@ -442,17 +442,17 @@ export function HeroLanding(props: HeroLandingProps) {
               </button>
             </div>
             {navigation && navigation.length > 0 && (
-              <div className="hidden lg:flex lg:gap-x-5 xl:gap-x-7">
+              <div className="hidden lg:flex lg:gap-x-4 xl:gap-x-6">
                 {navigation.map((item) =>
                   item.items && item.items.length > 0 ? (
                     <div
                       key={item.name}
-                      className="relative group py-1.5 -my-1.5"
+                      className="relative group py-1 -my-1"
                       onPointerEnter={() => setOpenDesktopDropdown(item.name)}
                     >
                       <button
                         type="button"
-                        className={`text-xs font-semibold tracking-[0.14em] uppercase ${navTextClass} inline-flex items-center gap-1`}
+                        className={`text-[10px] font-semibold tracking-[0.14em] uppercase ${navTextClass} inline-flex items-center gap-1`}
                         aria-haspopup="menu"
                         aria-expanded={openDesktopDropdown === item.name}
                         onPointerDown={(e) => {
@@ -537,7 +537,7 @@ export function HeroLanding(props: HeroLandingProps) {
                     <motion.a
                       key={item.name}
                       href={item.href}
-                      className={`text-xs font-semibold tracking-[0.14em] uppercase ${navTextClass}`}
+                      className={`text-[10px] font-semibold tracking-[0.14em] uppercase ${navTextClass}`}
                       whileHover={reduceMotionFramer ? undefined : { y: -2 }}
                       whileTap={reduceMotionFramer ? undefined : { scale: 0.97 }}
                     >
@@ -571,7 +571,7 @@ export function HeroLanding(props: HeroLandingProps) {
                   name="q"
                   placeholder="products…"
                   className={[
-                    "min-w-0 flex-1 bg-transparent text-xs outline-none",
+                    "min-w-0 flex-1 bg-transparent text-[11px] outline-none",
                     hasImageBackground
                       ? "text-white placeholder:text-white/55"
                       : "text-neutral-900 placeholder:text-neutral-500",
@@ -589,7 +589,7 @@ export function HeroLanding(props: HeroLandingProps) {
                         : "/sign-in"
                       : loginHref
                   }
-                  className={`text-xs font-semibold tracking-[0.14em] uppercase ${navTextClass}`}
+                  className={`text-[10px] font-semibold tracking-[0.14em] uppercase ${navTextClass}`}
                 >
                   {authReady && authEmail ? "Account" : loginText}
                 </a>
