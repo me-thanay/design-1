@@ -424,7 +424,7 @@ export function HeroLanding(props: HeroLandingProps) {
                 <img
                   alt={logo?.alt ?? logo?.companyName ?? "Sawbhagya"}
                   src={logo?.src}
-                  className="h-12 w-auto object-contain sm:h-14 md:h-16 lg:h-20 xl:h-24"
+                  className="h-14 w-auto object-contain sm:h-16 md:h-[4.5rem] lg:h-24 xl:h-28"
                   style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
                 />
               </a>
