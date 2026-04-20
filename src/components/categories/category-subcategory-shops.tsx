@@ -150,13 +150,21 @@ export function CategorySubcategoryProductSections({
                   <img
                     src={img}
                     alt=""
-                    className="absolute inset-0 -z-10 h-full w-full object-cover object-[50%_20%] transition-transform duration-700 ease-out motion-reduce:transition-none group-hover:scale-[1.03]"
+                    className="absolute inset-0 -z-10 h-full w-full object-cover object-[50%_18%] transition-transform duration-700 ease-out motion-reduce:transition-none group-hover:scale-[1.04]"
                     loading="lazy"
                     decoding="async"
                   />
                 );
               })()}
-              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/65 via-black/35 to-black/5" />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/70 via-black/35 to-black/0" />
+              <div
+                aria-hidden="true"
+                className="absolute inset-0 -z-10"
+                style={{
+                  background:
+                    "radial-gradient(70% 70% at 20% 30%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 60%)",
+                }}
+              />
 
               <ProgressiveBlur
                 className="pointer-events-none absolute inset-0 -z-10"
