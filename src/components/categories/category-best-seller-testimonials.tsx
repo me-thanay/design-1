@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { TestimonialSection, type Testimonial } from "@/components/ui/testimonials";
+import ImageGallery from "@/components/ui/image-gallery";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import type { ClothingCategory, Product } from "@/lib/products";
 import { normalizeProductRow } from "@/lib/products";
@@ -28,29 +28,22 @@ function sortByRating(a: Product, b: Product) {
   return b.price - a.price;
 }
 
-function stableNumericId(raw: string, index: number): number {
-  let h = index * 9973;
-  for (let i = 0; i < raw.length; i++) {
-    h = (h * 31 + raw.charCodeAt(i)) | 0;
-  }
-  return Math.abs(h) || index + 1;
+function normalizeSrc(src: string) {
+  if (!src) return src;
+  if (/^https?:\/\//i.test(src)) return src;
+  if (!src.startsWith("/")) return src;
+  return encodeURI(src);
 }
 
-function productToTestimonial(p: Product, category: ClothingCategory, rank: number): Testimonial {
+function productToGalleryItem(p: Product, category: ClothingCategory, rank: number) {
   const img = p.image || fallbackImageFor(category);
-  const blurb =
-    (p.description && p.description.trim().slice(0, 140)) ||
-    `Best seller #${rank} in this category — rated ${p.rating.toFixed(1)}★ by shoppers.`;
-  const roleParts = [`\u20B9${Math.round(p.price).toLocaleString("en-IN")}`, `${p.rating.toFixed(1)}\u2605`];
-  if (p.subcategory) roleParts.push(p.subcategory);
   return {
-    id: stableNumericId(p.id, rank),
-    quote: blurb + (p.description && p.description.length > 140 ? "…" : ""),
-    name: p.name,
-    role: roleParts.join(" · "),
-    imageSrc: img,
+    src: normalizeSrc(img),
+    title: p.name,
+    subtitle: p.subcategory ? `${p.subcategory} · best rated` : "Best rated · in stock",
     badge: rank === 1 ? "Top rated" : "Best seller",
-    product: p,
+    priceLabel: `₹${Math.round(p.price).toLocaleString("en-IN")}`,
+    ratingLabel: `${p.rating.toFixed(1)}★`,
   };
 }
 
@@ -65,7 +58,7 @@ type Props = {
  * testimonial-style cards (image + quote + name + price/rating line).
  */
 export function CategoryBestSellerTestimonials({ category, categoryTitle, limit = 6 }: Props) {
-  const [items, setItems] = React.useState<Testimonial[]>([]);
+  const [items, setItems] = React.useState<ReturnType<typeof productToGalleryItem>[]>([]);
   const [loading, setLoading] = React.useState(true);
 
   React.useEffect(() => {
@@ -96,7 +89,7 @@ export function CategoryBestSellerTestimonials({ category, categoryTitle, limit 
           .sort(sortByRating)
           .slice(0, limit);
 
-        setItems(products.map((p, i) => productToTestimonial(p, category, i + 1)));
+        setItems(products.map((p, i) => productToGalleryItem(p, category, i + 1)));
       } finally {
         setLoading(false);
       }
@@ -125,10 +118,13 @@ export function CategoryBestSellerTestimonials({ category, categoryTitle, limit 
   }
 
   return (
-    <TestimonialSection
-      title={`Best sellers · ${categoryTitle}`}
-      subtitle="Top-rated pieces in this category—our customers’ favourites. Each card shows the product, a short detail, price, and rating."
-      testimonials={items}
-    />
+    <div className="w-full">
+      <ImageGallery
+        title={`Best sellers · ${categoryTitle}`}
+        subtitle="Top-rated pieces in this category — price and rating included."
+        items={items}
+        className="py-0"
+      />
+    </div>
   );
 }
