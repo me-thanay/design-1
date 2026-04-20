@@ -71,13 +71,13 @@ export function CategoryHero({
       </div>
 
       <div className="w-full">
-        <div className="mx-auto w-full max-w-6xl px-4 pb-10 pt-20 sm:pb-14 sm:pt-24">
-          <div className="flex flex-wrap items-center gap-3">
+        <div className="relative mx-auto w-full max-w-6xl px-4 pb-10 pt-20 sm:pb-14 sm:pt-24">
+          <div className="absolute left-4 top-4 z-10 flex flex-wrap items-center gap-3 sm:left-6 sm:top-6">
             {breadcrumbs.map((b) => (
               <Link
                 key={b.href}
                 href={b.href}
-                className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 backdrop-blur transition hover:bg-white/15 hover:text-white"
+                className="rounded-full border border-white/15 bg-white/10 px-4 py-2 text-sm font-medium text-white/90 shadow-sm backdrop-blur transition hover:bg-white/15 hover:text-white"
               >
                 {b.label}
               </Link>
