@@ -165,57 +165,17 @@ export function ProductsGrid({
       ) : variant === "gallery" ? (
         <ImageGallery
           className="px-0"
-          heightClassName="h-[340px] sm:h-[380px] md:h-[400px]"
           items={items.map((p) => {
             const img = p.image || fallbackImageFor(p.category);
             const rating = Number(p.rating || 4);
+            const price = `₹${Math.round(p.price).toLocaleString("en-IN")}`;
             return {
-              id: p.id,
               src: img,
-              alt: p.name,
-              content: (
-                <div className="flex flex-col gap-1.5 sm:gap-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-xs font-semibold text-white line-clamp-2 drop-shadow-sm sm:text-sm">
-                        {p.name}
-                      </p>
-                      {p.subcategory ? (
-                        <p className="mt-0.5 text-[10px] capitalize text-white/75 line-clamp-1 sm:text-[11px]">
-                          {p.subcategory}
-                        </p>
-                      ) : null}
-                    </div>
-                    <div className="shrink-0 text-right">
-                      <div className="text-xs font-semibold text-white drop-shadow-sm sm:text-sm">
-                        ₹{Math.round(p.price).toLocaleString("en-IN")}
-                      </div>
-                      {p.inStock ? (
-                        <p className="mt-0.5 text-[9px] font-medium uppercase tracking-wider text-emerald-200/95 sm:text-[10px]">
-                          In stock
-                        </p>
-                      ) : null}
-                    </div>
-                  </div>
-
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-[10px] font-medium text-amber-200 sm:text-[11px]">
-                      {starsFor(rating)}{" "}
-                      <span className="text-white/70">({rating.toFixed(1)})</span>
-                    </p>
-                    <Link
-                      href={relatedHref(p)}
-                      className="shrink-0 text-[10px] font-semibold text-white/90 underline-offset-4 transition hover:text-white hover:underline sm:text-xs"
-                    >
-                      Related
-                    </Link>
-                  </div>
-
-                  <div className="mt-0.5">
-                    <ProductCartControl product={p} image={img} tone="onImage" compact className="mt-0" />
-                  </div>
-                </div>
-              ),
+              title: p.name,
+              subtitle: p.subcategory ? p.subcategory : p.category,
+              badge: p.inStock ? "In stock" : "Limited",
+              priceLabel: price,
+              ratingLabel: `${starsFor(rating)} (${rating.toFixed(1)})`,
             };
           })}
         />
