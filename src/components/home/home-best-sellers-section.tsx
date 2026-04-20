@@ -5,6 +5,9 @@ import {
   BestSellerCardCarousel,
   type BestSellerCarouselSlide,
 } from "@/components/ui/card-carousel";
+import ImageGallery from "@/components/ui/image-gallery";
+import { HeroLanding } from "@/components/ui/hero-1";
+import { CheckCircle2 } from "lucide-react";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { normalizeProductRow, type Product } from "@/lib/products";
 
@@ -140,7 +143,46 @@ export function HomeBestSellersSection() {
       id="best-seller"
       className="surface-texture scroll-mt-24 overflow-x-hidden border-b border-black/5 py-10 sm:py-14"
     >
+      <HeroLanding
+        showHeader={false}
+        title="Best sellers"
+        description="Highest-rated in-stock pieces from your catalogue — swipe for details, then add to cart."
+        titleSize="medium"
+        minHeightClassName="min-h-[70svh]"
+        backgroundImages={[
+          "/hero_imagesss/hero-2.jpeg",
+          "/hero_imagesss/hero-3.jpeg",
+          "/hero_imagesss/hero-4.jpeg",
+        ]}
+        callToActions={[
+          { text: "Shop best sellers", href: "#best-seller-carousel", variant: "primary" },
+          { text: "Browse categories", href: "/#categories", variant: "secondary" },
+        ]}
+      />
+
+      <div className="mx-auto w-full max-w-6xl px-4 pt-10 sm:px-6 sm:pt-12">
+        <div className="grid gap-3 rounded-3xl border border-black/5 bg-white/70 p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            "Top rated across categories",
+            "Fast add-to-cart from the card",
+            "Clean, consistent details",
+            "Hover gallery preview before you swipe",
+          ].map((t) => (
+            <div key={t} className="flex items-start gap-2 text-sm text-neutral-700 sm:text-base">
+              <CheckCircle2 className="mt-0.5 h-5 w-5 text-neutral-900" aria-hidden="true" />
+              <span>{t}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mx-auto w-full max-w-6xl px-0 sm:px-4">
+        <ImageGallery />
+      </div>
+
       <BestSellerCardCarousel
+        className="pt-8"
+        title={<span id="best-seller-carousel">Best <span className="text-[#f5c97a]">sellers</span></span>}
         slides={slides}
         subtitle="Highest-rated in-stock pieces from your catalogue — swipe for details, then add to cart."
       />

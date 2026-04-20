@@ -55,6 +55,8 @@ interface HeroLandingProps {
   backgroundImagePositions?: string[];
   backgroundImageIntervalMs?: number;
   backgroundImageFadeMs?: number;
+  /** Override default min-height (default: `min-h-[100svh]`). */
+  minHeightClassName?: string;
   className?: string;
 }
 
@@ -102,6 +104,7 @@ export function HeroLanding(props: HeroLandingProps) {
     backgroundImagePositions,
     backgroundImageIntervalMs,
     backgroundImageFadeMs,
+    minHeightClassName,
     className,
   } = { ...defaultProps, ...props };
 
@@ -345,7 +348,7 @@ export function HeroLanding(props: HeroLandingProps) {
   return (
     <div
       ref={heroRootRef}
-      className={`min-h-[100svh] w-full overflow-hidden relative isolate ${className || ""}`}
+      className={`${minHeightClassName ?? "min-h-[100svh]"} w-full overflow-hidden relative isolate ${className || ""}`}
     >
       {normalizedBackgroundImages.length > 0 && (
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">

@@ -1,105 +1,50 @@
 "use client";
 
-import * as React from "react";
-import { motion, useReducedMotion } from "framer-motion";
-import { SCROLL_REVEAL_EASE, defaultRevealViewport } from "@/components/motion/scroll-reveal";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 
-export type ImageGalleryItem = {
-  id: string;
-  src: string;
-  alt: string;
-  content?: React.ReactNode;
-};
-
-type ImageGalleryProps = {
-  title?: React.ReactNode;
-  subtitle?: React.ReactNode;
-  items: ImageGalleryItem[];
-  className?: string;
-  heightClassName?: string;
-};
-
-export function ImageGallery({
-  title,
-  subtitle,
-  items,
-  className,
-  heightClassName = "h-[380px] sm:h-[420px]",
-}: ImageGalleryProps) {
-  const reduceMotion = useReducedMotion();
-
+export default function Example() {
   return (
-    <section className={cn("w-full", className)}>
-      {(title || subtitle) && (
-        <motion.div
-          className="mb-6 max-w-3xl px-1"
-          initial={reduceMotion ? false : { opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, ...defaultRevealViewport }}
-          transition={{
-            duration: reduceMotion ? 0 : 0.55,
-            ease: SCROLL_REVEAL_EASE,
-          }}
-        >
-          {title ? (
-            <h2 className="text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-              {title}
-            </h2>
-          ) : null}
-          {subtitle ? (
-            <p className="mt-2 text-sm text-neutral-600 sm:text-base">{subtitle}</p>
-          ) : null}
-        </motion.div>
-      )}
+    <>
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
+    
+        * {
+          font-family: 'Poppins', sans-serif;
+        }
+      `}</style>
 
-      {/* Scroll horizontally so expanded hover never overlaps siblings or page content */}
-      <div
-        className={cn(
-          "no-scrollbar -mx-4 flex w-auto max-w-none gap-3 overflow-x-auto overflow-y-hidden px-4 pb-2 pt-1 scroll-smooth sm:-mx-0 sm:mx-0 sm:max-w-full sm:px-0",
-          "snap-x snap-mandatory sm:snap-none",
-          heightClassName,
-        )}
-      >
-        {items.map((it, index) => (
-          <motion.div
-            key={it.id}
-            className={cn(
-              "group relative shrink-0 snap-start overflow-hidden rounded-3xl",
-              "w-[min(82vw,240px)] sm:w-[220px] md:w-[248px]",
-              "ring-1 ring-black/10 bg-white/40 shadow-sm",
-              "transition-shadow duration-300 ease-out hover:z-10 hover:shadow-xl hover:ring-black/20",
-            )}
-            initial={
-              reduceMotion ? false : { opacity: 0, scale: 0.96, y: 24, filter: "blur(6px)" }
-            }
-            whileInView={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
-            viewport={{ once: false, ...defaultRevealViewport }}
-            transition={{
-              duration: reduceMotion ? 0 : 0.62,
-              delay: reduceMotion ? 0 : index * 0.075,
-              ease: SCROLL_REVEAL_EASE,
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.05] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-              src={it.src}
-              alt={it.alt}
-              loading="lazy"
-              decoding="async"
-            />
+      <section className="flex w-full flex-col items-center justify-start py-12">
+        <div className="max-w-3xl px-4 text-center">
+          <h1 className="text-3xl font-semibold">Our Latest Creations</h1>
+          <p className="mt-2 text-sm text-slate-500">
+            A visual collection of our most recent works – each piece crafted
+            with intention, emotion, and style.
+          </p>
+        </div>
 
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent opacity-90 transition-opacity duration-300 group-hover:opacity-100" />
-
-            {it.content ? (
-              <div className="absolute inset-x-0 bottom-0 max-h-[55%] overflow-y-auto p-3 sm:p-4">
-                <div className="pointer-events-auto">{it.content}</div>
-              </div>
-            ) : null}
-          </motion.div>
-        ))}
-      </div>
-    </section>
+        <div className="mt-10 flex h-[400px] w-full max-w-5xl items-center gap-2 px-4">
+          {[
+            "https://images.unsplash.com/photo-1719368472026-dc26f70a9b76?q=80&h=800&w=800&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1649265825072-f7dd6942baed?q=80&h=800&w=800&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1555212697-194d092e3b8f?q=80&h=800&w=800&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1729086046027-09979ade13fd?q=80&h=800&w=800&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1601568494843-772eb04aca5d?q=80&h=800&w=800&auto=format&fit=crop",
+            "https://images.unsplash.com/photo-1585687501004-615dfdfde7f1?q=80&h=800&w=800&auto=format&fit=crop",
+          ].map((src, idx) => (
+            <div
+              key={idx}
+              className="group relative h-[400px] w-56 flex-grow overflow-hidden rounded-lg transition-all duration-500 hover:w-full"
+            >
+              <img
+                className="h-full w-full object-cover object-center"
+                src={src}
+                alt={`image-${idx}`}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    </>
   );
 }
