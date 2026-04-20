@@ -5,7 +5,10 @@ import { ProductsGrid } from "@/components/products/products-grid";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { FeaturedSpotlight, type FeaturedSpotlightProps } from "@/components/ui/feature-spotlight";
 import { CLOTHING_SUBCATEGORIES, type ClothingCategory } from "@/lib/products";
+import { PRIMARY_NAV } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { ProgressiveBlur } from "@/components/ui/progressive-blur";
+import { motion } from "motion/react";
 
 export function subAnchorId(sub: string) {
   return `shop-${sub.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "")}`;
@@ -13,6 +16,26 @@ export function subAnchorId(sub: string) {
 
 function titleCaseLine(s: string) {
   return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function normalizeSrc(src?: string) {
+  if (!src) return null;
+  if (/^https?:\/\//i.test(src)) return src;
+  if (!src.startsWith("/")) return src;
+  return encodeURI(src);
+}
+
+function subcategoryHeroImage(category: ClothingCategory, sub: string) {
+  const navName: Record<ClothingCategory, string> = {
+    sarees: "SAREE",
+    kurtis: "KURTIS",
+    blouses: "BLOUSES",
+    gowns: "GOWNS",
+  };
+
+  const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
+  const hit = nav?.items?.find((x) => x.name.toLowerCase() === sub.toLowerCase());
+  return normalizeSrc(hit?.imageSrc ?? nav?.featuredImageSrc);
 }
 
 /** Pill links only — same subcategories as Creator admin (jumps to `#shop-…` sections). */
@@ -100,21 +123,76 @@ export function CategorySubcategoryProductSections({
           id={subAnchorId(sub)}
           className="scroll-mt-28"
         >
-          <ScrollReveal variant="fade-up" y={22}>
-            <h3 className="text-lg font-semibold tracking-tight text-neutral-900 sm:text-xl">
-              {titleCaseLine(sub)}
-            </h3>
-            <p className="mt-1 text-sm text-neutral-600">
-              Products tagged &ldquo;{sub}&rdquo; in this category.
-            </p>
-          </ScrollReveal>
-          <ProductsGrid
-            category={category}
-            subcategory={sub}
-            limit={12}
-            variant="gallery"
-            className="mt-6"
-          />
+          <div className="overflow-hidden rounded-3xl border border-black/10 bg-white/70 shadow-sm">
+            <motion.div
+              className="relative isolate overflow-hidden"
+              whileHover={{ y: -2 }}
+              whileTap={{ scale: 0.99 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              onClick={() => {
+                const el = document.getElementById(`${subAnchorId(sub)}-grid`);
+                el?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => {
+                if (e.key !== "Enter" && e.key !== " ") return;
+                e.preventDefault();
+                const el = document.getElementById(`${subAnchorId(sub)}-grid`);
+                el?.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+            >
+              {(() => {
+                const img = subcategoryHeroImage(category, sub);
+                if (!img) return null;
+                // eslint-disable-next-line @next/next/no-img-element
+                return (
+                  <img
+                    src={img}
+                    alt=""
+                    className="absolute inset-0 -z-10 h-full w-full object-cover object-center"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                );
+              })()}
+              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/65 via-black/35 to-black/5" />
+
+              <ProgressiveBlur
+                className="pointer-events-none absolute inset-0 -z-10"
+                blurIntensity={0.45}
+              />
+
+              <div className="flex flex-col gap-3 px-6 py-7 sm:px-8 sm:py-8">
+                <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/80">
+                  Subcategory
+                </p>
+                <h3 className="text-balance font-serif text-2xl font-bold tracking-tight text-white sm:text-3xl">
+                  {titleCaseLine(sub)}
+                </h3>
+                <p className="max-w-2xl text-sm text-white/80 sm:text-base">
+                  Products tagged “{sub}” — tap to jump into the collection.
+                </p>
+                <div className="flex flex-wrap items-center gap-2 pt-1">
+                  <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur">
+                    Swipe products below
+                  </span>
+                  <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow">
+                    View items
+                  </span>
+                </div>
+              </div>
+            </motion.div>
+
+            <div id={`${subAnchorId(sub)}-grid`} className="p-6 sm:p-8">
+              <ProductsGrid
+                category={category}
+                subcategory={sub}
+                limit={12}
+                variant="gallery"
+              />
+            </div>
+          </div>
         </section>
       ))}
     </div>
