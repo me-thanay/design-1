@@ -90,7 +90,7 @@ export function ImageGallery({
                 <img
                   src={it.src}
                   alt={it.title}
-                  className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                  className="h-full w-full object-cover object-[50%_18%] sm:object-center transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                   loading="lazy"
                   decoding="async"
                   onError={(e) => {

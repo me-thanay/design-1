@@ -150,7 +150,7 @@ export function CategorySubcategoryProductSections({
                   <img
                     src={img}
                     alt=""
-                    className="absolute inset-0 -z-10 h-full w-full object-cover object-center"
+                    className="absolute inset-0 -z-10 h-full w-full object-cover object-[50%_20%] transition-transform duration-700 ease-out motion-reduce:transition-none group-hover:scale-[1.03]"
                     loading="lazy"
                     decoding="async"
                   />
