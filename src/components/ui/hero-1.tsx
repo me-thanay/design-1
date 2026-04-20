@@ -312,7 +312,7 @@ export function HeroLanding(props: HeroLandingProps) {
           key={`${cta.text}-${index}`}
           href={cta.href}
           className={[
-            "rounded-full px-5 py-2.5 text-xs sm:text-sm font-semibold",
+            "inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold sm:w-auto sm:py-2.5 sm:text-sm",
             "shadow-sm transition-colors",
             hasImageBackground
               ? "bg-white text-black hover:bg-white/90"
@@ -333,7 +333,8 @@ export function HeroLanding(props: HeroLandingProps) {
           key={`${cta.text}-${index}`}
           href={cta.href}
           className={[
-            "text-xs sm:text-sm/6 font-semibold transition-colors",
+            "inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold sm:w-auto sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm/6",
+            hasImageBackground ? "bg-white/10 ring-1 ring-white/20 backdrop-blur sm:ring-0" : "bg-black/5 ring-1 ring-black/10 sm:ring-0",
             hasImageBackground ? "text-white/90 hover:text-white" : "text-foreground hover:text-muted-foreground",
           ].join(" ")}
           whileHover={motionOff ? undefined : { x: 4 }}
@@ -799,7 +800,7 @@ export function HeroLanding(props: HeroLandingProps) {
             </p>
 
             {callToActions && callToActions.length > 0 && (
-              <div className="mt-8 sm:mt-10 flex items-center justify-center gap-x-4 sm:gap-x-6 flex-wrap gap-y-4">
+              <div className="mt-8 sm:mt-10 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-x-6 sm:gap-y-4">
                 {callToActions.map((cta, index) => renderCallToAction(cta, index))}
               </div>
             )}
