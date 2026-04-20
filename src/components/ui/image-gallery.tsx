@@ -76,6 +76,10 @@ export function ImageGallery({
                   variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
                   transition={{ duration: 0.2, ease: "easeOut" }}
                 />
+                <div
+                  aria-hidden="true"
+                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/35 via-black/0 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                />
 
                 {it.badge ? (
                   <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-[#c9a227] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-900 shadow-sm">
@@ -84,34 +88,6 @@ export function ImageGallery({
                 ) : null}
               </div>
 
-              <motion.div
-                className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] p-4"
-                animate={hovered === idx ? "visible" : "hidden"}
-                variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-              >
-                <div className="space-y-2">
-                  <div className="inline-flex max-w-full rounded-lg bg-white/10 px-3 py-1 text-sm font-bold text-white ring-1 ring-white/20 backdrop-blur">
-                    {it.title}
-                  </div>
-                  {it.subtitle ? (
-                    <p className="line-clamp-2 text-sm text-white/85">{it.subtitle}</p>
-                  ) : null}
-                  <div className="flex flex-wrap items-center gap-2 text-sm">
-                    {it.priceLabel ? (
-                      <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow">
-                        {it.priceLabel}
-                      </span>
-                    ) : null}
-                    {it.ratingLabel ? (
-                      <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur">
-                        {it.ratingLabel}
-                      </span>
-                    ) : null}
-                  </div>
-                </div>
-              </motion.div>
-
               <div className="p-4">
                 <div className="min-w-0">
                   <h3 className="truncate font-serif text-base font-bold text-neutral-900">{it.title}</h3>
@@ -119,6 +95,21 @@ export function ImageGallery({
                     <p className="mt-1 line-clamp-2 text-sm text-neutral-600">{it.subtitle}</p>
                   ) : null}
                 </div>
+
+                {(it.priceLabel || it.ratingLabel) ? (
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {it.priceLabel ? (
+                      <span className="inline-flex rounded-full bg-neutral-900 px-3 py-1 text-xs font-bold text-white">
+                        {it.priceLabel}
+                      </span>
+                    ) : null}
+                    {it.ratingLabel ? (
+                      <span className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-800 ring-1 ring-black/5">
+                        {it.ratingLabel}
+                      </span>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             </motion.article>
           ))}
