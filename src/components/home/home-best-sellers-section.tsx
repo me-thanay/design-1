@@ -2,7 +2,6 @@
 
 import * as React from "react";
 import {
-  BestSellerCardCarousel,
   type BestSellerCarouselSlide,
 } from "@/components/ui/card-carousel";
 import ImageGallery from "@/components/ui/image-gallery";
@@ -179,13 +178,6 @@ export function HomeBestSellersSection() {
       <div className="mx-auto w-full max-w-6xl px-0 sm:px-4">
         <ImageGallery />
       </div>
-
-      <BestSellerCardCarousel
-        className="pt-8"
-        title={<span id="best-seller-carousel">Best <span className="text-[#f5c97a]">sellers</span></span>}
-        slides={slides}
-        subtitle="Highest-rated in-stock pieces from your catalogue — swipe for details, then add to cart."
-      />
     </section>
   );
 }
