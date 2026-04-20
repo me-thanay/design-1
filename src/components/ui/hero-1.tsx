@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Menu, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { SITE_BRAND_NAME, SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
@@ -626,6 +626,7 @@ export function HeroLanding(props: HeroLandingProps) {
           <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             {mobileMenuOpen ? (
               <DialogContent className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-none translate-x-0 translate-y-0 overflow-y-auto rounded-none border-0 bg-card px-4 py-4 data-[state=open]:slide-in-from-right sm:left-auto sm:top-0 sm:max-w-sm sm:rounded-none sm:border-l sm:border-border sm:px-6 sm:py-6 sm:ring-1 sm:ring-border lg:hidden [&>button]:hidden">
+                <DialogTitle className="sr-only">Menu</DialogTitle>
                 <div className="flex items-center justify-between">
                   <a href="/" className="-m-1.5 p-1.5">
                     <span className="sr-only">{logo?.companyName}</span>
