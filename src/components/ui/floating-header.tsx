@@ -90,7 +90,7 @@ export function FloatingHeader() {
   return (
     <header className="w-full">
       <motion.nav
-        className="mx-auto mt-2 flex max-w-6xl items-center justify-between gap-2 rounded-full bg-white px-2 py-1 text-xs font-medium text-zinc-900 shadow-sm ring-1 ring-zinc-200 md:px-3 md:py-1.5 lg:gap-4 lg:text-sm"
+        className="mx-auto mt-2 flex max-w-6xl items-center justify-between gap-2 overflow-visible rounded-full bg-white px-2 py-1 text-xs font-medium text-zinc-900 shadow-sm ring-1 ring-zinc-200 md:px-3 md:py-1.5 lg:gap-4 lg:text-sm"
         initial={reduceMotion ? false : { opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -103,7 +103,7 @@ export function FloatingHeader() {
           <img
             src={SITE_LOGO_SRC}
             alt={SITE_LOGO_ALT}
-            className="h-14 w-auto shrink-0 object-contain sm:h-16 md:h-[4.5rem] lg:h-24"
+            className="h-14 w-auto -my-1 shrink-0 object-contain sm:h-16 sm:-my-1.5 md:h-[4.5rem] md:-my-2 lg:h-24 lg:-my-3"
           />
         </div>
         <div className="hidden items-center gap-5 lg:flex xl:gap-7">
