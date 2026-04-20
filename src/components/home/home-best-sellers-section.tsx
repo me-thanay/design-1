@@ -73,6 +73,30 @@ export function HomeBestSellersSection() {
   const [slides, setSlides] = React.useState<BestSellerCarouselSlide[]>(FALLBACK_SLIDES);
   const [ready, setReady] = React.useState(false);
 
+  const galleryItems = React.useMemo(() => {
+    return slides.slice(0, 8).map((s) => {
+      if (s.kind === "product") {
+        return {
+          src: s.imageSrc,
+          title: s.product.name,
+          subtitle: s.product.subcategory ? `${s.product.subcategory} · best rated` : "Best rated · in stock",
+          badge: s.badge,
+          priceLabel: `₹${Math.round(s.product.price).toLocaleString("en-IN")}`,
+          ratingLabel: `${s.product.rating.toFixed(1)}★`,
+        };
+      }
+      const clean = (s.description ?? "").trim().replace(/\s+/g, " ");
+      return {
+        src: s.imageSrc,
+        title: s.title,
+        subtitle: clean.length > 90 ? `${clean.slice(0, 90)}…` : clean,
+        badge: s.badge,
+        priceLabel: s.priceLabel,
+        ratingLabel: s.ratingLabel,
+      };
+    });
+  }, [slides]);
+
   React.useEffect(() => {
     const load = async () => {
       try {
@@ -176,7 +200,11 @@ export function HomeBestSellersSection() {
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-0 sm:px-4">
-        <ImageGallery />
+        <ImageGallery
+          items={galleryItems}
+          title="Best sellers in detail"
+          subtitle="Hover a card to preview — then browse the collection."
+        />
       </div>
     </section>
   );

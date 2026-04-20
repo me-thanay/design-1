@@ -1,50 +1,109 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { useState } from "react";
 
-export default function Example() {
+export type ImageGalleryItem = {
+  src: string;
+  title: string;
+  subtitle?: string;
+  badge?: string;
+  priceLabel?: string;
+  ratingLabel?: string;
+};
+
+export type ImageGalleryProps = {
+  title?: string;
+  subtitle?: string;
+  items: ImageGalleryItem[];
+  className?: string;
+};
+
+export function ImageGallery({
+  title = "Best sellers in detail",
+  subtitle = "Hover a card to preview — then browse the collection.",
+  items,
+  className,
+}: ImageGalleryProps) {
   return (
-    <>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900&display=swap');
-    
-        * {
-          font-family: 'Poppins', sans-serif;
-        }
-      `}</style>
-
-      <section className="flex w-full flex-col items-center justify-start py-12">
-        <div className="max-w-3xl px-4 text-center">
-          <h1 className="text-3xl font-semibold">Our Latest Creations</h1>
-          <p className="mt-2 text-sm text-slate-500">
-            A visual collection of our most recent works – each piece crafted
-            with intention, emotion, and style.
-          </p>
+    <section className={cn("w-full py-10 sm:py-14", className)}>
+      <div className="mx-auto max-w-6xl px-4">
+        <div className="mx-auto max-w-3xl text-center">
+          <h2 className="text-balance font-serif text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
+            {title}
+          </h2>
+          <p className="mt-2 text-sm text-neutral-600 sm:text-base">{subtitle}</p>
         </div>
 
-        <div className="mt-10 flex h-[400px] w-full max-w-5xl items-center gap-2 px-4">
-          {[
-            "https://images.unsplash.com/photo-1719368472026-dc26f70a9b76?q=80&h=800&w=800&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1649265825072-f7dd6942baed?q=80&h=800&w=800&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1555212697-194d092e3b8f?q=80&h=800&w=800&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1729086046027-09979ade13fd?q=80&h=800&w=800&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1601568494843-772eb04aca5d?q=80&h=800&w=800&auto=format&fit=crop",
-            "https://images.unsplash.com/photo-1585687501004-615dfdfde7f1?q=80&h=800&w=800&auto=format&fit=crop",
-          ].map((src, idx) => (
-            <div
-              key={idx}
-              className="group relative h-[400px] w-56 flex-grow overflow-hidden rounded-lg transition-all duration-500 hover:w-full"
+        {/* Horizontal scroll keeps the layout stable (no reflow on hover). */}
+        <div className="no-scrollbar mt-8 -mx-4 flex gap-4 overflow-x-auto px-4 pb-2 pt-1 sm:mx-0 sm:px-0">
+          {items.slice(0, 10).map((it, idx) => (
+            <article
+              key={`${it.title}-${idx}`}
+              className={cn(
+                "group relative shrink-0 overflow-hidden rounded-3xl bg-white",
+                "w-[min(82vw,280px)] sm:w-[260px] md:w-[280px]",
+                "ring-1 ring-black/10 shadow-sm",
+                "transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-xl",
+              )}
             >
-              <img
-                className="h-full w-full object-cover object-center"
-                src={src}
-                alt={`image-${idx}`}
-              />
-            </div>
+              <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={it.src}
+                  alt={it.title}
+                  className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.06]"
+                  loading="lazy"
+                  decoding="async"
+                />
+                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+
+                {it.badge ? (
+                  <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-[#c9a227] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-900 shadow-sm">
+                    {it.badge}
+                  </div>
+                ) : null}
+              </div>
+
+              <div className="space-y-2 p-4">
+                <div className="min-w-0">
+                  <h3 className="truncate font-serif text-base font-bold text-neutral-900">
+                    {it.title}
+                  </h3>
+                  {it.subtitle ? (
+                    <p className="mt-1 line-clamp-2 text-sm text-neutral-600">
+                      {it.subtitle}
+                    </p>
+                  ) : null}
+                </div>
+
+                <div className="flex items-center justify-between gap-3 pt-1">
+                  <div className="flex flex-wrap items-center gap-2 text-sm">
+                    {it.priceLabel ? (
+                      <span className="inline-flex rounded-full bg-neutral-900 px-3 py-1 text-xs font-bold text-white">
+                        {it.priceLabel}
+                      </span>
+                    ) : null}
+                    {it.ratingLabel ? (
+                      <span className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-800 ring-1 ring-black/5">
+                        {it.ratingLabel}
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <button
+                    type="button"
+                    className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow-sm transition-colors hover:bg-neutral-50"
+                  >
+                    View
+                  </button>
+                </div>
+              </div>
+            </article>
           ))}
         </div>
-      </section>
-    </>
+      </div>
+    </section>
   );
 }
+
+export default ImageGallery;
