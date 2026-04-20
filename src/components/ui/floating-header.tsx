@@ -98,12 +98,12 @@ export function FloatingHeader() {
           reduceMotion ? undefined : { boxShadow: "0 18px 40px rgba(0,0,0,0.08)", transition: { duration: 0.25 } }
         }
       >
-        <div className="min-w-0 flex shrink-0 items-center lg:mr-4">
+        <div className="min-w-0 flex shrink-0 items-center gap-2 sm:gap-3 lg:mr-6">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={SITE_LOGO_SRC}
             alt={SITE_LOGO_ALT}
-            className="h-auto w-[10.5rem] max-h-14 object-contain object-left sm:w-[12rem] sm:max-h-16 md:w-[14rem] md:max-h-[4.5rem] lg:w-[17rem] lg:max-h-24 xl:w-[19rem] xl:max-h-28"
+            className="h-14 w-14 shrink-0 object-contain sm:h-16 sm:w-16 md:h-[4.5rem] md:w-[4.5rem] lg:h-[5.25rem] lg:w-[5.25rem]"
           />
         </div>
         <div className="hidden items-center gap-5 lg:flex xl:gap-7">

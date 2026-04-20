@@ -419,15 +419,12 @@ export function HeroLanding(props: HeroLandingProps) {
             aria-label="Global"
             className="flex min-h-0 items-center justify-between gap-3 bg-white px-2 py-1.5 shadow-sm ring-1 ring-black/5 sm:px-3 sm:py-2 lg:gap-6 lg:px-5"
           >
-            <div className="flex min-w-0 flex-1 items-center lg:pr-6 xl:pr-10">
-              <a
-                href="/"
-                className="flex min-w-0 shrink-0 items-center -m-0.5 p-0.5"
-              >
+            <div className="flex min-w-0 flex-1 items-center lg:pr-8 xl:pr-12">
+              <a href="/" className="-m-0.5 shrink-0 p-0.5">
                 <img
                   alt={logo?.alt ?? logo?.companyName ?? "Sawbhagya"}
                   src={logo?.src}
-                  className="h-auto w-[12rem] max-h-16 object-contain object-left sm:w-[14rem] sm:max-h-20 md:w-[16rem] md:max-h-24 lg:w-[19rem] lg:max-h-28 xl:w-[22rem] xl:max-h-32"
+                  className="h-14 w-auto rounded-sm object-contain sm:h-[4.25rem] md:h-[4.75rem] lg:h-24 xl:h-[5.85rem]"
                   style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
                 />
               </a>
