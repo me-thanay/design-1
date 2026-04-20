@@ -19,6 +19,12 @@ export type ImageGalleryProps = {
   subtitle?: string;
   items: ImageGalleryItem[];
   className?: string;
+  /** Wrapper around header + scroller (defaults to centered max-width container). */
+  containerClassName?: string;
+  /** Header alignment (defaults to centered). */
+  headerAlign?: "center" | "left";
+  /** Limit number of cards rendered (defaults to 10). */
+  maxItems?: number;
 };
 
 export function ImageGallery({
@@ -26,6 +32,9 @@ export function ImageGallery({
   subtitle = "Hover a card to preview — then browse the collection.",
   items,
   className,
+  containerClassName = "mx-auto max-w-6xl px-4",
+  headerAlign = "center",
+  maxItems = 10,
 }: ImageGalleryProps) {
   const [hovered, setHovered] = React.useState<number | null>(null);
   const fallbackSrc = "/stock_images/banarasi%20silk.jpeg";
@@ -42,8 +51,14 @@ export function ImageGallery({
 
   return (
     <section className={cn("w-full py-10 sm:py-14", className)}>
-      <div className="mx-auto max-w-6xl px-4">
-        <div className="mx-auto max-w-3xl text-center">
+      <div className={cn(containerClassName)}>
+        <div
+          className={cn(
+            "mx-auto max-w-3xl",
+            headerAlign === "center" ? "text-center" : "text-left",
+            headerAlign === "left" ? "mx-0" : null,
+          )}
+        >
           <h2 className="text-balance font-serif text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
             {title}
           </h2>
@@ -57,7 +72,7 @@ export function ImageGallery({
 
         {/* Horizontal scroll keeps the layout stable (no reflow on hover). */}
         <div className="no-scrollbar mt-8 -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mx-0 sm:px-0 sm:gap-6 sm:snap-none sm:overflow-visible snap-x snap-mandatory">
-          {items.slice(0, 10).map((it, idx) => (
+          {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
             <motion.article
               key={`${it.title}-${idx}`}
               className={cn(

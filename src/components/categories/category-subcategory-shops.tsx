@@ -125,7 +125,7 @@ export function CategorySubcategoryProductSections({
         >
           <div className="overflow-hidden rounded-3xl border border-black/10 bg-white/70 shadow-sm">
             <motion.div
-              className="relative isolate overflow-hidden"
+              className="group relative isolate overflow-hidden"
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.18, ease: "easeOut" }}

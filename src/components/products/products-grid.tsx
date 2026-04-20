@@ -164,7 +164,9 @@ export function ProductsGrid({
         </div>
       ) : variant === "gallery" ? (
         <ImageGallery
-          className="px-0"
+          className="py-0"
+          containerClassName="w-full px-0"
+          headerAlign="left"
           items={items.map((p) => {
             const img = p.image || fallbackImageFor(p.category);
             const rating = Number(p.rating || 4);

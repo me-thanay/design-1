@@ -124,6 +124,8 @@ export function CategoryBestSellerTestimonials({ category, categoryTitle, limit 
         subtitle="Top-rated pieces in this category — price and rating included."
         items={items}
         className="py-0"
+        containerClassName="w-full px-0"
+        headerAlign="left"
       />
     </div>
   );
