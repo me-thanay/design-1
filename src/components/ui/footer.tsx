@@ -1,0 +1,127 @@
+"use client";
+
+import * as React from "react";
+import { motion, useReducedMotion } from "framer-motion";
+
+import { buttonVariants } from "@/components/ui/button";
+import { ScrollReveal } from "@/components/motion/scroll-reveal";
+import { cn } from "@/lib/utils";
+
+interface FooterProps {
+  logo: React.ReactNode;
+  brandName: string;
+  socialLinks: Array<{
+    icon: React.ReactNode;
+    href: string;
+    label: string;
+  }>;
+  mainLinks: Array<{
+    href: string;
+    label: string;
+  }>;
+  legalLinks: Array<{
+    href: string;
+    label: string;
+  }>;
+  copyright: {
+    text: string;
+    license?: string;
+  };
+}
+
+export function Footer({
+  logo,
+  brandName,
+  socialLinks,
+  mainLinks,
+  legalLinks,
+  copyright,
+}: FooterProps) {
+  const reduceMotion = useReducedMotion();
+
+  return (
+    <footer className="surface-texture pb-6 pt-16 lg:pb-8 lg:pt-24">
+      <ScrollReveal variant="blur" y={20} className="block">
+        <div className="mx-auto w-full max-w-6xl px-4">
+          <div className="md:flex md:items-start md:justify-between">
+            <motion.a
+              href="/"
+              className="flex items-center gap-x-2 rounded-lg outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+              aria-label={brandName}
+              whileHover={reduceMotion ? undefined : { y: -2 }}
+              whileTap={reduceMotion ? undefined : { scale: 0.98 }}
+              transition={{ type: "spring", stiffness: 400, damping: 24 }}
+            >
+              {logo}
+              <span className="text-xl font-bold tracking-tight text-neutral-900 transition-colors group-hover:text-neutral-700">
+                {brandName}
+              </span>
+            </motion.a>
+            <ul className="mt-6 flex list-none space-x-3 md:mt-0">
+              {socialLinks.map((link, i) => (
+                // eslint-disable-next-line react/no-array-index-key
+                <li key={i}>
+                  <motion.a
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    aria-label={link.label}
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "icon" }),
+                      "h-10 w-10 rounded-full transition-shadow",
+                    )}
+                    whileHover={
+                      reduceMotion ? undefined : { scale: 1.08, y: -2, boxShadow: "0 12px 28px rgba(0,0,0,0.12)" }
+                    }
+                    whileTap={reduceMotion ? undefined : { scale: 0.95 }}
+                  >
+                    {link.icon}
+                  </motion.a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-6 border-t border-black/10 pt-6 md:mt-4 md:pt-8 lg:grid lg:grid-cols-10">
+            <nav className="lg:col-[4/11] lg:mt-0">
+              <ul className="flex list-none flex-wrap -mx-2 -my-1 lg:justify-end">
+                {mainLinks.map((link, i) => (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <li key={i} className="mx-2 my-1 shrink-0">
+                    <a
+                      href={link.href}
+                      className="text-sm text-neutral-900 underline-offset-4 transition-colors hover:text-neutral-600 hover:underline"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+
+            <div className="mt-6 lg:col-[4/11] lg:mt-0">
+              <ul className="flex list-none flex-wrap -mx-3 -my-1 lg:justify-end">
+                {legalLinks.map((link, i) => (
+                  // eslint-disable-next-line react/no-array-index-key
+                  <li key={i} className="mx-3 my-1 shrink-0">
+                    <a
+                      href={link.href}
+                      className="text-sm text-neutral-600 underline-offset-4 transition-colors hover:text-neutral-900 hover:underline"
+                    >
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="mt-6 whitespace-nowrap text-sm leading-6 text-neutral-600 lg:col-[1/4] lg:row-[1/3] lg:mt-0">
+              <div>{copyright.text}</div>
+              {copyright.license && <div>{copyright.license}</div>}
+            </div>
+          </div>
+        </div>
+      </ScrollReveal>
+    </footer>
+  );
+}
