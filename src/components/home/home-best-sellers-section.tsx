@@ -74,10 +74,18 @@ export function HomeBestSellersSection() {
   const [ready, setReady] = React.useState(false);
 
   const galleryItems = React.useMemo(() => {
+    const normalizeSrc = (src: string) => {
+      if (!src) return src;
+      if (/^https?:\/\//i.test(src)) return src;
+      if (!src.startsWith("/")) return src;
+      // Encode spaces and other characters for Next static serving.
+      return encodeURI(src);
+    };
+
     return slides.slice(0, 8).map((s) => {
       if (s.kind === "product") {
         return {
-          src: s.imageSrc,
+          src: normalizeSrc(s.imageSrc),
           title: s.product.name,
           subtitle: s.product.subcategory ? `${s.product.subcategory} · best rated` : "Best rated · in stock",
           badge: s.badge,
@@ -87,7 +95,7 @@ export function HomeBestSellersSection() {
       }
       const clean = (s.description ?? "").trim().replace(/\s+/g, " ");
       return {
-        src: s.imageSrc,
+        src: normalizeSrc(s.imageSrc),
         title: s.title,
         subtitle: clean.length > 90 ? `${clean.slice(0, 90)}…` : clean,
         badge: s.badge,

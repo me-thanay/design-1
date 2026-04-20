@@ -28,6 +28,7 @@ export function ImageGallery({
   className,
 }: ImageGalleryProps) {
   const [hovered, setHovered] = React.useState<number | null>(null);
+  const fallbackSrc = "/stock_images/banarasi%20silk.jpeg";
 
   return (
     <section className={cn("w-full py-10 sm:py-14", className)}>
@@ -61,6 +62,12 @@ export function ImageGallery({
                   className="h-full w-full object-cover object-center transition-transform duration-700 ease-out group-hover:scale-[1.06]"
                   loading="lazy"
                   decoding="async"
+                  onError={(e) => {
+                    const img = e.currentTarget as HTMLImageElement;
+                    if (img.dataset.fallbackApplied) return;
+                    img.dataset.fallbackApplied = "1";
+                    img.src = fallbackSrc;
+                  }}
                 />
                 <ProgressiveBlur
                   className="pointer-events-none absolute bottom-0 left-0 h-[70%] w-full"
