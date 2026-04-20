@@ -5,7 +5,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ShoppingBag, ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
-import { SITE_BRAND_NAME, SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
+import { SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 import { PRIMARY_NAV } from "@/lib/navigation";
 
 export function FloatingHeader() {
@@ -66,13 +66,10 @@ export function FloatingHeader() {
     const onKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") setOpenDesktopDropdown(null);
     };
-    const onPointerDown = () => setOpenDesktopDropdown(null);
 
     window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("pointerdown", onPointerDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("pointerdown", onPointerDown);
     };
   }, [openDesktopDropdown]);
 
@@ -101,16 +98,13 @@ export function FloatingHeader() {
           reduceMotion ? undefined : { boxShadow: "0 18px 40px rgba(0,0,0,0.08)", transition: { duration: 0.25 } }
         }
       >
-        <div className="min-w-0 flex items-center gap-2 sm:gap-3 lg:mr-6 lg:gap-4">
+        <div className="min-w-0 flex shrink-0 items-center lg:mr-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={SITE_LOGO_SRC}
             alt={SITE_LOGO_ALT}
-            className="h-16 w-16 shrink-0 object-contain sm:h-[4.5rem] sm:w-[4.5rem] md:h-20 md:w-20 lg:h-[5.25rem] lg:w-[5.25rem]"
+            className="h-auto w-[10.5rem] max-h-14 object-contain object-left sm:w-[12rem] sm:max-h-16 md:w-[14rem] md:max-h-[4.5rem] lg:w-[17rem] lg:max-h-24 xl:w-[19rem] xl:max-h-28"
           />
-          <span className="truncate text-xs font-bold uppercase tracking-[0.16em] text-zinc-800 sm:text-sm lg:text-base">
-            {SITE_BRAND_NAME}
-          </span>
         </div>
         <div className="hidden items-center gap-5 lg:flex xl:gap-7">
           {PRIMARY_NAV.filter((x) => x.name !== "Cart").map((item) =>
@@ -121,33 +115,27 @@ export function FloatingHeader() {
                 onPointerEnter={() => setOpenDesktopDropdown(item.name)}
                 onPointerLeave={() => setOpenDesktopDropdown((v) => (v === item.name ? null : v))}
               >
-                <a
-                  href={item.href}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-800 hover:text-zinc-900 transition-colors lg:text-xs xl:text-sm"
+                <span
+                  className="inline-flex cursor-default items-center gap-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-800 lg:text-xs xl:text-sm"
                   aria-haspopup="menu"
                   aria-expanded={openDesktopDropdown === item.name}
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    setOpenDesktopDropdown((v) => (v === item.name ? null : item.name));
-                  }}
                 >
                   {item.name}
                   <span aria-hidden="true" className="translate-y-[-1px] opacity-70">
                     ▾
                   </span>
-                </a>
-                <div
-                  className={[
-                    "absolute left-0 top-full mt-3 w-[34rem] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl",
-                    openDesktopDropdown === item.name
-                      ? "opacity-100 translate-y-0 pointer-events-auto"
-                      : "opacity-0 translate-y-1 pointer-events-none",
-                    "transition duration-150",
-                    "z-50",
-                  ].join(" ")}
-                  role="menu"
-                  onPointerDown={(e) => e.stopPropagation()}
-                >
+                </span>
+                <div className="absolute left-0 top-full z-50 pt-2">
+                  <div
+                    className={[
+                      "w-[34rem] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl",
+                      openDesktopDropdown === item.name
+                        ? "pointer-events-auto opacity-100 translate-y-0"
+                        : "pointer-events-none opacity-0 translate-y-1",
+                      "transition duration-150",
+                    ].join(" ")}
+                    role="menu"
+                  >
                   <div className="grid grid-cols-[1fr_12.5rem] gap-0">
                     <div className="p-2">
                       {item.items.map((sub) => {
@@ -191,6 +179,7 @@ export function FloatingHeader() {
                         <div className="mt-2 text-xs text-zinc-500">{item.name}</div>
                       </div>
                     </div>
+                  </div>
                   </div>
                 </div>
               </div>

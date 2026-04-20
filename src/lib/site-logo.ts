@@ -1,5 +1,5 @@
-/** Public URL for the site logo (file lives in `public/logo/logo.png`). */
-export const SITE_LOGO_SRC = "/logo/logo.png" as const;
+/** Public URL for the site logo (wordmark image in `public/logo/`). */
+export const SITE_LOGO_SRC = "/logo/sawbhagya-wordmark.png" as const;
 
 export const SITE_LOGO_ALT = "Sawbhagya logo" as const;
 

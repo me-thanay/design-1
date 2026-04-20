@@ -270,13 +270,9 @@ export function HeroLanding(props: HeroLandingProps) {
       if (e.key === "Escape") setOpenDesktopDropdown(null);
     };
 
-    const onPointerDown = () => setOpenDesktopDropdown(null);
-
     window.addEventListener("keydown", onKeyDown);
-    window.addEventListener("pointerdown", onPointerDown);
     return () => {
       window.removeEventListener("keydown", onKeyDown);
-      window.removeEventListener("pointerdown", onPointerDown);
     };
   }, [openDesktopDropdown]);
 
@@ -423,20 +419,17 @@ export function HeroLanding(props: HeroLandingProps) {
             aria-label="Global"
             className="flex min-h-0 items-center justify-between gap-3 bg-white px-2 py-1.5 shadow-sm ring-1 ring-black/5 sm:px-3 sm:py-2 lg:gap-6 lg:px-5"
           >
-            <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4 lg:gap-5 lg:pr-8 xl:pr-12">
+            <div className="flex min-w-0 flex-1 items-center lg:pr-6 xl:pr-10">
               <a
                 href="/"
-                className="flex min-w-0 shrink-0 items-center gap-3 sm:gap-4 lg:gap-5 -m-0.5 p-0.5"
+                className="flex min-w-0 shrink-0 items-center -m-0.5 p-0.5"
               >
                 <img
-                  alt={logo?.alt ?? logo?.companyName}
+                  alt={logo?.alt ?? logo?.companyName ?? "Sawbhagya"}
                   src={logo?.src}
-                  className="h-16 w-auto rounded-sm sm:h-[4.75rem] md:h-[5.25rem] lg:h-24 xl:h-[5.85rem]"
+                  className="h-auto w-[12rem] max-h-16 object-contain object-left sm:w-[14rem] sm:max-h-20 md:w-[16rem] md:max-h-24 lg:w-[19rem] lg:max-h-28 xl:w-[22rem] xl:max-h-32"
                   style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
                 />
-                <span className="hidden min-w-0 truncate font-serif text-sm font-bold uppercase tracking-[0.14em] text-neutral-900 lg:inline xl:text-base">
-                  {logo?.companyName}
-                </span>
               </a>
             </div>
             <div className="flex lg:hidden">
@@ -455,39 +448,35 @@ export function HeroLanding(props: HeroLandingProps) {
                   item.items && item.items.length > 0 ? (
                     <div
                       key={item.name}
-                      className="relative group py-1 -my-1"
+                      className="relative py-1 -my-1"
                       onPointerEnter={() => setOpenDesktopDropdown(item.name)}
+                      onPointerLeave={() => setOpenDesktopDropdown((v) => (v === item.name ? null : v))}
                     >
                       <button
                         type="button"
                         className={`text-[11px] font-bold tracking-[0.12em] uppercase lg:text-xs xl:text-sm ${navTextClass} inline-flex items-center gap-1`}
                         aria-haspopup="menu"
                         aria-expanded={openDesktopDropdown === item.name}
-                        onPointerDown={(e) => {
-                          e.stopPropagation();
-                          setOpenDesktopDropdown((v) => (v === item.name ? null : item.name));
-                        }}
                       >
                         {item.name}
                         <span aria-hidden="true" className="translate-y-[-1px] opacity-80">
                           ▾
                         </span>
                       </button>
-                      <div
-                        className={[
-                          "absolute left-0 top-full mt-0 w-[34rem] overflow-hidden rounded-2xl border shadow-xl",
-                          openDesktopDropdown === item.name
-                            ? "opacity-100 translate-y-0 pointer-events-auto"
-                            : "opacity-0 translate-y-1 pointer-events-none",
-                          "transition duration-150",
-                          hasImageBackground
-                            ? "border-white/15 bg-black/70 backdrop-blur"
-                            : "border-black/10 bg-white/95 backdrop-blur",
-                          "z-50",
-                        ].join(" ")}
-                        role="menu"
-                        onPointerDown={(e) => e.stopPropagation()}
-                      >
+                      <div className="absolute left-0 top-full z-50 pt-2">
+                        <div
+                          className={[
+                            "pointer-events-auto w-[34rem] overflow-hidden rounded-2xl border shadow-xl",
+                            openDesktopDropdown === item.name
+                              ? "opacity-100 translate-y-0"
+                              : "pointer-events-none opacity-0 translate-y-1",
+                            "transition duration-150",
+                            hasImageBackground
+                              ? "border-white/15 bg-black/70 backdrop-blur"
+                              : "border-black/10 bg-white/95 backdrop-blur",
+                          ].join(" ")}
+                          role="menu"
+                        >
                         <div className="grid grid-cols-[1fr_12.5rem] gap-0">
                           <div className="p-2">
                             {item.items.map((sub) => {
@@ -538,6 +527,7 @@ export function HeroLanding(props: HeroLandingProps) {
                               </div>
                             </div>
                           </div>
+                        </div>
                         </div>
                       </div>
                     </div>
