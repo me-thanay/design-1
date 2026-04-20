@@ -1,6 +1,9 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { ProgressiveBlur } from "@/components/ui/progressive-blur";
+import { motion } from "motion/react";
+import * as React from "react";
 
 export type ImageGalleryItem = {
   src: string;
@@ -24,6 +27,8 @@ export function ImageGallery({
   items,
   className,
 }: ImageGalleryProps) {
+  const [hovered, setHovered] = React.useState<number | null>(null);
+
   return (
     <section className={cn("w-full py-10 sm:py-14", className)}>
       <div className="mx-auto max-w-6xl px-4">
@@ -37,7 +42,7 @@ export function ImageGallery({
         {/* Horizontal scroll keeps the layout stable (no reflow on hover). */}
         <div className="no-scrollbar mt-8 -mx-4 flex gap-4 overflow-x-auto px-4 pb-2 pt-1 sm:mx-0 sm:px-0">
           {items.slice(0, 10).map((it, idx) => (
-            <article
+            <motion.article
               key={`${it.title}-${idx}`}
               className={cn(
                 "group relative shrink-0 overflow-hidden rounded-3xl bg-white",
@@ -45,6 +50,8 @@ export function ImageGallery({
                 "ring-1 ring-black/10 shadow-sm",
                 "transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1 hover:shadow-xl",
               )}
+              onHoverStart={() => setHovered(idx)}
+              onHoverEnd={() => setHovered((v) => (v === idx ? null : v))}
             >
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -55,7 +62,13 @@ export function ImageGallery({
                   loading="lazy"
                   decoding="async"
                 />
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent" />
+                <ProgressiveBlur
+                  className="pointer-events-none absolute bottom-0 left-0 h-[70%] w-full"
+                  blurIntensity={0.55}
+                  animate={hovered === idx ? "visible" : "hidden"}
+                  variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+                  transition={{ duration: 0.2, ease: "easeOut" }}
+                />
 
                 {it.badge ? (
                   <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-[#c9a227] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-900 shadow-sm">
@@ -64,41 +77,43 @@ export function ImageGallery({
                 ) : null}
               </div>
 
-              <div className="space-y-2 p-4">
-                <div className="min-w-0">
-                  <h3 className="truncate font-serif text-base font-bold text-neutral-900">
+              <motion.div
+                className="pointer-events-none absolute inset-x-0 bottom-0 z-[1] p-4"
+                animate={hovered === idx ? "visible" : "hidden"}
+                variants={{ hidden: { opacity: 0, y: 8 }, visible: { opacity: 1, y: 0 } }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+              >
+                <div className="space-y-2">
+                  <div className="inline-flex max-w-full rounded-lg bg-white/10 px-3 py-1 text-sm font-bold text-white ring-1 ring-white/20 backdrop-blur">
                     {it.title}
-                  </h3>
+                  </div>
                   {it.subtitle ? (
-                    <p className="mt-1 line-clamp-2 text-sm text-neutral-600">
-                      {it.subtitle}
-                    </p>
+                    <p className="line-clamp-2 text-sm text-white/85">{it.subtitle}</p>
                   ) : null}
-                </div>
-
-                <div className="flex items-center justify-between gap-3 pt-1">
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     {it.priceLabel ? (
-                      <span className="inline-flex rounded-full bg-neutral-900 px-3 py-1 text-xs font-bold text-white">
+                      <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow">
                         {it.priceLabel}
                       </span>
                     ) : null}
                     {it.ratingLabel ? (
-                      <span className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-800 ring-1 ring-black/5">
+                      <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur">
                         {it.ratingLabel}
                       </span>
                     ) : null}
                   </div>
+                </div>
+              </motion.div>
 
-                  <button
-                    type="button"
-                    className="inline-flex shrink-0 items-center justify-center rounded-full border border-black/10 bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow-sm transition-colors hover:bg-neutral-50"
-                  >
-                    View
-                  </button>
+              <div className="p-4">
+                <div className="min-w-0">
+                  <h3 className="truncate font-serif text-base font-bold text-neutral-900">{it.title}</h3>
+                  {it.subtitle ? (
+                    <p className="mt-1 line-clamp-2 text-sm text-neutral-600">{it.subtitle}</p>
+                  ) : null}
                 </div>
               </div>
-            </article>
+            </motion.article>
           ))}
         </div>
       </div>
