@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ProductsGrid } from "@/components/products/products-grid";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
@@ -10,6 +9,7 @@ import type { CategoryCarouselSlide } from "@/components/categories/category-med
 import { CATEGORY_HERO_VIDEO_SRC } from "@/lib/category-hero-video";
 import type { ClothingCategory } from "@/lib/products";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
+import { PRIMARY_NAV } from "@/lib/navigation";
 
 const CATEGORY_CONFIG: Record<
   string,
@@ -228,26 +228,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             { text: "Explore styles", href: "#shop-by-type", variant: "secondary" },
           ],
         })}
-        showHeader={false}
+        navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
         className="min-h-[56svh] sm:min-h-[52svh]"
       />
 
       {/* No ScrollRevealGroup here: fade-in starts at opacity 0 and can block hero video autoplay in every category. */}
       <section className="mx-auto w-full max-w-6xl px-4 pb-10 sm:pb-12">
-        <div className="mb-8 flex flex-wrap items-center gap-3 pt-6">
-          <Link
-            href="/"
-            className="rounded-full border border-black/10 bg-white/70 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
-          >
-            ← Home
-          </Link>
-          <Link
-            href="/#categories"
-            className="rounded-full border border-black/10 bg-white/70 px-4 py-2 text-sm font-medium text-neutral-900 shadow-sm transition duration-300 hover:-translate-y-0.5 hover:bg-white hover:shadow-md"
-          >
-            All categories
-          </Link>
-        </div>
         <CategoryBestSellerTestimonials category={category} categoryTitle={cfg.title} limit={6} />
       </section>
 
