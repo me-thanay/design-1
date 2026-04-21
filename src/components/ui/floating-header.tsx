@@ -13,6 +13,8 @@ export function FloatingHeader() {
   const { itemCount } = useCart();
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
   const [userName, setUserName] = React.useState<string | null>(null);
+  const [userEmail, setUserEmail] = React.useState<string | null>(null);
+  const [userAvatarUrl, setUserAvatarUrl] = React.useState<string | null>(null);
   const [menuOpen, setMenuOpen] = React.useState(false);
   const [searchText, setSearchText] = React.useState("");
   const [openDesktopDropdown, setOpenDesktopDropdown] = React.useState<string | null>(null);
@@ -38,6 +40,9 @@ export function FloatingHeader() {
 
         if (user) {
           setIsLoggedIn(true);
+          setUserEmail(user.email ?? null);
+          const meta = (user.user_metadata as any) ?? {};
+          setUserAvatarUrl((meta.avatar_url ?? meta.picture ?? meta.avatar ?? null) as string | null);
           const fromMeta =
             (user.user_metadata as any)?.full_name ||
             (user.user_metadata as any)?.name;
@@ -46,10 +51,14 @@ export function FloatingHeader() {
         } else {
           setIsLoggedIn(false);
           setUserName(null);
+          setUserEmail(null);
+          setUserAvatarUrl(null);
         }
       } catch {
         setIsLoggedIn(false);
         setUserName(null);
+        setUserEmail(null);
+        setUserAvatarUrl(null);
       }
     };
 
@@ -248,8 +257,20 @@ export function FloatingHeader() {
             </motion.a>
           ) : (
             <div className="hidden items-center gap-2 text-xs md:flex lg:text-sm">
-              <span className="max-w-[140px] truncate rounded-full bg-zinc-100 px-3 py-1 font-semibold uppercase tracking-[0.1em] text-zinc-700">
-                Welcome {userName ?? ""}
+              <span className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2.5 py-1 ring-1 ring-black/5">
+                <span className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {userAvatarUrl ? (
+                    <img src={userAvatarUrl} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-[11px] font-bold text-zinc-700">
+                      {(userEmail?.[0] ?? userName?.[0] ?? "U").toUpperCase()}
+                    </span>
+                  )}
+                </span>
+                <span className="max-w-[180px] truncate text-xs font-semibold text-zinc-800 lg:max-w-[220px]">
+                  {userEmail ?? ""}
+                </span>
               </span>
               <button
                 type="button"

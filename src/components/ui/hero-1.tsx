@@ -125,6 +125,7 @@ export function HeroLanding(props: HeroLandingProps) {
   const [heroInView, setHeroInView] = useState<boolean | null>(null);
   const prevHeroInView = useRef<boolean | null>(null);
   const [authEmail, setAuthEmail] = useState<string | null>(null);
+  const [authAvatarUrl, setAuthAvatarUrl] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
 
   const normalizedBackgroundImages = useMemo(
@@ -141,10 +142,13 @@ export function HeroLanding(props: HeroLandingProps) {
   }, []);
 
   const isAdmin = !!authEmail && allowedAdmins.includes(authEmail.toLowerCase());
+  const authHref =
+    authReady && authEmail ? (isAdmin ? "/creator" : "/sign-in") : (loginHref ?? "/sign-in");
 
   useEffect(() => {
     if (!supabaseEnabled) {
       setAuthEmail(null);
+      setAuthAvatarUrl(null);
       setAuthReady(true);
       return;
     }
@@ -155,14 +159,23 @@ export function HeroLanding(props: HeroLandingProps) {
     const init = async () => {
       const { data: sub } = supabase.auth.onAuthStateChange(
         (_event: AuthChangeEvent, session: Session | null) => {
-          if (!cancelled) setAuthEmail(session?.user?.email ?? null);
+          if (cancelled) return;
+          const user = session?.user ?? null;
+          setAuthEmail(user?.email ?? null);
+          const meta = (user?.user_metadata as any) ?? {};
+          setAuthAvatarUrl((meta.avatar_url ?? meta.picture ?? meta.avatar ?? null) as string | null);
         },
       );
       unsub = () => sub.subscription.unsubscribe();
 
       try {
         const { data } = await supabase.auth.getSession();
-        if (!cancelled) setAuthEmail(data?.session?.user?.email ?? null);
+        if (!cancelled) {
+          const user = data?.session?.user ?? null;
+          setAuthEmail(user?.email ?? null);
+          const meta = (user?.user_metadata as any) ?? {};
+          setAuthAvatarUrl((meta.avatar_url ?? meta.picture ?? meta.avatar ?? null) as string | null);
+        }
       } finally {
         if (!cancelled) setAuthReady(true);
       }
@@ -610,18 +623,36 @@ export function HeroLanding(props: HeroLandingProps) {
                     </motion.a>
                   ) : null}
                   {loginText && loginHref ? (
-                <a
-                  href={
-                    authReady && authEmail
-                      ? isAdmin
-                        ? "/creator"
-                        : "/sign-in"
-                      : loginHref
-                  }
-                  className={`text-[11px] font-bold tracking-[0.12em] uppercase lg:text-xs xl:text-sm ${navTextClass}`}
-                >
-                  {authReady && authEmail ? "Account" : loginText}
-                </a>
+                    <a
+                      href={authHref}
+                      className={[
+                        "inline-flex items-center gap-2 transition-colors",
+                        authReady && authEmail ? "rounded-full bg-white/70 px-2 py-1.5 ring-1 ring-black/10 hover:bg-white" : "",
+                        `text-[11px] font-bold tracking-[0.12em] uppercase lg:text-xs xl:text-sm ${navTextClass}`,
+                      ].join(" ")}
+                      aria-label={authReady && authEmail ? `Account ${authEmail}` : loginText}
+                      title={authReady && authEmail ? authEmail ?? undefined : undefined}
+                    >
+                      {authReady && authEmail ? (
+                        <>
+                          <span className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-black/5 ring-1 ring-black/10">
+                            {/* eslint-disable-next-line @next/next/no-img-element */}
+                            {authAvatarUrl ? (
+                              <img src={authAvatarUrl} alt="" className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="text-[11px] font-bold text-neutral-700">
+                                {(authEmail?.[0] ?? "U").toUpperCase()}
+                              </span>
+                            )}
+                          </span>
+                          <span className="max-w-[160px] truncate normal-case tracking-normal text-neutral-900 lg:max-w-[220px]">
+                            {authEmail}
+                          </span>
+                        </>
+                      ) : (
+                        loginText
+                      )}
+                    </a>
                   ) : null}
                 </div>
               </div>
@@ -712,16 +743,33 @@ export function HeroLanding(props: HeroLandingProps) {
                     {loginText && loginHref && (
                       <div className="py-6">
                         <a
-                          href={
-                            authReady && authEmail
-                              ? isAdmin
-                                ? "/creator"
-                                : "/sign-in"
-                              : loginHref
-                          }
+                          href={authHref}
                           className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-card-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                         >
-                          {authReady && authEmail ? "Account" : loginText}
+                          {authReady && authEmail ? (
+                            <span className="flex items-center gap-3">
+                              <span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-black/5 ring-1 ring-black/10">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                {authAvatarUrl ? (
+                                  <img src={authAvatarUrl} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  <span className="text-sm font-bold text-neutral-700">
+                                    {(authEmail?.[0] ?? "U").toUpperCase()}
+                                  </span>
+                                )}
+                              </span>
+                              <span className="min-w-0">
+                                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
+                                  Account
+                                </span>
+                                <span className="block truncate text-sm font-semibold text-neutral-900">
+                                  {authEmail}
+                                </span>
+                              </span>
+                            </span>
+                          ) : (
+                            loginText
+                          )}
                         </a>
                       </div>
                     )}
