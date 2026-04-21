@@ -466,8 +466,8 @@ export function HeroLanding(props: HeroLandingProps) {
                       onPointerEnter={() => setOpenDesktopDropdown(item.name)}
                       onPointerLeave={() => setOpenDesktopDropdown((v) => (v === item.name ? null : v))}
                     >
-                      <button
-                        type="button"
+                      <a
+                        href={item.href}
                         className={`text-[11px] font-bold tracking-[0.12em] uppercase lg:text-xs xl:text-sm ${navTextClass} inline-flex items-center gap-1`}
                         aria-haspopup="menu"
                         aria-expanded={openDesktopDropdown === item.name}
@@ -476,7 +476,7 @@ export function HeroLanding(props: HeroLandingProps) {
                         <span aria-hidden="true" className="translate-y-[-1px] opacity-80">
                           ▾
                         </span>
-                      </button>
+                      </a>
                       <div className="absolute left-0 top-full z-50 pt-2">
                         <div
                           className={[

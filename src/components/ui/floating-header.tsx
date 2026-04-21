@@ -124,8 +124,9 @@ export function FloatingHeader() {
                 onPointerEnter={() => setOpenDesktopDropdown(item.name)}
                 onPointerLeave={() => setOpenDesktopDropdown((v) => (v === item.name ? null : v))}
               >
-                <span
-                  className="inline-flex cursor-default items-center gap-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-800 lg:text-xs xl:text-sm"
+                <a
+                  href={item.href}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-[0.12em] text-zinc-800 hover:text-zinc-900 transition-colors lg:text-xs xl:text-sm"
                   aria-haspopup="menu"
                   aria-expanded={openDesktopDropdown === item.name}
                 >
@@ -133,7 +134,7 @@ export function FloatingHeader() {
                   <span aria-hidden="true" className="translate-y-[-1px] opacity-70">
                     ▾
                   </span>
-                </span>
+                </a>
                 <div className="absolute left-0 top-full z-50 pt-2">
                   <div
                     className={[
