@@ -18,7 +18,7 @@ export function FloatingHeader() {
   const [openDesktopDropdown, setOpenDesktopDropdown] = React.useState<string | null>(null);
   const [activeDesktopDropdownItem, setActiveDesktopDropdownItem] = React.useState<string | null>(null);
 
-  const navIconClassName = "h-5 w-5 sm:h-[22px] sm:w-[22px] lg:h-6 lg:w-6";
+  const navIconClassName = "h-[18px] w-[18px] sm:h-5 sm:w-5 lg:h-[22px] lg:w-[22px]";
 
   const submitSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +103,7 @@ export function FloatingHeader() {
           <img
             src={SITE_LOGO_SRC}
             alt={SITE_LOGO_ALT}
-            className="h-14 w-auto -my-1 shrink-0 object-contain sm:h-16 sm:-my-1.5 md:h-[4.5rem] md:-my-2 lg:h-24 lg:-my-3"
+            className="h-12 w-auto -my-1 shrink-0 object-contain sm:h-14 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5"
           />
         </div>
         <div className="hidden items-center gap-5 lg:flex xl:gap-7">

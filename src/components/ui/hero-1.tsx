@@ -286,7 +286,7 @@ export function HeroLanding(props: HeroLandingProps) {
   const iconTextClass = hasImageBackground
     ? "text-zinc-700 hover:text-zinc-900 transition-colors"
     : "text-muted-foreground hover:text-foreground transition-colors";
-  const navIconClassName = "h-5 w-5 sm:h-[22px] sm:w-[22px] lg:h-6 lg:w-6";
+  const navIconClassName = "h-[18px] w-[18px] sm:h-5 sm:w-5 lg:h-[22px] lg:w-[22px]";
   const isShopItem = (item: NavigationItem) => item.name.toLowerCase() === "shop";
   const isCartItem = (item: NavigationItem) => item.name.toLowerCase() === "cart";
   const titleTextClass = hasImageBackground ? "text-[#F7F3EE]" : "text-foreground";
@@ -421,14 +421,14 @@ export function HeroLanding(props: HeroLandingProps) {
         <header className="absolute inset-x-0 top-0 z-20">
           <nav
             aria-label="Global"
-            className="flex min-h-0 items-center justify-between gap-3 overflow-visible bg-white px-2 py-1.5 shadow-sm ring-1 ring-black/5 sm:px-3 sm:py-2 lg:gap-6 lg:px-5"
+            className="flex min-h-0 items-center justify-between gap-3 overflow-visible bg-white px-2 py-1 shadow-sm ring-1 ring-black/5 sm:px-3 sm:py-1.5 lg:gap-6 lg:px-5"
           >
             <div className="flex min-w-0 flex-1 items-center lg:pr-8 xl:pr-12">
               <a href="/" className="-m-0.5 shrink-0 p-0.5">
                 <img
                   alt={logo?.alt ?? logo?.companyName ?? "Sawbhagya"}
                   src={logo?.src}
-                  className="h-14 w-auto -my-1 object-contain sm:h-16 sm:-my-1.5 md:h-[4.5rem] md:-my-2 lg:h-24 lg:-my-3 xl:h-28 xl:-my-3.5"
+                  className="h-12 w-auto -my-1 object-contain sm:h-14 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5 xl:h-24 xl:-my-3"
                   style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
                 />
               </a>
