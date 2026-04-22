@@ -18,6 +18,24 @@ function encodePublicSrc(src?: string | null) {
   return encodeURI(src);
 }
 
+const STOCK_IMAGES_DIR_WITH_SPACE = "/stock images" as const;
+const STOCK_IMAGES_FILES = [
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM.jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (1).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (2).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (3).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (4).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (5).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (6).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.49 PM.jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.49 PM (1).jpeg",
+] as const;
+
+function stockImagesUrl(file: (typeof STOCK_IMAGES_FILES)[number]) {
+  // Encode parentheses reliably (encodeURI does not).
+  return `/stock%20images/${encodeURIComponent(file)}`;
+}
+
 function heroImagesForCategory(category: ClothingCategory) {
   const navName: Record<ClothingCategory, string> = {
     sarees: "SAREE",
@@ -105,27 +123,27 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "/stock_images/showcase-1.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[0]),
           alt: "Rich woven silk and festive drape",
           title: "Banarasi silk",
         },
         {
-          src: "/stock_images/showcase-2.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[1]),
           alt: "Soft flowing fabric in motion",
           title: "Georgette",
         },
         {
-          src: "/stock_images/showcase-3.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[2]),
           alt: "Light sheer layers and delicate texture",
           title: "Organza",
         },
         {
-          src: "/stock_images/showcase-4.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[3]),
           alt: "Smooth luminous textile with modern drape",
           title: "Modal silk",
         },
         {
-          src: "/stock_images/showcase-5.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[4]),
           alt: "Natural matte weave and relaxed fall",
           title: "Linen",
         },
@@ -152,22 +170,22 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "/stock_images/showcase-6.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[5]),
           alt: "Statement evening blouse with detail",
           title: "Party wear",
         },
         {
-          src: "/stock_images/showcase-7.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[6]),
           alt: "Easy breathable cotton top",
           title: "Cotton",
         },
         {
-          src: "/stock_images/showcase-8.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[7]),
           alt: "Lustrous silk blouse styling",
           title: "Silk",
         },
         {
-          src: "/stock_images/showcase-9.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[8]),
           alt: "Bold block print and artisan color",
           title: "Ajrakh & artisan",
         },
@@ -194,22 +212,22 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "/stock_images/showcase-1.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[0]),
           alt: "Everyday cotton kurta silhouette",
           title: "Cotton",
         },
         {
-          src: "/stock_images/showcase-2.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[1]),
           alt: "Fluid rayon drape and movement",
           title: "Rayon",
         },
         {
-          src: "/stock_images/showcase-3.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[2]),
           alt: "Light georgette layers",
           title: "Georgette",
         },
         {
-          src: "/stock_images/showcase-4.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[3]),
           alt: "Festive embellished kurti look",
           title: "Party wear",
         },
@@ -236,27 +254,27 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "/stock_images/showcase-5.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[4]),
           alt: "Evening gown with dramatic light",
           title: "Party wear",
         },
         {
-          src: "/stock_images/showcase-6.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[5]),
           alt: "Relaxed dress for day events",
           title: "Casual wear",
         },
         {
-          src: "/stock_images/showcase-7.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[6]),
           alt: "Airy layered formal look",
           title: "Light & layered",
         },
         {
-          src: "/stock_images/showcase-8.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[7]),
           alt: "Longline silhouette on the runway",
           title: "Fluid silhouettes",
         },
         {
-          src: "/stock_images/showcase-9.jpeg",
+          src: stockImagesUrl(STOCK_IMAGES_FILES[8]),
           alt: "High-impact evening styling",
           title: "Statement evenings",
         },
