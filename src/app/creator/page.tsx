@@ -422,6 +422,19 @@ export default function CreatorPage() {
     }
   };
 
+  // Last-resort watchdog: never leave the UI in an infinite loading state.
+  useEffect(() => {
+    if (!loading) return;
+    const t = window.setTimeout(() => {
+      setLoading(false);
+      setError((prev) =>
+        prev ??
+        "Still loading items. This usually means Supabase read access (RLS) is blocking the query or the network is failing. Click Reload.",
+      );
+    }, 12000);
+    return () => window.clearTimeout(t);
+  }, [loading]);
+
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -1032,6 +1045,16 @@ export default function CreatorPage() {
                   Existing items
                 </h2>
                 <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setError(null);
+                        await loadItems();
+                      }}
+                      className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs font-semibold text-zinc-700 hover:bg-zinc-50"
+                    >
+                      Reload
+                    </button>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium text-zinc-500">
                       Category
