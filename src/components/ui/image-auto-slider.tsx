@@ -1,15 +1,16 @@
 import * as React from "react";
 
 const images = [
-  // Use local stock images so the theme stays consistent
-  "/stock_images/banarasi%20silk.jpeg",
-  "/stock_images/Georgette.jpeg",
-  "/stock_images/Organza.jpeg",
-  "/stock_images/Modal%20Silk.jpeg",
-  "/stock_images/linen%20saree.jpeg",
-  "/stock_images/Linen%20saree%20-%202.jpeg",
-  "/stock_images/PARTY%20WEAR%20BLOUSE.jpeg",
-  "/stock_images/SILK%20BLOUSE.jpeg",
+  // Local uploads (folder name includes a space → URL-encoded)
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM.jpeg",
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(1).jpeg",
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(2).jpeg",
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(3).jpeg",
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(4).jpeg",
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(5).jpeg",
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(6).jpeg",
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM.jpeg",
+  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM%20(1).jpeg",
 ];
 
 type ImageAutoSliderProps = {

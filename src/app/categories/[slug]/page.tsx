@@ -53,27 +53,27 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "https://images.unsplash.com/photo-1641699862936-be9f49b1c38d?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM.jpeg",
           alt: "Rich woven silk and festive drape",
           title: "Banarasi silk",
         },
         {
-          src: "https://images.unsplash.com/photo-1771507056578-f9675a2a8f8a?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(1).jpeg",
           alt: "Soft flowing fabric in motion",
           title: "Georgette",
         },
         {
-          src: "https://images.unsplash.com/photo-1742677143629-b9784beab2e1?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(2).jpeg",
           alt: "Light sheer layers and delicate texture",
           title: "Organza",
         },
         {
-          src: "https://images.unsplash.com/photo-1767125715251-c257c8f8cefe?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(3).jpeg",
           alt: "Smooth luminous textile with modern drape",
           title: "Modal silk",
         },
         {
-          src: "https://images.unsplash.com/photo-1692992193981-d3d92fabd9cb?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(4).jpeg",
           alt: "Natural matte weave and relaxed fall",
           title: "Linen",
         },
@@ -99,22 +99,22 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "https://images.unsplash.com/photo-1507691754536-1d2b755da326?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(5).jpeg",
           alt: "Statement evening blouse with detail",
           title: "Party wear",
         },
         {
-          src: "https://images.unsplash.com/photo-1769275061356-a038b498c4a7?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(6).jpeg",
           alt: "Easy breathable cotton top",
           title: "Cotton",
         },
         {
-          src: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM.jpeg",
           alt: "Lustrous silk blouse styling",
           title: "Silk",
         },
         {
-          src: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM%20(1).jpeg",
           alt: "Bold block print and artisan color",
           title: "Ajrakh & artisan",
         },
@@ -140,22 +140,22 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "https://images.unsplash.com/photo-1520975661595-6453be3f7070?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM.jpeg",
           alt: "Everyday cotton kurta silhouette",
           title: "Cotton",
         },
         {
-          src: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(1).jpeg",
           alt: "Fluid rayon drape and movement",
           title: "Rayon",
         },
         {
-          src: "https://images.unsplash.com/photo-1572804013309-59a88b7e92f1?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(2).jpeg",
           alt: "Light georgette layers",
           title: "Georgette",
         },
         {
-          src: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(3).jpeg",
           alt: "Festive embellished kurti look",
           title: "Party wear",
         },
@@ -181,27 +181,27 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "https://images.unsplash.com/photo-1490481651871-ab68de25d43d?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(4).jpeg",
           alt: "Evening gown with dramatic light",
           title: "Party wear",
         },
         {
-          src: "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(5).jpeg",
           alt: "Relaxed dress for day events",
           title: "Casual wear",
         },
         {
-          src: "https://images.unsplash.com/photo-1539008835657-9e8e9680c956?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(6).jpeg",
           alt: "Airy layered formal look",
           title: "Light & layered",
         },
         {
-          src: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM.jpeg",
           alt: "Longline silhouette on the runway",
           title: "Fluid silhouettes",
         },
         {
-          src: "https://images.unsplash.com/photo-1469334031218-e382a71b716b?auto=format&fit=crop&w=1400&q=80",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM%20(1).jpeg",
           alt: "High-impact evening styling",
           title: "Statement evenings",
         },
