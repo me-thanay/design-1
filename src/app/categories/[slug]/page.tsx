@@ -42,6 +42,25 @@ function heroImagesForCategory(category: ClothingCategory) {
   return unique.slice(0, 6);
 }
 
+function heroPositionsFor(category: ClothingCategory, count: number, override?: string[]) {
+  const defaults: Record<ClothingCategory, string> = {
+    sarees: "50% 10%",
+    blouses: "50% 12%",
+    kurtis: "50% 12%",
+    // Gowns images often have faces lower; bias upward so the subject stays centered under the title.
+    gowns: "50% 22%",
+  };
+
+  const base =
+    override && override.length
+      ? override
+      : Array.from({ length: Math.max(1, count) }, () => defaults[category]);
+
+  if (base.length >= count) return base.slice(0, count);
+  const last = base[base.length - 1] ?? defaults[category];
+  return [...base, ...Array.from({ length: count - base.length }, () => last)];
+}
+
 const CATEGORY_CONFIG: Record<
   string,
   {
@@ -200,7 +219,7 @@ const CATEGORY_CONFIG: Record<
   gowns: {
     title: "Gowns",
     subtitle: "Party glam and casual comfort — in one edit.",
-    heroImagePositions: ["50% 12%", "50% 12%"],
+    heroImagePositions: ["50% 22%", "50% 22%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Gown",
@@ -253,6 +272,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   const category = slug as ClothingCategory;
   const heroImages = heroImagesForCategory(category);
+  const heroPositions = heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
   return (
     <main className="surface-texture">
@@ -266,7 +286,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           ],
         })}
         backgroundImages={heroImages}
-        backgroundImagePositions={cfg.heroImagePositions}
+        backgroundImagePositions={heroPositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
         className="min-h-[56svh] sm:min-h-[52svh]"
       />
