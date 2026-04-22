@@ -28,7 +28,7 @@ export const ImageAutoSlider = ({ className, durationSeconds = 20 }: ImageAutoSl
       <div className="image-auto-slider__pause relative w-full overflow-hidden">
         <div className="image-auto-slider__mask">
           <div
-            className="image-auto-slider__track motion-reduce:animate-none flex w-max gap-4 sm:gap-6"
+            className="image-auto-slider__track motion-reduce:animate-none flex w-max gap-3 sm:gap-6"
             style={
               {
                 ["--image-auto-slider-duration" as any]: `${durationSeconds}s`,
@@ -39,7 +39,7 @@ export const ImageAutoSlider = ({ className, durationSeconds = 20 }: ImageAutoSl
               <div
                 // eslint-disable-next-line react/no-array-index-key
                 key={index}
-                className="group relative h-44 w-44 flex-shrink-0 overflow-hidden rounded-2xl shadow-2xl sm:h-56 sm:w-56 lg:h-72 lg:w-72"
+                className="group relative h-36 w-36 flex-shrink-0 overflow-hidden rounded-2xl shadow-2xl sm:h-56 sm:w-56 lg:h-72 lg:w-72"
               >
                 <img
                   src={src}
@@ -54,8 +54,8 @@ export const ImageAutoSlider = ({ className, durationSeconds = 20 }: ImageAutoSl
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-[rgb(252_250_247)] to-transparent" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-24 bg-gradient-to-l from-[rgb(252_250_247)] to-transparent" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-12 bg-gradient-to-r from-[rgb(252_250_247)] to-transparent sm:w-24" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[rgb(252_250_247)] to-transparent sm:w-24" />
       </div>
     </div>
   );

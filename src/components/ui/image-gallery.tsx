@@ -77,13 +77,13 @@ export function ImageGallery({
         </div>
 
         {/* Horizontal scroll keeps the layout stable (no reflow on hover). */}
-        <div className="no-scrollbar mt-8 -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mx-0 sm:px-0 sm:gap-6 sm:snap-none sm:overflow-visible snap-x snap-mandatory">
+        <div className="no-scrollbar mt-6 -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mt-8 sm:mx-0 sm:px-0 sm:gap-6 sm:snap-none sm:overflow-visible snap-x snap-mandatory">
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
             <motion.article
               key={`${it.title}-${idx}`}
               className={cn(
                 "group relative shrink-0 overflow-hidden rounded-3xl bg-white",
-                "w-[min(82vw,280px)] sm:w-[260px] md:w-[280px]",
+                "w-[min(78vw,260px)] sm:w-[260px] md:w-[280px]",
                 "ring-1 ring-black/10 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]",
                 "transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.45)]",
                 "snap-start",
