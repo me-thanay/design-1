@@ -267,9 +267,30 @@ export default function CreatorPage() {
         return;
       }
 
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      // Avoid hanging forever if Supabase auth/network is blocked.
+      const authRes = (await Promise.race([
+        supabase.auth.getUser(),
+        new Promise<{ data: { user: null }; error: { message: string } }>((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                data: { user: null },
+                error: { message: "Timed out checking auth. Check your Supabase env vars / network." },
+              }),
+            9000,
+          ),
+        ),
+      ])) as { data: { user: any | null }; error: { message: string } | null };
+
+      if (authRes.error) {
+        setAuthState("authorized");
+        setError(authRes.error.message);
+        setCurrentUserEmail(null);
+        setLoading(false);
+        return;
+      }
+
+      const user = authRes.data.user;
 
       if (!user) {
         setAuthState("unauthorized");
