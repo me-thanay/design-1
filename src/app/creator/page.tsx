@@ -698,6 +698,17 @@ export default function CreatorPage() {
       setError(error.message);
     } else {
       setItems((prev) => prev.filter((item) => item.id !== id));
+      // Also purge any stale local cache so deleted items don't reappear if the app
+      // falls back to local mode (missing env vars / offline).
+      try {
+        const prevLocal = readLocalClothes();
+        if (prevLocal.length) {
+          const nextLocal = prevLocal.filter((it) => it.id !== id);
+          if (nextLocal.length !== prevLocal.length) writeLocalClothes(nextLocal);
+        }
+      } catch {
+        // ignore
+      }
     }
   };
 
