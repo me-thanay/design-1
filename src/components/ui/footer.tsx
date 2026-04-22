@@ -10,6 +10,13 @@ import { cn } from "@/lib/utils";
 interface FooterProps {
   logo: React.ReactNode;
   brandName: string;
+  contact?: {
+    phone?: string;
+    email?: string;
+    address?: string;
+    mapsHref?: string;
+    whatsappHref?: string;
+  };
   socialLinks: Array<{
     icon: React.ReactNode;
     href: string;
@@ -32,6 +39,7 @@ interface FooterProps {
 export function Footer({
   logo,
   brandName,
+  contact,
   socialLinks,
   mainLinks,
   legalLinks,
@@ -119,6 +127,61 @@ export function Footer({
               <div>{copyright.text}</div>
               {copyright.license && <div>{copyright.license}</div>}
             </div>
+
+            {contact ? (
+              <div className="mt-6 text-sm leading-6 text-neutral-700 lg:col-[1/4] lg:row-[3/4] lg:mt-4">
+                <div className="space-y-1">
+                  {contact.phone ? (
+                    <div>
+                      <span className="text-neutral-500">Phone:</span>{" "}
+                      <a className="text-neutral-900 underline-offset-4 hover:underline" href={`tel:+91${contact.phone}`}>
+                        +91 {contact.phone}
+                      </a>
+                    </div>
+                  ) : null}
+                  {contact.email ? (
+                    <div>
+                      <span className="text-neutral-500">Email:</span>{" "}
+                      <a
+                        className="text-neutral-900 underline-offset-4 hover:underline"
+                        href={`mailto:${contact.email}`}
+                      >
+                        {contact.email}
+                      </a>
+                    </div>
+                  ) : null}
+                  {contact.address ? (
+                    <div className="text-neutral-600">
+                      <span className="text-neutral-500">Address:</span>{" "}
+                      {contact.mapsHref ? (
+                        <a
+                          className="underline-offset-4 hover:underline"
+                          href={contact.mapsHref}
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          {contact.address}
+                        </a>
+                      ) : (
+                        contact.address
+                      )}
+                    </div>
+                  ) : null}
+                  {contact.whatsappHref ? (
+                    <div>
+                      <a
+                        className="inline-flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-semibold text-neutral-900 shadow-sm transition hover:bg-white"
+                        href={contact.whatsappHref}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        Message us on WhatsApp
+                      </a>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </ScrollReveal>

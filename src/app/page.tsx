@@ -7,7 +7,7 @@ import { HomeTestimonialsMarquee } from "@/components/home/home-testimonials-mar
 import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import { Footer } from "@/components/ui/footer";
 import Slideshow from "@/components/ui/slideshow";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, MessageCircle } from "lucide-react";
 import { ProductsGrid } from "@/components/products/products-grid";
 import { ScrollToSearchResults } from "@/components/search/scroll-to-search-results";
 import { ScrollReveal, ScrollRevealGroup } from "@/components/motion/scroll-reveal";
@@ -239,10 +239,33 @@ export default async function Home({ searchParams }: HomeProps) {
           <img src={SITE_LOGO_SRC} alt={SITE_LOGO_ALT} className="h-9 w-9 rounded-sm object-contain" />
         }
         brandName="Sawbhagya"
+        contact={{
+          phone: "8978237992",
+          email: "info@sawbhagya.com",
+          address:
+            "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
+          mapsHref:
+            "https://www.google.com/maps/search/?api=1&query=" +
+            encodeURIComponent(
+              "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
+            ),
+          whatsappHref:
+            "https://wa.me/918978237992?text=" +
+            encodeURIComponent("Hi Sawbhagya, I want to know more about your products."),
+        }}
         socialLinks={[
-          { icon: <Mail className="h-5 w-5" />, href: "mailto:hello@sawbhagya.com", label: "Email" },
-          { icon: <Phone className="h-5 w-5" />, href: "tel:+910000000000", label: "Phone" },
-          { icon: <MapPin className="h-5 w-5" />, href: "/#shop", label: "Shop" },
+          { icon: <MessageCircle className="h-5 w-5" />, href: "https://wa.me/918978237992", label: "WhatsApp" },
+          { icon: <Mail className="h-5 w-5" />, href: "mailto:info@sawbhagya.com", label: "Email" },
+          { icon: <Phone className="h-5 w-5" />, href: "tel:+918978237992", label: "Phone" },
+          {
+            icon: <MapPin className="h-5 w-5" />,
+            href:
+              "https://www.google.com/maps/search/?api=1&query=" +
+              encodeURIComponent(
+                "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
+              ),
+            label: "Location",
+          },
         ]}
         mainLinks={[
           { href: "#best-seller", label: "Best sellers" },

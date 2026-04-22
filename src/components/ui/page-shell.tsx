@@ -4,7 +4,7 @@ import * as React from "react";
 import { FloatingHeader } from "@/components/ui/floating-header";
 import { Footer } from "@/components/ui/footer";
 import { PageTransition } from "@/components/motion/page-transition";
-import { Mail, MapPin, Phone } from "lucide-react";
+import { Mail, MapPin, Phone, MessageCircle } from "lucide-react";
 import { SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 
 type PageShellProps = {
@@ -68,18 +68,45 @@ export function PageShell({
           />
         }
         brandName="Sawbhagya"
+        contact={{
+          phone: "8978237992",
+          email: "info@sawbhagya.com",
+          address:
+            "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
+          mapsHref:
+            "https://www.google.com/maps/search/?api=1&query=" +
+            encodeURIComponent(
+              "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
+            ),
+          whatsappHref:
+            "https://wa.me/918978237992?text=" +
+            encodeURIComponent("Hi Sawbhagya, I want to know more about your products."),
+        }}
         socialLinks={[
           {
+            icon: <MessageCircle className="h-5 w-5" />,
+            href: "https://wa.me/918978237992",
+            label: "WhatsApp",
+          },
+          {
             icon: <Mail className="h-5 w-5" />,
-            href: "mailto:hello@sawbhagya.com",
+            href: "mailto:info@sawbhagya.com",
             label: "Email",
           },
           {
             icon: <Phone className="h-5 w-5" />,
-            href: "tel:+910000000000",
+            href: "tel:+918978237992",
             label: "Phone",
           },
-          { icon: <MapPin className="h-5 w-5" />, href: "/#shop", label: "Shop" },
+          {
+            icon: <MapPin className="h-5 w-5" />,
+            href:
+              "https://www.google.com/maps/search/?api=1&query=" +
+              encodeURIComponent(
+                "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
+              ),
+            label: "Location",
+          },
         ]}
         mainLinks={[
           { href: "/#best-seller", label: "Best sellers" },
