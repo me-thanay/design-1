@@ -241,6 +241,20 @@ export default function CreatorPage() {
     };
   }, [editImagePreviewUrl]);
 
+  // Last-resort watchdog: never leave the UI in an infinite loading state.
+  // Must be declared BEFORE any early returns to keep hook order stable.
+  useEffect(() => {
+    if (!loading) return;
+    const t = window.setTimeout(() => {
+      setLoading(false);
+      setError((prev) =>
+        prev ??
+        "Still loading items. This usually means Supabase read access (RLS) is blocking the query or the network is failing. Click Reload.",
+      );
+    }, 12000);
+    return () => window.clearTimeout(t);
+  }, [loading]);
+
   useEffect(() => {
     const checkAuthAndLoad = async () => {
       setAuthState("checking");
@@ -442,19 +456,6 @@ export default function CreatorPage() {
       setLoading(false);
     }
   };
-
-  // Last-resort watchdog: never leave the UI in an infinite loading state.
-  useEffect(() => {
-    if (!loading) return;
-    const t = window.setTimeout(() => {
-      setLoading(false);
-      setError((prev) =>
-        prev ??
-        "Still loading items. This usually means Supabase read access (RLS) is blocking the query or the network is failing. Click Reload.",
-      );
-    }, 12000);
-    return () => window.clearTimeout(t);
-  }, [loading]);
 
   const handleChange = (
     e: React.ChangeEvent<
