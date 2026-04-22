@@ -383,21 +383,43 @@ export default function CreatorPage() {
       setLoading(false);
       return;
     }
+    try {
+      // Avoid getting stuck forever on bad network/RLS; surface a useful error instead.
+      const res = (await Promise.race([
+        supabase.from("clothes").select("*").order("created_at", { ascending: false }),
+        new Promise<{ data: null; error: { message: string } }>((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                data: null,
+                error: { message: "Timed out loading items. Check your Supabase connection / RLS policies." },
+              }),
+            9000,
+          ),
+        ),
+      ])) as { data: any[] | null; error: { message: string } | null };
 
-    const { data, error } = await supabase
-      .from("clothes")
-      .select("*")
-      .order("created_at", { ascending: false });
+      if (res.error) {
+        setError(res.error.message);
+        setItems([]);
+        return;
+      }
 
-    if (error) {
-      setError(error.message);
-    } else {
-      const normalized = (data as any[]).map((it) =>
-        normalizeClothingItem(it),
-      );
+      const normalized = ((res.data ?? []) as any[]).map((it) => normalizeClothingItem(it));
       setItems(normalized);
+
+      // Keep local cache in sync so old deleted items won't reappear if the app falls back to local mode.
+      try {
+        writeLocalClothes(normalized);
+      } catch {
+        // ignore
+      }
+    } catch (e: any) {
+      setError(e?.message ?? "Could not load items.");
+      setItems([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleChange = (
