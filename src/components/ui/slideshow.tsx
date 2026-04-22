@@ -9,38 +9,34 @@ type Slide = {
   text: [string, string];
 };
 
-const STOCK_IMAGES_FILES = [
-  "WhatsApp Image 2026-04-21 at 12.22.48 PM.jpeg",
-  "WhatsApp Image 2026-04-21 at 12.22.48 PM (1).jpeg",
-  "WhatsApp Image 2026-04-21 at 12.22.48 PM (2).jpeg",
-  "WhatsApp Image 2026-04-21 at 12.22.48 PM (3).jpeg",
-  "WhatsApp Image 2026-04-21 at 12.22.48 PM (4).jpeg",
+const STOCK_SLIDES = [
+  // Use the renamed no-space files (most robust on Vercel/Linux).
+  "/stock_images/showcase-1.jpeg",
+  "/stock_images/showcase-2.jpeg",
+  "/stock_images/showcase-3.jpeg",
+  "/stock_images/showcase-4.jpeg",
+  "/stock_images/showcase-5.jpeg",
 ] as const;
-
-function stockImagesUrl(file: (typeof STOCK_IMAGES_FILES)[number]) {
-  // Encode parentheses reliably (encodeURI does not).
-  return `/stock%20images/${encodeURIComponent(file)}`;
-}
 
 const defaultSlides: Slide[] = [
   {
-    img: stockImagesUrl(STOCK_IMAGES_FILES[0]),
+    img: STOCK_SLIDES[0],
     text: ["FESTIVE", "SILK EDITS"],
   },
   {
-    img: stockImagesUrl(STOCK_IMAGES_FILES[1]),
+    img: STOCK_SLIDES[1],
     text: ["JEWELRY", "AND DRAPES"],
   },
   {
-    img: stockImagesUrl(STOCK_IMAGES_FILES[2]),
+    img: STOCK_SLIDES[2],
     text: ["ELEGANCE", "IN WHITE"],
   },
   {
-    img: stockImagesUrl(STOCK_IMAGES_FILES[3]),
+    img: STOCK_SLIDES[3],
     text: ["CRAFT", "IN DETAIL"],
   },
   {
-    img: stockImagesUrl(STOCK_IMAGES_FILES[4]),
+    img: STOCK_SLIDES[4],
     text: ["COLOR", "THAT GLOWS"],
   },
 ];
