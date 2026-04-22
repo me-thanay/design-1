@@ -9,25 +9,38 @@ type Slide = {
   text: [string, string];
 };
 
+const STOCK_IMAGES_FILES = [
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM.jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (1).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (2).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (3).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (4).jpeg",
+] as const;
+
+function stockImagesUrl(file: (typeof STOCK_IMAGES_FILES)[number]) {
+  // Encode parentheses reliably (encodeURI does not).
+  return `/stock%20images/${encodeURIComponent(file)}`;
+}
+
 const defaultSlides: Slide[] = [
   {
-    img: "https://images.unsplash.com/photo-1641699862936-be9f49b1c38d?auto=format&fit=crop&w=2000&q=80",
+    img: stockImagesUrl(STOCK_IMAGES_FILES[0]),
     text: ["FESTIVE", "SILK EDITS"],
   },
   {
-    img: "https://images.unsplash.com/photo-1771507056578-f9675a2a8f8a?auto=format&fit=crop&w=2000&q=80",
+    img: stockImagesUrl(STOCK_IMAGES_FILES[1]),
     text: ["JEWELRY", "AND DRAPES"],
   },
   {
-    img: "https://images.unsplash.com/photo-1742677143629-b9784beab2e1?auto=format&fit=crop&w=2000&q=80",
+    img: stockImagesUrl(STOCK_IMAGES_FILES[2]),
     text: ["ELEGANCE", "IN WHITE"],
   },
   {
-    img: "https://images.unsplash.com/photo-1767125715251-c257c8f8cefe?auto=format&fit=crop&w=2000&q=80",
+    img: stockImagesUrl(STOCK_IMAGES_FILES[3]),
     text: ["CRAFT", "IN DETAIL"],
   },
   {
-    img: "https://images.unsplash.com/photo-1692992193981-d3d92fabd9cb?auto=format&fit=crop&w=2000&q=80",
+    img: stockImagesUrl(STOCK_IMAGES_FILES[4]),
     text: ["COLOR", "THAT GLOWS"],
   },
 ];
