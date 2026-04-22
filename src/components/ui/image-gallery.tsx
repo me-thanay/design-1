@@ -77,7 +77,7 @@ export function ImageGallery({
         </div>
 
         {/* Horizontal scroll keeps the layout stable (no reflow on hover). */}
-        <div className="no-scrollbar mt-6 -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mt-8 sm:mx-0 sm:px-0 sm:gap-6 sm:snap-none sm:overflow-visible snap-x snap-mandatory">
+        <div className="no-scrollbar mt-6 -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mt-8 sm:mx-0 sm:px-0 sm:gap-6 snap-x snap-mandatory">
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
             <motion.article
               key={`${it.title}-${idx}`}
