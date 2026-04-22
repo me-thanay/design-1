@@ -2,6 +2,8 @@
 
 import { cn } from "@/lib/utils";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
+import { ProductCartControl } from "@/components/cart/product-cart-control";
+import type { Product } from "@/lib/products";
 import { motion } from "motion/react";
 import * as React from "react";
 
@@ -12,6 +14,10 @@ export type ImageGalleryItem = {
   badge?: string;
   priceLabel?: string;
   ratingLabel?: string;
+  /** When provided, renders an add-to-cart control in the card. */
+  product?: Product;
+  /** Optional image to store in cart (defaults to `src`). */
+  cartImage?: string;
 };
 
 export type ImageGalleryProps = {
@@ -195,6 +201,17 @@ export function ImageGallery({
                         {it.ratingLabel}
                       </span>
                     ) : null}
+                  </div>
+                ) : null}
+
+                {it.product ? (
+                  <div className="mt-3">
+                    <ProductCartControl
+                      product={it.product}
+                      image={it.cartImage ?? it.src}
+                      tone="card"
+                      compact
+                    />
                   </div>
                 ) : null}
               </div>

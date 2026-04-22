@@ -37,13 +37,16 @@ function normalizeSrc(src: string) {
 
 function productToGalleryItem(p: Product, category: ClothingCategory, rank: number) {
   const img = p.image || fallbackImageFor(category);
+  const src = normalizeSrc(img);
   return {
-    src: normalizeSrc(img),
+    src,
     title: p.name,
     subtitle: p.subcategory ? `${p.subcategory} · best rated` : "Best rated · in stock",
     badge: rank === 1 ? "Top rated" : "Best seller",
     priceLabel: `₹${Math.round(p.price).toLocaleString("en-IN")}`,
     ratingLabel: `${p.rating.toFixed(1)}★`,
+    product: p,
+    cartImage: src,
   };
 }
 

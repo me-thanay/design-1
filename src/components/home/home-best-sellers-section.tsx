@@ -84,13 +84,16 @@ export function HomeBestSellersSection() {
 
     return slides.slice(0, 8).map((s) => {
       if (s.kind === "product") {
+        const src = normalizeSrc(s.imageSrc);
         return {
-          src: normalizeSrc(s.imageSrc),
+          src,
           title: s.product.name,
           subtitle: s.product.subcategory ? `${s.product.subcategory} · best rated` : "Best rated · in stock",
           badge: s.badge,
           priceLabel: `₹${Math.round(s.product.price).toLocaleString("en-IN")}`,
           ratingLabel: `${s.product.rating.toFixed(1)}★`,
+          product: s.product,
+          cartImage: src,
         };
       }
       const clean = (s.description ?? "").trim().replace(/\s+/g, " ");
