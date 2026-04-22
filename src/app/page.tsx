@@ -165,6 +165,29 @@ export default async function Home({ searchParams }: HomeProps) {
         <HomeBestSellersSection />
       </ScrollReveal>
 
+      <section className="surface-texture pb-20 pt-2">
+        <div className="mx-auto w-full max-w-6xl px-4">
+          <div className="overflow-hidden rounded-3xl bg-transparent px-0 py-10 sm:px-0">
+            <ScrollRevealGroup stagger={0.1} delayChildren={0.04} variant="blur" y={20}>
+              <div className="mb-7">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
+                    Showcase
+                  </p>
+                  <h3 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
+                    Featured picks in motion
+                  </h3>
+                  <p className="mt-2 max-w-2xl text-sm text-neutral-600">
+                    Textures, drapes, and details—hover to pause.
+                  </p>
+                </div>
+              </div>
+              <ImageAutoSlider durationSeconds={22} />
+            </ScrollRevealGroup>
+          </div>
+        </div>
+      </section>
+
       <section id="shop" className="surface-texture scroll-mt-24 pb-12 pt-2">
         <div className="mx-auto w-full max-w-6xl px-4">
           <ScrollRevealGroup stagger={0.085} delayChildren={0.02} variant="fade-up" y={26}>
@@ -208,29 +231,6 @@ export default async function Home({ searchParams }: HomeProps) {
       <ScrollReveal y={36}>
         <Slideshow className="surface-texture pb-16 pt-2" />
       </ScrollReveal>
-
-      <section className="surface-texture pb-20 pt-2">
-        <div className="mx-auto w-full max-w-6xl px-4">
-          <div className="overflow-hidden rounded-3xl bg-transparent px-0 py-10 sm:px-0">
-            <ScrollRevealGroup stagger={0.1} delayChildren={0.04} variant="blur" y={20}>
-              <div className="mb-7">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
-                    Showcase
-                  </p>
-                  <h3 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-                    Featured picks in motion
-                  </h3>
-                  <p className="mt-2 max-w-2xl text-sm text-neutral-600">
-                    Textures, drapes, and details—hover to pause.
-                  </p>
-                </div>
-              </div>
-              <ImageAutoSlider durationSeconds={22} />
-            </ScrollRevealGroup>
-          </div>
-        </div>
-      </section>
 
       <HomeTestimonialsMarquee />
 
