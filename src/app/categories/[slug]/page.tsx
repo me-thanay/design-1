@@ -58,22 +58,22 @@ const CATEGORY_CONFIG: Record<
           title: "Banarasi silk",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(1).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%281%29.jpeg",
           alt: "Soft flowing fabric in motion",
           title: "Georgette",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(2).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%282%29.jpeg",
           alt: "Light sheer layers and delicate texture",
           title: "Organza",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(3).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%283%29.jpeg",
           alt: "Smooth luminous textile with modern drape",
           title: "Modal silk",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(4).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%284%29.jpeg",
           alt: "Natural matte weave and relaxed fall",
           title: "Linen",
         },
@@ -99,12 +99,12 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(5).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%285%29.jpeg",
           alt: "Statement evening blouse with detail",
           title: "Party wear",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(6).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%286%29.jpeg",
           alt: "Easy breathable cotton top",
           title: "Cotton",
         },
@@ -114,7 +114,7 @@ const CATEGORY_CONFIG: Record<
           title: "Silk",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM%20(1).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM%20%281%29.jpeg",
           alt: "Bold block print and artisan color",
           title: "Ajrakh & artisan",
         },
@@ -145,17 +145,17 @@ const CATEGORY_CONFIG: Record<
           title: "Cotton",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(1).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%281%29.jpeg",
           alt: "Fluid rayon drape and movement",
           title: "Rayon",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(2).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%282%29.jpeg",
           alt: "Light georgette layers",
           title: "Georgette",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(3).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%283%29.jpeg",
           alt: "Festive embellished kurti look",
           title: "Party wear",
         },
@@ -181,17 +181,17 @@ const CATEGORY_CONFIG: Record<
       eyebrow: "Shop by type",
       slides: [
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(4).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%284%29.jpeg",
           alt: "Evening gown with dramatic light",
           title: "Party wear",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(5).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%285%29.jpeg",
           alt: "Relaxed dress for day events",
           title: "Casual wear",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(6).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20%286%29.jpeg",
           alt: "Airy layered formal look",
           title: "Light & layered",
         },
@@ -201,7 +201,7 @@ const CATEGORY_CONFIG: Record<
           title: "Fluid silhouettes",
         },
         {
-          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM%20(1).jpeg",
+          src: "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM%20%281%29.jpeg",
           alt: "High-impact evening styling",
           title: "Statement evenings",
         },

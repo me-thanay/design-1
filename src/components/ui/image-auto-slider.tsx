@@ -1,17 +1,17 @@
 import * as React from "react";
 
 const images = [
-  // Local uploads — keep raw paths and encode at runtime (spaces + parentheses).
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM.jpeg",
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (1).jpeg",
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (2).jpeg",
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (3).jpeg",
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (4).jpeg",
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (5).jpeg",
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (6).jpeg",
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.49 PM.jpeg",
-  "/stock images/WhatsApp Image 2026-04-21 at 12.22.49 PM (1).jpeg",
-].map((p) => encodeURI(p));
+  // Local uploads (folder name includes a space). Encode EACH filename so parentheses are safe on all servers.
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM.jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (1).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (2).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (3).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (4).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (5).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.48 PM (6).jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.49 PM.jpeg",
+  "WhatsApp Image 2026-04-21 at 12.22.49 PM (1).jpeg",
+].map((file) => `/stock%20images/${encodeURIComponent(file)}`);
 
 type ImageAutoSliderProps = {
   className?: string;
