@@ -11,12 +11,42 @@ import type { ClothingCategory } from "@/lib/products";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
 import { PRIMARY_NAV } from "@/lib/navigation";
 
+function encodePublicSrc(src?: string | null) {
+  if (!src) return null;
+  if (/^https?:\/\//i.test(src)) return src;
+  if (!src.startsWith("/")) return src;
+  return encodeURI(src);
+}
+
+function heroImagesForCategory(category: ClothingCategory) {
+  const navName: Record<ClothingCategory, string> = {
+    sarees: "SAREE",
+    kurtis: "KURTIS",
+    blouses: "BLOUSES",
+    gowns: "GOWNS",
+  };
+
+  const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
+  const candidates = [
+    nav?.featuredImageSrc ?? null,
+    ...(nav?.items?.map((i) => i.imageSrc ?? null) ?? []),
+  ]
+    .map(encodePublicSrc)
+    .filter(Boolean) as string[];
+
+  // Unique + stable order
+  const seen = new Set<string>();
+  const unique = candidates.filter((s) => (seen.has(s) ? false : (seen.add(s), true)));
+
+  // Keep it tight so it feels curated.
+  return unique.slice(0, 6);
+}
+
 const CATEGORY_CONFIG: Record<
   string,
   {
     title: string;
     subtitle: string;
-    heroImages?: string[];
     heroImagePositions?: string[];
     spotlight?: {
       label?: string;
@@ -39,13 +69,6 @@ const CATEGORY_CONFIG: Record<
   sarees: {
     title: "Sarees",
     subtitle: "Silk, cotton, and everyday drapes — curated edits.",
-    heroImages: [
-      "/stock_images/banarasi%20silk.jpeg",
-      "/stock_images/Georgette.jpeg",
-      "/stock_images/Organza.jpeg",
-      "/stock_images/Modal%20Silk.jpeg",
-      "/stock_images/linen%20saree.jpeg",
-    ],
     heroImagePositions: ["50% 10%", "50% 8%", "50% 12%", "50% 10%", "50% 12%"],
     spotlight: {
       label: "Featured",
@@ -93,12 +116,6 @@ const CATEGORY_CONFIG: Record<
   blouses: {
     title: "Blouses",
     subtitle: "Tailored fits and premium finishes for every look.",
-    heroImages: [
-      "/stock_images/SILK%20BLOUSE.jpeg",
-      "/stock_images/PARTY%20WEAR%20BLOUSE.jpeg",
-      "/stock_images/COTTON%20BLOUSE.jpeg",
-      "/stock_images/AJRAKH%20BLOUSE.jpeg",
-    ],
     heroImagePositions: ["50% 10%", "50% 10%", "50% 10%", "50% 10%"],
     spotlight: {
       label: "Featured",
@@ -141,12 +158,6 @@ const CATEGORY_CONFIG: Record<
   kurtis: {
     title: "Kurtis",
     subtitle: "Work-ready, festive, and easy everyday styles.",
-    heroImages: [
-      "/stock_images/COTTON%20KURTI.jpeg",
-      "/stock_images/Rayon%20Kurtis.jpeg",
-      "/stock_images/GEORGETTE%20KURTI.jpeg",
-      "/stock_images/PARTY%20WEAR%20KURTI.jpeg",
-    ],
     heroImagePositions: ["50% 12%", "50% 10%", "50% 10%", "50% 10%"],
     spotlight: {
       label: "Featured",
@@ -189,10 +200,6 @@ const CATEGORY_CONFIG: Record<
   gowns: {
     title: "Gowns",
     subtitle: "Party glam and casual comfort — in one edit.",
-    heroImages: [
-      "/stock_images/PARTY%20WEAR%20GOWN.jpeg",
-      "/stock_images/CASUAL%20WEAR%20GOWN.jpeg",
-    ],
     heroImagePositions: ["50% 12%", "50% 12%"],
     spotlight: {
       label: "Featured",
@@ -245,6 +252,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   if (!cfg) notFound();
 
   const category = slug as ClothingCategory;
+  const heroImages = heroImagesForCategory(category);
 
   return (
     <main className="surface-texture">
@@ -257,7 +265,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
             { text: "Explore styles", href: "#shop-by-type", variant: "secondary" },
           ],
         })}
-        backgroundImages={cfg.heroImages}
+        backgroundImages={heroImages}
         backgroundImagePositions={cfg.heroImagePositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
         className="min-h-[56svh] sm:min-h-[52svh]"
