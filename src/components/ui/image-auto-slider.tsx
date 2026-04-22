@@ -1,17 +1,17 @@
 import * as React from "react";
 
 const images = [
-  // Local uploads (folder name includes a space → URL-encoded)
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM.jpeg",
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(1).jpeg",
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(2).jpeg",
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(3).jpeg",
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(4).jpeg",
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(5).jpeg",
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.48%20PM%20(6).jpeg",
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM.jpeg",
-  "/stock%20images/WhatsApp%20Image%202026-04-21%20at%2012.22.49%20PM%20(1).jpeg",
-];
+  // Local uploads — keep raw paths and encode at runtime (spaces + parentheses).
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM.jpeg",
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (1).jpeg",
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (2).jpeg",
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (3).jpeg",
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (4).jpeg",
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (5).jpeg",
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.48 PM (6).jpeg",
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.49 PM.jpeg",
+  "/stock images/WhatsApp Image 2026-04-21 at 12.22.49 PM (1).jpeg",
+].map((p) => encodeURI(p));
 
 type ImageAutoSliderProps = {
   className?: string;
