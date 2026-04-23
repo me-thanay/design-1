@@ -303,7 +303,18 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
 
   const category = slug as ClothingCategory;
   const heroImages = heroImagesForCategory(category);
-  const heroPositions = heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
+  const heroPositions =
+    category === "kurtis"
+      ? heroImages.map((src) => {
+          // Keep face + dress visible. For the full-length portrait, bias slightly down (not too much)
+          // so outfit stays in frame without losing the head.
+          if (src.includes("pexels-neha-mishra-1851906907-28512787")) return "50% 45%";
+          if (src.includes("pexels-fahadputhawala-33335083")) return "50% 18%";
+          if (src.includes("pexels-dhanno-28949655")) return "50% 22%";
+          if (src.includes("pexels-dhanno-19880621")) return "50% 16%";
+          return "50% 18%";
+        })
+      : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
   return (
     <main className="surface-texture">
