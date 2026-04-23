@@ -48,6 +48,12 @@ interface HeroLandingProps {
   };
   backgroundImages?: string[];
   /**
+   * How background images should fit.
+   * - `cover`: fills the hero, may crop (default)
+   * - `contain`: shows the full image (no crop); we add a subtle blurred backdrop for nicer edges.
+   */
+  backgroundImageFit?: "cover" | "contain";
+  /**
    * Per-image focal point for `object-position` on hero `<img>` (same syntax as
    * background-position). Prefer top weighting (`center top`, `50% 5%`) so faces
    * stay in frame on wide viewports with `object-cover`.
@@ -81,6 +87,7 @@ const defaultProps: Partial<HeroLandingProps> = {
   },
   backgroundImageIntervalMs: 4000,
   backgroundImageFadeMs: 900,
+  backgroundImageFit: "cover",
   callToActions: [
     { text: "Get started", href: "#", variant: "primary" },
     { text: "Learn more", href: "#", variant: "secondary" },
@@ -101,6 +108,7 @@ export function HeroLanding(props: HeroLandingProps) {
     titleSize,
     gradientColors,
     backgroundImages,
+    backgroundImageFit,
     backgroundImagePositions,
     backgroundImageIntervalMs,
     backgroundImageFadeMs,
@@ -143,6 +151,7 @@ export function HeroLanding(props: HeroLandingProps) {
   );
 
   const [validBgSlides, setValidBgSlides] = useState(bgSlides);
+  const bgFit = backgroundImageFit ?? "cover";
 
   // Remove broken images so the hero never rotates into a blank slide.
   useEffect(() => {
@@ -404,6 +413,32 @@ export function HeroLanding(props: HeroLandingProps) {
     >
       {validBgSlides.length > 0 && (
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+          {bgFit === "contain" && (
+            <>
+              {validBgSlides.map((s, index) => (
+                // eslint-disable-next-line @next/next/no-img-element -- backdrop layer only
+                <img
+                  key={`backdrop-${s.src}-${index}`}
+                  src={s.src}
+                  alt=""
+                  decoding="async"
+                  fetchPriority="low"
+                  className={[
+                    "absolute inset-0 h-full w-full object-cover",
+                    "scale-[1.06] blur-2xl opacity-70",
+                    "transition-opacity motion-reduce:transition-none",
+                    index === (bgIndex % validBgSlides.length) ? "opacity-70" : "opacity-0",
+                  ].join(" ")}
+                  style={{
+                    objectPosition: s.pos,
+                    transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
+                    filter: "saturate(1.05) contrast(1.05)",
+                  }}
+                />
+              ))}
+              <div className="absolute inset-0 bg-black/10" />
+            </>
+          )}
           {validBgSlides.map((s, index) => (
             // eslint-disable-next-line @next/next/no-img-element -- full-bleed hero carousel; LCP handled by first slide
             <img
@@ -413,7 +448,8 @@ export function HeroLanding(props: HeroLandingProps) {
               decoding={index === 0 ? "sync" : "async"}
               fetchPriority={index === 0 ? "high" : "low"}
               className={[
-                "absolute inset-0 h-full w-full object-cover will-change-transform will-change-opacity",
+                "absolute inset-0 h-full w-full will-change-transform will-change-opacity",
+                bgFit === "contain" ? "object-contain" : "object-cover",
                 "origin-top motion-reduce:origin-center",
                 "transition-[opacity,transform] motion-reduce:transition-none",
                 index === (bgIndex % validBgSlides.length)

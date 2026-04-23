@@ -317,6 +317,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         })}
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
+        backgroundImageFit={category === "kurtis" ? "contain" : "cover"}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
         className="min-h-[56svh] sm:min-h-[52svh]"
       />
