@@ -21,13 +21,12 @@ export const PRIMARY_NAV: NavItem[] = [
   {
     name: "KURTIS",
     href: "/categories/kurtis",
-    // Use a full-length hero so face + dress are visible.
-    featuredImageSrc: "/kurtis/pexels-neha-mishra-1851906907-28512787.jpg",
+    featuredImageSrc: "/kurtis/WhatsApp Image 2026-04-22 at 10.40.13 PM.jpeg",
     items: [
       { name: "Rayon", href: "/categories/kurtis?q=rayon", imageSrc: "/kurtis/pexels-dhanno-28949655.jpg" },
-      { name: "Georgette", href: "/categories/kurtis?q=georgette", imageSrc: "/kurtis/pexels-fahadputhawala-33335083.jpg" },
-      { name: "Party wear", href: "/categories/kurtis?q=party", imageSrc: "/kurtis/pexels-neha-mishra-1851906907-28512787.jpg" },
-      { name: "Cotton", href: "/categories/kurtis?q=cotton", imageSrc: "/kurtis/pexels-dhanno-19880621.jpg" },
+      { name: "Georgette", href: "/categories/kurtis?q=georgette", imageSrc: "/kurtis/pexels-dhanno-28949643.jpg" },
+      { name: "Party wear", href: "/categories/kurtis?q=party", imageSrc: "/kurtis/WhatsApp Image 2026-04-22 at 10.40.13 PM.jpeg" },
+      { name: "Cotton", href: "/categories/kurtis?q=cotton", imageSrc: "/kurtis/pexels-dhanno-28949643.jpg" },
     ],
   },
   {

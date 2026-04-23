@@ -56,10 +56,9 @@ function heroImagesForCategory(category: ClothingCategory) {
   const extras =
     category === "kurtis"
       ? ([
-          "/kurtis/pexels-neha-mishra-1851906907-28512787.jpg",
+          "/kurtis/WhatsApp Image 2026-04-22 at 10.40.13 PM.jpeg",
+          "/kurtis/pexels-dhanno-28949643.jpg",
           "/kurtis/pexels-dhanno-28949655.jpg",
-          "/kurtis/pexels-fahadputhawala-33335083.jpg",
-          "/kurtis/pexels-dhanno-19880621.jpg",
         ].map(encodePublicSrc).filter(Boolean) as string[])
       : [];
 
@@ -308,10 +307,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       ? heroImages.map((src) => {
           // Keep face + dress visible. For the full-length portrait, bias slightly down (not too much)
           // so outfit stays in frame without losing the head.
-          if (src.includes("pexels-neha-mishra-1851906907-28512787")) return "50% 45%";
-          if (src.includes("pexels-fahadputhawala-33335083")) return "50% 18%";
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 18%";
+          if (src.includes("pexels-dhanno-28949643")) return "50% 18%";
           if (src.includes("pexels-dhanno-28949655")) return "50% 22%";
-          if (src.includes("pexels-dhanno-19880621")) return "50% 16%";
           return "50% 18%";
         })
       : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
