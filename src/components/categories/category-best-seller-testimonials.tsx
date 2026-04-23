@@ -38,6 +38,14 @@ function normalizeSrc(src: string) {
 function productToGalleryItem(p: Product, category: ClothingCategory, rank: number) {
   const img = p.image || fallbackImageFor(category);
   const src = normalizeSrc(img);
+  const imagePosition =
+    category === "gowns"
+      ? (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")
+          ? "46% 16%"
+          : src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")
+            ? "55% 16%"
+            : "50% 16%")
+      : undefined;
   return {
     src,
     title: p.name,
@@ -45,6 +53,7 @@ function productToGalleryItem(p: Product, category: ClothingCategory, rank: numb
     badge: rank === 1 ? "Top rated" : "Best seller",
     priceLabel: `₹${Math.round(p.price).toLocaleString("en-IN")}`,
     ratingLabel: `${p.rating.toFixed(1)}★`,
+    imagePosition,
     product: p,
     cartImage: src,
   };

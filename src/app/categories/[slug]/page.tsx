@@ -324,11 +324,19 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
           if (src.includes("pexels-dhanno-28949655")) return "36% 16%";
           return "50% 16%";
         })
-      : heroImages.map((src, index) => {
-          const fromCfg = cfg.heroImagePositions?.[index];
-          // Most category hero images are portrait; bias a bit upward on mobile.
-          return fromCfg ? fromCfg : category === "gowns" ? "50% 16%" : "50% 12%";
-        });
+      : category === "gowns"
+        ? heroImages.map((src) => {
+            // Gown heroes are easy to crop wrong on phones (faces + hem).
+            // Tune per-image focal points to keep face and silhouette visible.
+            if (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")) return "46% 16%";
+            if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
+            return "50% 16%";
+          })
+        : heroImages.map((src, index) => {
+            const fromCfg = cfg.heroImagePositions?.[index];
+            // Most category hero images are portrait; bias a bit upward on mobile.
+            return fromCfg ? fromCfg : "50% 12%";
+          });
 
   return (
     <main className="surface-texture">

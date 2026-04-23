@@ -38,6 +38,15 @@ function subcategoryHeroImage(category: ClothingCategory, sub: string) {
   return normalizeSrc(hit?.imageSrc ?? nav?.featuredImageSrc);
 }
 
+function subcategoryHeroPosition(category: ClothingCategory, src: string) {
+  if (category === "gowns") {
+    if (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")) return "46% 16%";
+    if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
+    return "50% 16%";
+  }
+  return "50% 18%";
+}
+
 /** Pill links only — same subcategories as Creator admin (jumps to `#shop-…` sections). */
 export function CategorySubcategoryPills({
   category,
@@ -150,7 +159,8 @@ export function CategorySubcategoryProductSections({
                   <img
                     src={img}
                     alt=""
-                    className="absolute inset-0 -z-10 h-full w-full object-cover object-[50%_18%] transition-transform duration-700 ease-out motion-reduce:transition-none group-hover:scale-[1.04]"
+                    className="absolute inset-0 -z-10 h-full w-full object-cover transition-transform duration-700 ease-out motion-reduce:transition-none group-hover:scale-[1.04]"
+                    style={{ objectPosition: subcategoryHeroPosition(category, img) }}
                     loading="lazy"
                     decoding="async"
                   />

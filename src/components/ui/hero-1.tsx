@@ -532,18 +532,9 @@ export function HeroLanding(props: HeroLandingProps) {
         <header className="absolute inset-x-0 top-0 z-20">
           <nav
             aria-label="Global"
-            className="flex min-h-0 items-center justify-between gap-3 overflow-visible bg-white px-2 py-1 shadow-sm ring-1 ring-black/5 sm:px-3 sm:py-1.5 lg:gap-6 lg:px-5"
+            className="grid min-h-0 grid-cols-[44px_1fr_44px] items-center gap-3 overflow-visible bg-white px-2 py-1 shadow-sm ring-1 ring-black/5 sm:px-3 sm:py-1.5 lg:flex lg:justify-between lg:gap-6 lg:px-5"
           >
-            <div className="flex min-w-0 flex-1 items-center lg:pr-8 xl:pr-12">
-              <a href="/" className="-m-0.5 shrink-0 p-0.5">
-                <img
-                  alt={logo?.alt ?? logo?.companyName ?? "Sawbhagya"}
-                  src={logo?.src}
-                  className="h-12 w-auto -my-1 object-contain sm:h-14 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5 xl:h-24 xl:-my-3"
-                  style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
-                />
-              </a>
-            </div>
+            {/* Mobile: menu button left so logo can be centered */}
             <div className="flex lg:hidden">
               <button
                 type="button"
@@ -553,6 +544,33 @@ export function HeroLanding(props: HeroLandingProps) {
                 <span className="sr-only">Open main menu</span>
                 <Menu aria-hidden="true" className="size-5" />
               </button>
+            </div>
+
+            <div className="flex min-w-0 flex-1 items-center justify-center lg:justify-start lg:pr-8 xl:pr-12">
+              <a href="/" className="-m-0.5 shrink-0 p-0.5">
+                <img
+                  alt={logo?.alt ?? logo?.companyName ?? "Sawbhagya"}
+                  src={logo?.src}
+                  className="h-16 w-auto -my-1 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5 xl:h-24 xl:-my-3"
+                  style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
+                />
+              </a>
+            </div>
+            {/* Mobile: right slot (cart if available, otherwise spacer) */}
+            <div className="flex items-center justify-end lg:hidden">
+              {navigation?.find(isCartItem) ? (
+                <motion.a
+                  href={navigation.find(isCartItem)!.href}
+                  className={iconTextClass}
+                  whileTap={reduceMotionFramer ? undefined : { scale: 0.97 }}
+                  aria-label="Cart"
+                  title="Cart"
+                >
+                  <ShoppingCart className={navIconClassName} aria-hidden="true" />
+                </motion.a>
+              ) : (
+                <div className="h-9 w-9" aria-hidden="true" />
+              )}
             </div>
             {navigation && navigation.length > 0 && (
               <div className="hidden shrink-0 lg:flex lg:gap-x-6 xl:gap-x-8">
@@ -763,7 +781,7 @@ export function HeroLanding(props: HeroLandingProps) {
                 <div className="flex items-center justify-between">
                   <a href="/" className="-m-1.5 p-1.5">
                     <span className="sr-only">{logo?.companyName}</span>
-                    <img alt={logo?.alt} src={logo?.src} className="h-14 w-auto sm:h-20 md:h-24" />
+                    <img alt={logo?.alt} src={logo?.src} className="h-16 w-auto sm:h-20 md:h-24" />
                   </a>
                   <button
                     type="button"

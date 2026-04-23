@@ -50,6 +50,14 @@ function starsFor(rating: number) {
   return "★".repeat(n);
 }
 
+function imagePositionFor(category: ClothingCategory | undefined, src: string) {
+  if (category !== "gowns") return undefined;
+  const s = src ?? "";
+  if (s.includes("PARTY%20WEAR%20GOWN") || s.includes("PARTY WEAR GOWN")) return "46% 16%";
+  if (s.includes("CASUAL%20WEAR%20GOWN") || s.includes("CASUAL WEAR GOWN")) return "55% 16%";
+  return "50% 16%";
+}
+
 function matchesFilter(p: Product, filterQuery: string) {
   const needle = filterQuery.trim().toLowerCase();
   if (!needle) return true;
@@ -178,6 +186,7 @@ export function ProductsGrid({
               badge: p.inStock ? "In stock" : "Limited",
               priceLabel: price,
               ratingLabel: `${starsFor(rating)} (${rating.toFixed(1)})`,
+              imagePosition: imagePositionFor(p.category, img),
             };
           })}
         />
@@ -186,6 +195,7 @@ export function ProductsGrid({
           {items.map((p) => {
             const img = p.image || fallbackImageFor(p.category);
             const rating = Number(p.rating || 4);
+            const pos = imagePositionFor(p.category, img);
             return (
               <article
                 key={p.id}
@@ -196,6 +206,7 @@ export function ProductsGrid({
                   src={img}
                   alt={p.name}
                   className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                  style={pos ? { objectPosition: pos } : undefined}
                 />
                 <div className="space-y-2 p-4">
                   <div className="flex items-start justify-between gap-3">
@@ -237,6 +248,7 @@ export function ProductsGrid({
           {items.map((p) => {
             const img = p.image || fallbackImageFor(p.category);
             const rating = Number(p.rating || 4);
+            const pos = imagePositionFor(p.category, img);
             return (
               <article
                 key={p.id}
@@ -247,6 +259,7 @@ export function ProductsGrid({
                   src={img}
                   alt={p.name}
                   className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  style={pos ? { objectPosition: pos } : undefined}
                 />
                 <div className="space-y-2 p-4">
                   <div className="flex items-start justify-between gap-3">

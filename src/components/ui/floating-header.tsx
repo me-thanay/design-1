@@ -99,7 +99,7 @@ export function FloatingHeader() {
   return (
     <header className="w-full">
       <motion.nav
-        className="mx-auto mt-2 flex max-w-6xl items-center justify-between gap-2 overflow-visible rounded-full bg-white px-2 py-1 text-xs font-medium text-zinc-900 shadow-sm ring-1 ring-zinc-200 md:px-3 md:py-1.5 lg:gap-4 lg:text-sm"
+        className="mx-auto mt-2 grid max-w-6xl grid-cols-[40px_1fr_40px] items-center gap-2 overflow-visible rounded-full bg-white px-2 py-1 text-xs font-medium text-zinc-900 shadow-sm ring-1 ring-zinc-200 md:px-3 md:py-1.5 lg:flex lg:justify-between lg:gap-4 lg:text-sm"
         initial={reduceMotion ? false : { opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -107,12 +107,25 @@ export function FloatingHeader() {
           reduceMotion ? undefined : { boxShadow: "0 18px 40px rgba(0,0,0,0.08)", transition: { duration: 0.25 } }
         }
       >
-        <div className="min-w-0 flex shrink-0 items-center gap-2 sm:gap-3 lg:mr-6">
+        {/* Mobile: left menu button (keeps logo perfectly centered) */}
+        <div className="flex items-center justify-start lg:hidden">
+          <motion.button
+            type="button"
+            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-[16px] text-zinc-800"
+            aria-label="Toggle navigation"
+            onClick={() => setMenuOpen((v) => !v)}
+            whileTap={reduceMotion ? undefined : { scale: 0.92 }}
+          >
+            <span className="leading-none">☰</span>
+          </motion.button>
+        </div>
+
+        <div className="min-w-0 flex shrink-0 items-center justify-center gap-2 sm:gap-3 lg:mr-6 lg:justify-start">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={SITE_LOGO_SRC}
             alt={SITE_LOGO_ALT}
-            className="h-12 w-auto -my-1 shrink-0 object-contain sm:h-14 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5"
+            className="h-16 w-auto -my-1 shrink-0 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5"
           />
         </div>
         <div className="hidden items-center gap-5 lg:flex xl:gap-7">
@@ -232,7 +245,7 @@ export function FloatingHeader() {
             Search
           </motion.button>
         </form>
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex items-center justify-end gap-1.5 sm:gap-2">
           <motion.a
             href={isLoggedIn ? "/cart" : "/sign-in"}
             className="relative inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-bold uppercase tracking-[0.12em] text-zinc-800 hover:text-zinc-900 sm:px-3 lg:text-sm"
@@ -282,16 +295,6 @@ export function FloatingHeader() {
               </button>
             </div>
           )}
-          {/* Mobile menu button */}
-          <motion.button
-            type="button"
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-zinc-300 bg-white text-[16px] text-zinc-800 lg:hidden"
-            aria-label="Toggle navigation"
-            onClick={() => setMenuOpen((v) => !v)}
-            whileTap={reduceMotion ? undefined : { scale: 0.92 }}
-          >
-            <span className="leading-none">☰</span>
-          </motion.button>
         </div>
       </motion.nav>
       {/* Mobile dropdown menu */}

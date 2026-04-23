@@ -14,6 +14,8 @@ export type ImageGalleryItem = {
   badge?: string;
   priceLabel?: string;
   ratingLabel?: string;
+  /** Optional CSS object-position (e.g. "50% 16%") for better subject framing. */
+  imagePosition?: string;
   /** When provided, renders an add-to-cart control in the card. */
   product?: Product;
   /** Optional image to store in cart (defaults to `src`). */
@@ -111,7 +113,8 @@ export function ImageGallery({
                 <img
                   src={it.src}
                   alt={it.title}
-                  className="h-full w-full object-cover object-[50%_18%] sm:object-center transition-transform duration-700 ease-out group-hover:scale-[1.075]"
+                  className="h-full w-full object-cover sm:object-center transition-transform duration-700 ease-out group-hover:scale-[1.075]"
+                  style={{ objectPosition: it.imagePosition ?? "50% 18%" }}
                   loading="lazy"
                   decoding="async"
                   onError={(e) => {
