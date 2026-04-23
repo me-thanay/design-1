@@ -208,20 +208,6 @@ export default async function Home({ searchParams }: HomeProps) {
               limit={8}
               variant="row"
             />
-            <div className="mt-8 grid gap-6 lg:grid-cols-2">
-              <ProductsGrid
-                title="Sarees"
-                subtitle="Drapes, textures, and festive edits."
-                category="sarees"
-                limit={6}
-              />
-              <ProductsGrid
-                title="Blouses"
-                subtitle="Tailored fits with premium finishing."
-                category="blouses"
-                limit={6}
-              />
-            </div>
           </ScrollRevealGroup>
         </div>
       </section>
