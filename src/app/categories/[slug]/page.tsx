@@ -52,14 +52,14 @@ function heroImagesForCategory(category: ClothingCategory) {
     .map(encodePublicSrc)
     .filter(Boolean) as string[];
 
-  // Kurti uploads are limited; add a few high-quality local kurti shots as extra options.
+  // Add a few guaranteed-local images as extra options (avoid missing-file blanks).
   const extras =
     category === "kurtis"
       ? ([
-          "/stock_images/COTTON%20KURTI.jpeg",
-          "/stock_images/Rayon%20Kurtis.jpeg",
-          "/stock_images/GEORGETTE%20KURTI.jpeg",
-          "/stock_images/PARTY%20WEAR%20KURTI.jpeg",
+          stockImagesUrl(STOCK_IMAGES_FILES[0]),
+          stockImagesUrl(STOCK_IMAGES_FILES[1]),
+          stockImagesUrl(STOCK_IMAGES_FILES[2]),
+          stockImagesUrl(STOCK_IMAGES_FILES[3]),
         ].map(encodePublicSrc).filter(Boolean) as string[])
       : [];
 
