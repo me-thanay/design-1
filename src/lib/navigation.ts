@@ -21,12 +21,12 @@ export const PRIMARY_NAV: NavItem[] = [
   {
     name: "KURTIS",
     href: "/categories/kurtis",
-    featuredImageSrc: "/catogary-slider/kurti/Cotton-kurti.jpeg",
+    featuredImageSrc: "/kurtis/pexels-dhanno-19880621.jpg",
     items: [
-      { name: "Rayon", href: "/categories/kurtis?q=rayon", imageSrc: "/catogary-slider/kurti/Rayon-kurti.jpeg" },
-      { name: "Georgette", href: "/categories/kurtis?q=georgette", imageSrc: "/catogary-slider/kurti/georgette-kurti.jpeg" },
-      { name: "Party wear", href: "/categories/kurtis?q=party", imageSrc: "/catogary-slider/kurti/PARTYWEAR-KURTI.jpeg" },
-      { name: "Cotton", href: "/categories/kurtis?q=cotton", imageSrc: "/catogary-slider/kurti/Cotton-kurti.jpeg" },
+      { name: "Rayon", href: "/categories/kurtis?q=rayon", imageSrc: "/kurtis/pexels-dhanno-28949655.jpg" },
+      { name: "Georgette", href: "/categories/kurtis?q=georgette", imageSrc: "/kurtis/pexels-fahadputhawala-33335083.jpg" },
+      { name: "Party wear", href: "/categories/kurtis?q=party", imageSrc: "/kurtis/pexels-neha-mishra-1851906907-28512787.jpg" },
+      { name: "Cotton", href: "/categories/kurtis?q=cotton", imageSrc: "/kurtis/pexels-dhanno-19880621.jpg" },
     ],
   },
   {

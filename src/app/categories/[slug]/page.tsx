@@ -75,7 +75,8 @@ function heroPositionsFor(category: ClothingCategory, count: number, override?: 
   const defaults: Record<ClothingCategory, string> = {
     sarees: "50% 10%",
     blouses: "50% 12%",
-    kurtis: "50% 12%",
+    // New kurti set has heads a bit higher; keep faces visible under the title.
+    kurtis: "50% 18%",
     // Gowns images often have faces lower; bias upward so the subject stays centered under the title.
     gowns: "50% 22%",
   };
