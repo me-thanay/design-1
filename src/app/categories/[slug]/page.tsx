@@ -314,6 +314,22 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         })
       : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
+  const heroMobilePositions =
+    category === "kurtis"
+      ? heroImages.map((src) => {
+          // These kurtis images are portrait and easy to crop wrong on phones.
+          // Keep face + outfit visible without cutting the head.
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "46% 14%";
+          if (src.includes("pexels-dhanno-28949643")) return "64% 18%";
+          if (src.includes("pexels-dhanno-28949655")) return "36% 16%";
+          return "50% 16%";
+        })
+      : heroImages.map((src, index) => {
+          const fromCfg = cfg.heroImagePositions?.[index];
+          // Most category hero images are portrait; bias a bit upward on mobile.
+          return fromCfg ? fromCfg : category === "gowns" ? "50% 16%" : "50% 12%";
+        });
+
   return (
     <main className="surface-texture">
       <HeroLanding
@@ -327,6 +343,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         })}
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
+        backgroundImagePositionsMobile={heroMobilePositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
         backgroundImageFit="cover"
         className={category === "kurtis" ? "min-h-[82svh] sm:min-h-[56svh]" : "min-h-[56svh] sm:min-h-[52svh]"}

@@ -54,11 +54,21 @@ interface HeroLandingProps {
    */
   backgroundImageFit?: "cover" | "contain";
   /**
+   * Mobile-specific fit override (<= sm breakpoint).
+   * Useful when the same hero should be full-bleed on desktop but less cropped on phones.
+   */
+  backgroundImageFitMobile?: "cover" | "contain";
+  /**
    * Per-image focal point for `object-position` on hero `<img>` (same syntax as
    * background-position). Prefer top weighting (`center top`, `50% 5%`) so faces
    * stay in frame on wide viewports with `object-cover`.
    */
   backgroundImagePositions?: string[];
+  /**
+   * Mobile-specific focal points (<= sm breakpoint). If omitted, we fall back to
+   * `backgroundImagePositions` and then a slightly-lower default to show more outfit.
+   */
+  backgroundImagePositionsMobile?: string[];
   backgroundImageIntervalMs?: number;
   backgroundImageFadeMs?: number;
   /** Override default min-height (default: `min-h-[100svh]`). */
@@ -109,7 +119,9 @@ export function HeroLanding(props: HeroLandingProps) {
     gradientColors,
     backgroundImages,
     backgroundImageFit,
+    backgroundImageFitMobile,
     backgroundImagePositions,
+    backgroundImagePositionsMobile,
     backgroundImageIntervalMs,
     backgroundImageFadeMs,
     minHeightClassName,
@@ -135,6 +147,7 @@ export function HeroLanding(props: HeroLandingProps) {
   const [authEmail, setAuthEmail] = useState<string | null>(null);
   const [authAvatarUrl, setAuthAvatarUrl] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
 
   const normalizedBackgroundImages = useMemo(
     () => (backgroundImages ?? []).filter(Boolean),
@@ -145,13 +158,24 @@ export function HeroLanding(props: HeroLandingProps) {
     () =>
       normalizedBackgroundImages.map((src, index) => ({
         src,
-        pos: backgroundImagePositions?.[index] ?? "center top",
+        posDesktop: backgroundImagePositions?.[index] ?? "center top",
+        // Mobile default: slightly lower framing so outfit isn't cropped too aggressively.
+        posMobile: backgroundImagePositionsMobile?.[index] ?? backgroundImagePositions?.[index] ?? "50% 22%",
       })),
-    [normalizedBackgroundImages, backgroundImagePositions],
+    [normalizedBackgroundImages, backgroundImagePositions, backgroundImagePositionsMobile],
   );
 
   const [validBgSlides, setValidBgSlides] = useState(bgSlides);
-  const bgFit = backgroundImageFit ?? "cover";
+  const bgFitDesktop = backgroundImageFit ?? "cover";
+  const bgFit = (isMobile ? (backgroundImageFitMobile ?? bgFitDesktop) : bgFitDesktop) as "cover" | "contain";
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   // Remove broken images so the hero never rotates into a blank slide.
   useEffect(() => {
@@ -430,7 +454,7 @@ export function HeroLanding(props: HeroLandingProps) {
                     index === (bgIndex % validBgSlides.length) ? "opacity-70" : "opacity-0",
                   ].join(" ")}
                   style={{
-                    objectPosition: s.pos,
+                    objectPosition: isMobile ? s.posMobile : s.posDesktop,
                     transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
                     filter: "saturate(1.05) contrast(1.05)",
                   }}
@@ -449,9 +473,7 @@ export function HeroLanding(props: HeroLandingProps) {
               fetchPriority={index === 0 ? "high" : "low"}
               className={[
                 "absolute inset-0 h-full w-full will-change-transform will-change-opacity",
-                // On mobile, `contain` keeps the full character visible.
-                // On larger screens we can safely use `cover` for a more premium hero feel.
-                bgFit === "contain" ? "object-contain sm:object-cover" : "object-cover",
+                bgFit === "contain" ? "object-contain" : "object-cover",
                 "origin-top motion-reduce:origin-center",
                 "transition-[opacity,transform] motion-reduce:transition-none",
                 index === (bgIndex % validBgSlides.length)
@@ -459,7 +481,7 @@ export function HeroLanding(props: HeroLandingProps) {
                   : "opacity-0 scale-[1.01] motion-reduce:scale-100",
               ].join(" ")}
               style={{
-                objectPosition: s.pos,
+                objectPosition: isMobile ? s.posMobile : s.posDesktop,
                 transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
                 animation:
                   index === (bgIndex % validBgSlides.length) && !reduceMotionFramer

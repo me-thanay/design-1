@@ -24,6 +24,17 @@ export const HERO_THEME_IMAGE_POSITIONS = [
   "50% 18%",
 ];
 
+export const HERO_THEME_IMAGE_POSITIONS_MOBILE = [
+  // These images are right-weighted; on mobile cover we keep faces/outfits in frame.
+  "72% 22%",
+  "72% 22%",
+  "68% 24%",
+  "66% 24%",
+  "66% 24%",
+  "64% 18%",
+  "70% 22%",
+];
+
 export function buildHeroThemeProps(
   overrides: Pick<HeroLandingProps, "title" | "description"> &
     Partial<Pick<HeroLandingProps, "announcementBanner" | "callToActions" | "titleSize">>,
@@ -48,6 +59,7 @@ export function buildHeroThemeProps(
     },
     backgroundImages: HERO_THEME_BACKGROUND_IMAGES,
     backgroundImagePositions: HERO_THEME_IMAGE_POSITIONS,
+    backgroundImagePositionsMobile: HERO_THEME_IMAGE_POSITIONS_MOBILE,
     backgroundImageIntervalMs: 4000,
     backgroundImageFadeMs: 900,
   };
