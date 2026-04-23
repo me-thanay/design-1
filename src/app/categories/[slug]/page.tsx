@@ -56,10 +56,10 @@ function heroImagesForCategory(category: ClothingCategory) {
   const extras =
     category === "kurtis"
       ? ([
-          stockImagesUrl(STOCK_IMAGES_FILES[0]),
-          stockImagesUrl(STOCK_IMAGES_FILES[1]),
-          stockImagesUrl(STOCK_IMAGES_FILES[2]),
-          stockImagesUrl(STOCK_IMAGES_FILES[3]),
+          "/kurtis/pexels-neha-mishra-1851906907-28512787.jpg",
+          "/kurtis/pexels-dhanno-28949655.jpg",
+          "/kurtis/pexels-fahadputhawala-33335083.jpg",
+          "/kurtis/pexels-dhanno-19880621.jpg",
         ].map(encodePublicSrc).filter(Boolean) as string[])
       : [];
 
@@ -207,7 +207,8 @@ const CATEGORY_CONFIG: Record<
   kurtis: {
     title: "Kurtis",
     subtitle: "Work-ready, festive, and easy everyday styles.",
-    heroImagePositions: ["50% 12%", "50% 10%", "50% 10%", "50% 10%"],
+    // Focus lower for the full-length shot so feet don't get cropped in the hero.
+    heroImagePositions: ["50% 18%", "50% 28%", "50% 22%", "50% 78%", "50% 18%", "50% 22%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Kurti",
@@ -317,9 +318,9 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         })}
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
-        backgroundImageFit={category === "kurtis" ? "contain" : "cover"}
+        backgroundImageFit="cover"
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-        className="min-h-[56svh] sm:min-h-[52svh]"
+        className={category === "kurtis" ? "min-h-[78svh] sm:min-h-[70svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
       />
 
       {/* No ScrollRevealGroup here: fade-in starts at opacity 0 and can block hero video autoplay in every category. */}
