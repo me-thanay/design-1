@@ -21,7 +21,8 @@ export const PRIMARY_NAV: NavItem[] = [
   {
     name: "KURTIS",
     href: "/categories/kurtis",
-    featuredImageSrc: "/kurtis/pexels-dhanno-19880621.jpg",
+    // Use a full-length hero so face + dress are visible.
+    featuredImageSrc: "/kurtis/pexels-neha-mishra-1851906907-28512787.jpg",
     items: [
       { name: "Rayon", href: "/categories/kurtis?q=rayon", imageSrc: "/kurtis/pexels-dhanno-28949655.jpg" },
       { name: "Georgette", href: "/categories/kurtis?q=georgette", imageSrc: "/kurtis/pexels-fahadputhawala-33335083.jpg" },
