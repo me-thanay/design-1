@@ -21,12 +21,12 @@ export const PRIMARY_NAV: NavItem[] = [
   {
     name: "KURTIS",
     href: "/categories/kurtis",
-    featuredImageSrc: "/catogary-slider/kurti/Cotton-kurti.jpeg",
+    featuredImageSrc: "/stock_images/COTTON KURTI.jpeg",
     items: [
-      { name: "Rayon", href: "/categories/kurtis?q=rayon", imageSrc: "/catogary-slider/kurti/Rayon-kurti.jpeg" },
-      { name: "Georgette", href: "/categories/kurtis?q=georgette", imageSrc: "/catogary-slider/kurti/georgette-kurti.jpeg" },
-      { name: "Party wear", href: "/categories/kurtis?q=party", imageSrc: "/catogary-slider/kurti/PARTYWEAR-KURTI.jpeg" },
-      { name: "Cotton", href: "/categories/kurtis?q=cotton", imageSrc: "/catogary-slider/kurti/Cotton-kurti.jpeg" },
+      { name: "Rayon", href: "/categories/kurtis?q=rayon", imageSrc: "/stock_images/Rayon Kurtis.jpeg" },
+      { name: "Georgette", href: "/categories/kurtis?q=georgette", imageSrc: "/stock_images/GEORGETTE KURTI.jpeg" },
+      { name: "Party wear", href: "/categories/kurtis?q=party", imageSrc: "/stock_images/PARTY WEAR KURTI.jpeg" },
+      { name: "Cotton", href: "/categories/kurtis?q=cotton", imageSrc: "/stock_images/COTTON KURTI.jpeg" },
     ],
   },
   {
