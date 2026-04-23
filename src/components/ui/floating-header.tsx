@@ -125,7 +125,7 @@ export function FloatingHeader() {
           <img
             src={SITE_LOGO_SRC}
             alt={SITE_LOGO_ALT}
-            className="h-20 w-auto -my-1 shrink-0 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5"
+            className="h-24 w-auto -my-1 shrink-0 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5"
           />
         </div>
         <div className="hidden items-center gap-5 lg:flex xl:gap-7">
