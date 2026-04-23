@@ -52,9 +52,20 @@ function heroImagesForCategory(category: ClothingCategory) {
     .map(encodePublicSrc)
     .filter(Boolean) as string[];
 
+  // Kurti uploads are limited; add a few high-quality local kurti shots as extra options.
+  const extras =
+    category === "kurtis"
+      ? ([
+          "/stock_images/COTTON%20KURTI.jpeg",
+          "/stock_images/Rayon%20Kurtis.jpeg",
+          "/stock_images/GEORGETTE%20KURTI.jpeg",
+          "/stock_images/PARTY%20WEAR%20KURTI.jpeg",
+        ].map(encodePublicSrc).filter(Boolean) as string[])
+      : [];
+
   // Unique + stable order
   const seen = new Set<string>();
-  const unique = candidates.filter((s) => (seen.has(s) ? false : (seen.add(s), true)));
+  const unique = [...candidates, ...extras].filter((s) => (seen.has(s) ? false : (seen.add(s), true)));
 
   // Keep it tight so it feels curated.
   return unique.slice(0, 6);
@@ -314,13 +325,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         <CategoryBestSellerTestimonials category={category} categoryTitle={cfg.title} limit={6} />
       </section>
 
-      <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:py-14">
-        <div className="grid gap-6 lg:grid-cols-[320px_1fr]">
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:py-12">
+        <div className="grid gap-5 lg:gap-6 lg:grid-cols-[320px_1fr]">
           <div>
             <CategorySidebar category={category} />
           </div>
           <div>
-            <ScrollReveal delay={0.06} y={26} variant="fade-up" duration={0.66} className="mt-6 sm:mt-8">
+            <ScrollReveal delay={0.06} y={26} variant="fade-up" duration={0.66} className="mt-5 sm:mt-8">
               <div id="all-products">
                 <ProductsGrid
                   title={`All ${cfg.title}`}
@@ -332,7 +343,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
               </div>
             </ScrollReveal>
 
-            <section className="mt-10 grid gap-4 rounded-3xl border border-black/5 bg-white/70 p-6 shadow-sm backdrop-blur sm:grid-cols-3 sm:p-8">
+            <section className="mt-8 grid gap-4 rounded-3xl border border-black/5 bg-white/70 p-5 shadow-sm backdrop-blur sm:mt-10 sm:grid-cols-3 sm:p-8">
               <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
                   Fast shipping
