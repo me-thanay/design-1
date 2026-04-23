@@ -551,7 +551,7 @@ export function HeroLanding(props: HeroLandingProps) {
                 <img
                   alt={logo?.alt ?? logo?.companyName ?? "Sawbhagya"}
                   src={logo?.src}
-                  className="h-16 w-auto -my-1 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5 xl:h-24 xl:-my-3"
+                  className="h-20 w-auto -my-1 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5 xl:h-24 xl:-my-3"
                   style={hasImageBackground ? { filter: "brightness(1.15) contrast(1.1)" } : undefined}
                 />
               </a>
@@ -781,7 +781,7 @@ export function HeroLanding(props: HeroLandingProps) {
                 <div className="flex items-center justify-between">
                   <a href="/" className="-m-1.5 p-1.5">
                     <span className="sr-only">{logo?.companyName}</span>
-                    <img alt={logo?.alt} src={logo?.src} className="h-16 w-auto sm:h-20 md:h-24" />
+                    <img alt={logo?.alt} src={logo?.src} className="h-20 w-auto sm:h-20 md:h-24" />
                   </a>
                   <button
                     type="button"
