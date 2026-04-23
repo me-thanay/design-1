@@ -449,7 +449,9 @@ export function HeroLanding(props: HeroLandingProps) {
               fetchPriority={index === 0 ? "high" : "low"}
               className={[
                 "absolute inset-0 h-full w-full will-change-transform will-change-opacity",
-                bgFit === "contain" ? "object-contain" : "object-cover",
+                // On mobile, `contain` keeps the full character visible.
+                // On larger screens we can safely use `cover` for a more premium hero feel.
+                bgFit === "contain" ? "object-contain sm:object-cover" : "object-cover",
                 "origin-top motion-reduce:origin-center",
                 "transition-[opacity,transform] motion-reduce:transition-none",
                 index === (bgIndex % validBgSlides.length)

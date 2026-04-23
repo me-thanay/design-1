@@ -327,9 +327,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         })}
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
-        backgroundImageFit="cover"
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-        className={category === "kurtis" ? "min-h-[78svh] sm:min-h-[70svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
+        // Mobile: show full character; desktop: keep hero premium.
+        backgroundImageFit={category === "kurtis" ? "contain" : "cover"}
+        className={category === "kurtis" ? "min-h-[64svh] sm:min-h-[52svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
       />
 
       {/* No ScrollRevealGroup here: fade-in starts at opacity 0 and can block hero video autoplay in every category. */}
