@@ -95,34 +95,31 @@ export function BestSellerCardCarousel({
       <style>{`
         .home-bs-swiper.swiper {
           width: 100%;
-          padding: 10px 0 56px;
+          padding: 8px 0 48px;
           overflow: visible;
         }
         .home-bs-swiper .swiper-wrapper { align-items: stretch; }
         .home-bs-swiper .swiper-slide {
-          width: clamp(260px, 28vw, 340px);
+          width: clamp(260px, 26vw, 320px);
           height: auto;
           transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.35s ease;
         }
         .home-bs-swiper .swiper-slide .home-bs-card {
           transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.35s ease;
         }
-        .home-bs-swiper .swiper-slide:hover .home-bs-card {
-          transform: translateY(-6px) scale(1.02);
-          box-shadow: 0 28px 50px -12px rgba(0,0,0,0.35);
-        }
+        .home-bs-swiper .swiper-slide:hover .home-bs-card { transform: translateY(-3px); }
         .home-bs-swiper .swiper-slide-active .home-bs-card {
-          box-shadow: 0 32px 55px -14px rgba(0,0,0,0.42);
+          box-shadow: 0 24px 44px -16px rgba(0,0,0,0.35);
         }
         .home-bs-swiper .swiper-slide .home-bs-card-img {
           transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
         }
         .home-bs-swiper .swiper-slide:hover .home-bs-card-img {
-          transform: scale(1.06);
+          transform: scale(1.03);
         }
         .home-bs-swiper .swiper-3d .swiper-slide-shadow-left,
         .home-bs-swiper .swiper-3d .swiper-slide-shadow-right {
-          background: rgba(0,0,0,0.18);
+          background: rgba(0,0,0,0.10);
         }
         .home-bs-swiper .swiper-button-prev,
         .home-bs-swiper .swiper-button-next {
@@ -184,7 +181,7 @@ export function BestSellerCardCarousel({
 
           <Swiper
             className="home-bs-swiper !overflow-visible"
-            spaceBetween={18}
+            spaceBetween={26}
             speed={650}
             autoplay={
               loopEnabled
@@ -202,13 +199,7 @@ export function BestSellerCardCarousel({
             loopAdditionalSlides={6}
             watchSlidesProgress
             slidesPerView="auto"
-            coverflowEffect={{
-              rotate: 0,
-              stretch: 0,
-              depth: 140,
-              modifier: 1.15,
-              slideShadows: true,
-            }}
+            coverflowEffect={{ rotate: 0, stretch: 10, depth: 80, modifier: 0.85, slideShadows: false }}
             pagination={
               showPagination
                 ? {
@@ -229,7 +220,7 @@ export function BestSellerCardCarousel({
           >
             {loopSlides.map(({ slide, reactKey }) => (
               <SwiperSlide key={reactKey}>
-                <article className="home-bs-card flex h-full min-h-[520px] flex-col overflow-hidden rounded-2xl bg-neutral-900 shadow-xl ring-1 ring-black/20">
+                <article className="home-bs-card flex h-full min-h-[500px] flex-col overflow-hidden rounded-2xl bg-neutral-900 shadow-lg ring-1 ring-black/15">
                   <div className="relative aspect-[3/4] w-full shrink-0 overflow-hidden bg-neutral-200">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img

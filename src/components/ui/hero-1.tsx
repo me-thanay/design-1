@@ -133,6 +133,44 @@ export function HeroLanding(props: HeroLandingProps) {
     [backgroundImages],
   );
 
+  const bgSlides = useMemo(
+    () =>
+      normalizedBackgroundImages.map((src, index) => ({
+        src,
+        pos: backgroundImagePositions?.[index] ?? "center top",
+      })),
+    [normalizedBackgroundImages, backgroundImagePositions],
+  );
+
+  const [validBgSlides, setValidBgSlides] = useState(bgSlides);
+
+  // Remove broken images so the hero never rotates into a blank slide.
+  useEffect(() => {
+    setValidBgSlides(bgSlides);
+    if (bgSlides.length === 0) return;
+
+    let cancelled = false;
+    const pending = new Set(bgSlides.map((s) => s.src));
+
+    for (const s of bgSlides) {
+      const img = new Image();
+      img.onload = () => {
+        pending.delete(s.src);
+      };
+      img.onerror = () => {
+        pending.delete(s.src);
+        if (cancelled) return;
+        setValidBgSlides((prev) => prev.filter((x) => x.src !== s.src));
+      };
+      img.src = s.src;
+    }
+
+    return () => {
+      cancelled = true;
+      pending.clear();
+    };
+  }, [bgSlides]);
+
   const allowedAdmins = useMemo(() => {
     const raw = process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "";
     return raw
@@ -267,13 +305,13 @@ export function HeroLanding(props: HeroLandingProps) {
   }, [heroInView, title, prefersReducedMotion]);
 
   useEffect(() => {
-    if (normalizedBackgroundImages.length <= 1) return;
+    if (validBgSlides.length <= 1) return;
     const interval = window.setInterval(() => {
-      setBgIndex((i) => (i + 1) % normalizedBackgroundImages.length);
+      setBgIndex((i) => (i + 1) % validBgSlides.length);
     }, Math.max(1500, backgroundImageIntervalMs ?? 5000));
 
     return () => window.clearInterval(interval);
-  }, [normalizedBackgroundImages.length, backgroundImageIntervalMs]);
+  }, [validBgSlides.length, backgroundImageIntervalMs]);
 
   useEffect(() => {
     if (!openDesktopDropdown) return;
@@ -292,7 +330,7 @@ export function HeroLanding(props: HeroLandingProps) {
     };
   }, [openDesktopDropdown]);
 
-  const hasImageBackground = normalizedBackgroundImages.length > 0;
+  const hasImageBackground = validBgSlides.length > 0;
   const navTextClass = hasImageBackground
     ? "text-zinc-700 hover:text-zinc-900 transition-colors"
     : "text-foreground hover:text-muted-foreground transition-colors";
@@ -364,13 +402,13 @@ export function HeroLanding(props: HeroLandingProps) {
       ref={heroRootRef}
       className={`${minHeightClassName ?? "min-h-[100svh]"} w-full overflow-hidden relative isolate ${className || ""}`}
     >
-      {normalizedBackgroundImages.length > 0 && (
+      {validBgSlides.length > 0 && (
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          {normalizedBackgroundImages.map((src, index) => (
+          {validBgSlides.map((s, index) => (
             // eslint-disable-next-line @next/next/no-img-element -- full-bleed hero carousel; LCP handled by first slide
             <img
-              key={`${src}-${index}`}
-              src={src}
+              key={`${s.src}-${index}`}
+              src={s.src}
               alt=""
               decoding={index === 0 ? "sync" : "async"}
               fetchPriority={index === 0 ? "high" : "low"}
@@ -378,15 +416,15 @@ export function HeroLanding(props: HeroLandingProps) {
                 "absolute inset-0 h-full w-full object-cover will-change-transform will-change-opacity",
                 "origin-top motion-reduce:origin-center",
                 "transition-[opacity,transform] motion-reduce:transition-none",
-                index === (bgIndex % normalizedBackgroundImages.length)
+                index === (bgIndex % validBgSlides.length)
                   ? "opacity-100 scale-[1.02] motion-reduce:scale-100"
                   : "opacity-0 scale-[1.01] motion-reduce:scale-100",
               ].join(" ")}
               style={{
-                objectPosition: backgroundImagePositions?.[index] ?? "center top",
+                objectPosition: s.pos,
                 transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
                 animation:
-                  index === (bgIndex % normalizedBackgroundImages.length) && !reduceMotionFramer
+                  index === (bgIndex % validBgSlides.length) && !reduceMotionFramer
                     ? "kenburns-slow 10s linear both"
                     : undefined,
                 filter: "saturate(1.08) contrast(1.08)",
