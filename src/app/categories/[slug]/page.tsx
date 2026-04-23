@@ -305,12 +305,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
   const heroPositions =
     category === "kurtis"
       ? heroImages.map((src) => {
-          // Keep face + dress visible. For the full-length portrait, bias slightly down (not too much)
-          // so outfit stays in frame without losing the head.
-          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 18%";
-          if (src.includes("pexels-dhanno-28949643")) return "50% 18%";
-          if (src.includes("pexels-dhanno-28949655")) return "50% 22%";
-          return "50% 18%";
+          // Mobile hero should look full-bleed (cover), so we tune focal points to keep
+          // face + outfit in frame without the "boxed" contain look.
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 30%";
+          if (src.includes("pexels-dhanno-28949643")) return "62% 22%";
+          if (src.includes("pexels-dhanno-28949655")) return "35% 18%";
+          return "50% 22%";
         })
       : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
@@ -328,9 +328,8 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-        // Mobile: show full character; desktop: keep hero premium.
-        backgroundImageFit={category === "kurtis" ? "contain" : "cover"}
-        className={category === "kurtis" ? "min-h-[64svh] sm:min-h-[52svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
+        backgroundImageFit="cover"
+        className={category === "kurtis" ? "min-h-[82svh] sm:min-h-[56svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
       />
 
       {/* No ScrollRevealGroup here: fade-in starts at opacity 0 and can block hero video autoplay in every category. */}
