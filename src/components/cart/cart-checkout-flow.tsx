@@ -65,7 +65,7 @@ export function CartCheckoutFlow() {
   const [currentLocation, setCurrentLocation] = React.useState<string | null>(null);
   const [currentMapsUrl, setCurrentMapsUrl] = React.useState<string | null>(null);
   const [locationStatus, setLocationStatus] = React.useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = React.useState<"cod" | "upi" | "card">("cod");
+  const [paymentMethod, setPaymentMethod] = React.useState<"upi" | "card">("upi");
   const [cardName, setCardName] = React.useState("");
   const [cardNumber, setCardNumber] = React.useState("");
   const [cardExpiry, setCardExpiry] = React.useState("");
@@ -532,11 +532,10 @@ export function CartCheckoutFlow() {
                 <CardContent className="space-y-4">
                   <RadioGroup
                     value={paymentMethod}
-                    onValueChange={(v) => setPaymentMethod(v as "cod" | "upi" | "card")}
+                    onValueChange={(v) => setPaymentMethod(v as "upi" | "card")}
                     className="grid gap-2"
                   >
                     {[
-                      { value: "cod" as const, label: "Cash on delivery (COD)" },
                       { value: "upi" as const, label: "UPI" },
                       { value: "card" as const, label: "Card" },
                     ].map((opt, i) => (

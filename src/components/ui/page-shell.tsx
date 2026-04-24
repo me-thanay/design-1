@@ -118,7 +118,7 @@ export function PageShell({
         legalLinks={[
           { href: "/shipping-returns", label: "Shipping & returns" },
           { href: "#", label: "Privacy" },
-          { href: "#", label: "Terms" },
+          { href: "/terms", label: "Terms" },
         ]}
         copyright={{
           text: `© ${new Date().getFullYear()} Sawbhagya`,

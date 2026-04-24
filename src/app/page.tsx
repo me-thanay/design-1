@@ -117,23 +117,6 @@ export default async function Home({ searchParams }: HomeProps) {
     <main>
       <HeroLanding {...heroProps} />
       <HomeTrustLogoCloud />
-      <section id="categories" className="surface-texture scroll-mt-24 border-b border-black/5 pb-12 pt-2">
-        <div className="mx-auto w-full max-w-6xl px-4">
-          <ScrollRevealGroup stagger={0.09} delayChildren={0.02} variant="fade-up" y={24}>
-            <div className="mb-6 text-center">
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
-                Categories
-              </p>
-              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-                Shop by mood
-              </h2>
-            </div>
-            <MoodCategoryGrid items={MOOD_CATEGORY_ITEMS} />
-          </ScrollRevealGroup>
-        </div>
-      </section>
-
-      <HomeAboutSawbhagya />
 
       {showSearchPanel ? (
         <>
@@ -165,29 +148,6 @@ export default async function Home({ searchParams }: HomeProps) {
         </>
       ) : null}
 
-      <section className="surface-texture pb-20 pt-2">
-        <div className="mx-auto w-full max-w-6xl px-4">
-          <div className="overflow-hidden rounded-3xl bg-transparent px-0 py-10 sm:px-0">
-            <ScrollRevealGroup stagger={0.1} delayChildren={0.04} variant="blur" y={20}>
-              <div className="mb-7">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-400">
-                    Showcase
-                  </p>
-                  <h3 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-                    Best sellers in motion
-                  </h3>
-                  <p className="mt-2 max-w-2xl text-sm text-neutral-600">
-                    Textures, drapes, and details — hover to pause.
-                  </p>
-                </div>
-              </div>
-              <ImageAutoSlider durationSeconds={22} />
-            </ScrollRevealGroup>
-          </div>
-        </div>
-      </section>
-
       <ScrollReveal y={40}>
         <HomeBestSellersSection />
       </ScrollReveal>
@@ -212,6 +172,64 @@ export default async function Home({ searchParams }: HomeProps) {
               limit={8}
               variant="row"
             />
+          </ScrollRevealGroup>
+        </div>
+      </section>
+
+      <section id="categories" className="surface-texture scroll-mt-24 border-b border-black/5 pb-12 pt-2">
+        <div className="mx-auto w-full max-w-6xl px-4">
+          <ScrollRevealGroup stagger={0.09} delayChildren={0.02} variant="fade-up" y={24}>
+            <div className="mb-6 text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
+                Categories
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
+                Shop by mood
+              </h2>
+            </div>
+            <MoodCategoryGrid items={MOOD_CATEGORY_ITEMS} />
+          </ScrollRevealGroup>
+        </div>
+      </section>
+
+      <HomeAboutSawbhagya />
+
+      <section className="surface-texture border-b border-black/5 pb-14 pt-2">
+        <div className="mx-auto w-full max-w-6xl px-4">
+          <ScrollRevealGroup stagger={0.08} delayChildren={0.02} variant="fade-up" y={22}>
+            <div className="mb-6 text-center">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
+                Legal
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
+                Terms & conditions
+              </h2>
+              <p className="mt-2 text-sm text-neutral-600">
+                Exchange, return, and policy details for your orders.
+              </p>
+            </div>
+
+            <div className="mx-auto max-w-3xl rounded-3xl border border-black/10 bg-white/70 p-6 shadow-sm sm:p-8">
+              <ul className="list-disc space-y-2 pl-5 text-sm leading-relaxed text-neutral-700 sm:text-base">
+                <li>48-hour exchange facility on Domestic orders.</li>
+                <li>Exchange requests must be raised within 48 hours of delivery with Order ID.</li>
+                <li>No refunds. Exchange via coupon after quality check.</li>
+              </ul>
+              <div className="mt-6 flex flex-wrap justify-center gap-3">
+                <a
+                  href="/terms"
+                  className="inline-flex items-center rounded-full bg-neutral-900 px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-neutral-800"
+                >
+                  Read full terms
+                </a>
+                <a
+                  href="/shipping-returns"
+                  className="inline-flex items-center rounded-full border border-black/10 bg-white/80 px-5 py-2 text-sm font-semibold text-neutral-900 shadow-sm hover:bg-white"
+                >
+                  Shipping & returns
+                </a>
+              </div>
+            </div>
           </ScrollRevealGroup>
         </div>
       </section>
@@ -265,7 +283,7 @@ export default async function Home({ searchParams }: HomeProps) {
         legalLinks={[
           { href: "/shipping-returns", label: "Shipping & returns" },
           { href: "#", label: "Privacy" },
-          { href: "#", label: "Terms" },
+          { href: "/terms", label: "Terms" },
         ]}
         copyright={{
           text: `© ${new Date().getFullYear()} Sawbhagya`,
