@@ -198,23 +198,6 @@ export function HomeBestSellersSection() {
       id="best-seller"
       className="surface-texture scroll-mt-24 overflow-x-hidden border-b border-black/5 py-10 sm:py-14"
     >
-      <HeroLanding
-        showHeader={false}
-        title="Best sellers"
-        description="Highest-rated in-stock pieces from your catalogue — swipe for details, then add to cart."
-        titleSize="medium"
-        minHeightClassName="min-h-[70svh]"
-        backgroundImages={[
-          "/hero_imagesss/hero-2.jpeg",
-          "/hero_imagesss/hero-3.jpeg",
-          "/hero_imagesss/hero-4.jpeg",
-        ]}
-        callToActions={[
-          { text: "Shop best sellers", href: "#best-seller-carousel", variant: "primary" },
-          { text: "Browse categories", href: "/#categories", variant: "secondary" },
-        ]}
-      />
-
       <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
         <div className="mb-5 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
