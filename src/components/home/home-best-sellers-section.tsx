@@ -213,8 +213,8 @@ export function HomeBestSellersSection() {
       <div className="mx-auto w-full max-w-6xl px-0 sm:px-4">
         <ImageGallery
           items={galleryItems}
-          title="Best sellers in detail"
-          subtitle="Hover a card to preview — then browse the collection."
+          title=""
+          subtitle=""
         />
       </div>
     </section>

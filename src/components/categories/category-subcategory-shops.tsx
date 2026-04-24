@@ -44,6 +44,15 @@ function subcategoryHeroPosition(category: ClothingCategory, src: string) {
     if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
     return "50% 16%";
   }
+  if (category === "sarees") {
+    // Saree subcategory banners vary a lot (landscape + portrait).
+    if (src.includes("banarassilk-saree")) return "56% 18%";
+    if (src.toLowerCase().includes("georgette-saree")) return "55% 12%";
+    if (src.toLowerCase().includes("organza-saree")) return "52% 14%";
+    if (src.toLowerCase().includes("modalsilk-saree")) return "52% 16%";
+    if (src.toLowerCase().includes("linen-saree")) return "52% 14%";
+    return "52% 16%";
+  }
   return "50% 18%";
 }
 
@@ -134,7 +143,7 @@ export function CategorySubcategoryProductSections({
         >
           <div className="overflow-hidden rounded-3xl border border-black/10 bg-white/70 shadow-sm">
             <motion.div
-              className="group relative isolate overflow-hidden"
+              className="group relative isolate overflow-hidden min-h-[220px] sm:min-h-[260px]"
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
@@ -192,12 +201,30 @@ export function CategorySubcategoryProductSections({
                   Products tagged “{sub}” — tap to jump into the collection.
                 </p>
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur">
+                  <a
+                    href={`#${subAnchorId(sub)}-grid`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const el = document.getElementById(`${subAnchorId(sub)}-grid`);
+                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur hover:bg-white/15 active:scale-[0.98] transition"
+                    aria-label={`Swipe products below for ${titleCaseLine(sub)}`}
+                  >
                     Swipe products below
-                  </span>
-                  <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow">
+                  </a>
+                  <a
+                    href={`#${subAnchorId(sub)}-grid`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      const el = document.getElementById(`${subAnchorId(sub)}-grid`);
+                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                    }}
+                    className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow hover:bg-neutral-50 active:scale-[0.98] transition"
+                    aria-label={`View items in ${titleCaseLine(sub)}`}
+                  >
                     View items
-                  </span>
+                  </a>
                 </div>
               </div>
             </motion.div>

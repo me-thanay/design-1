@@ -816,15 +816,20 @@ export function HeroLanding(props: HeroLandingProps) {
                         {navigation.map((item) =>
                           item.items && item.items.length > 0 ? (
                             <div key={item.name} className="-mx-3">
-                              <div className="px-3 py-2 text-base/7 font-semibold text-card-foreground">
+                              <a
+                                href={item.href}
+                                className="block rounded-lg px-3 py-2 text-base/7 font-semibold text-card-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
                                 {item.name}
-                              </div>
+                              </a>
                               <div className="ml-3 space-y-1 border-l border-border pl-3">
                                 {item.items.map((sub) => (
                                   <a
                                     key={`${item.name}-${sub.name}`}
                                     href={sub.href}
                                     className="block rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                                    onClick={() => setMobileMenuOpen(false)}
                                   >
                                     {sub.name}
                                   </a>
@@ -837,6 +842,7 @@ export function HeroLanding(props: HeroLandingProps) {
                               href={item.href}
                               className="-mx-3 flex items-center gap-3 rounded-lg px-3 py-2 text-base/7 font-semibold text-card-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
                               aria-label={item.name}
+                              onClick={() => setMobileMenuOpen(false)}
                             >
                               {isShopItem(item) ? (
                                 <>

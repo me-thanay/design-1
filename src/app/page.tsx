@@ -132,6 +132,9 @@ export default async function Home({ searchParams }: HomeProps) {
           </ScrollRevealGroup>
         </div>
       </section>
+
+      <HomeAboutSawbhagya />
+
       {showSearchPanel ? (
         <>
           <ScrollToSearchResults />
@@ -161,9 +164,6 @@ export default async function Home({ searchParams }: HomeProps) {
           </section>
         </>
       ) : null}
-      <ScrollReveal y={40}>
-        <HomeBestSellersSection />
-      </ScrollReveal>
 
       <section className="surface-texture pb-20 pt-2">
         <div className="mx-auto w-full max-w-6xl px-4">
@@ -175,10 +175,10 @@ export default async function Home({ searchParams }: HomeProps) {
                     Showcase
                   </p>
                   <h3 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-                    Featured picks in motion
+                    Best sellers in motion
                   </h3>
                   <p className="mt-2 max-w-2xl text-sm text-neutral-600">
-                    Textures, drapes, and details—hover to pause.
+                    Textures, drapes, and details — hover to pause.
                   </p>
                 </div>
               </div>
@@ -187,6 +187,10 @@ export default async function Home({ searchParams }: HomeProps) {
           </div>
         </div>
       </section>
+
+      <ScrollReveal y={40}>
+        <HomeBestSellersSection />
+      </ScrollReveal>
 
       <section id="shop" className="surface-texture scroll-mt-24 pb-12 pt-2">
         <div className="mx-auto w-full max-w-6xl px-4">
@@ -211,8 +215,6 @@ export default async function Home({ searchParams }: HomeProps) {
           </ScrollRevealGroup>
         </div>
       </section>
-
-      <HomeAboutSawbhagya />
 
       <ScrollReveal y={36}>
         <Slideshow className="surface-texture pb-16 pt-2" />
@@ -261,7 +263,7 @@ export default async function Home({ searchParams }: HomeProps) {
           { href: "/creator", label: "Admin" },
         ]}
         legalLinks={[
-          { href: "#", label: "Shipping & returns" },
+          { href: "/shipping-returns", label: "Shipping & returns" },
           { href: "#", label: "Privacy" },
           { href: "#", label: "Terms" },
         ]}

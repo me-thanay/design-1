@@ -116,7 +116,7 @@ export function PageShell({
           { href: "/sign-in?to=creator", label: "Admin" },
         ]}
         legalLinks={[
-          { href: "#", label: "Shipping & returns" },
+          { href: "/shipping-returns", label: "Shipping & returns" },
           { href: "#", label: "Privacy" },
           { href: "#", label: "Terms" },
         ]}
