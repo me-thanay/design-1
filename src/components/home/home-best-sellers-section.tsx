@@ -9,7 +9,6 @@ import { HeroLanding } from "@/components/ui/hero-1";
 import { CheckCircle2 } from "lucide-react";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { normalizeProductRow, type Product } from "@/lib/products";
-import { BestSellersMotionSlider } from "@/components/home/best-sellers-motion-slider";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
 
@@ -107,26 +106,6 @@ export function HomeBestSellersSection() {
         ratingLabel: s.ratingLabel,
       };
     });
-  }, [slides]);
-
-  const motionItems = React.useMemo(() => {
-    const normalizeSrc = (src: string) => {
-      if (!src) return src;
-      if (/^https?:\/\//i.test(src)) return src;
-      if (!src.startsWith("/")) return src;
-      return encodeURI(src);
-    };
-    return slides
-      .filter((s) => s.kind === "product")
-      .slice(0, 10)
-      .map((s) => {
-        const p = (s as Extract<BestSellerCarouselSlide, { kind: "product" }>).product;
-        return {
-          product: p,
-          imageSrc: normalizeSrc(s.imageSrc),
-          badge: s.badge,
-        };
-      });
   }, [slides]);
 
   React.useEffect(() => {
@@ -229,21 +208,6 @@ export function HomeBestSellersSection() {
             </div>
           ))}
         </div>
-      </div>
-
-      <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
-        <div className="mb-5 text-center">
-          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
-            Best sellers
-          </p>
-          <h3 className="mt-2 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
-            Featured picks in motion
-          </h3>
-          <p className="mt-2 text-sm text-neutral-600">
-            Tap any image to view big and read the description.
-          </p>
-        </div>
-        <BestSellersMotionSlider items={motionItems} />
       </div>
 
       <div className="mx-auto w-full max-w-6xl px-0 sm:px-4">
