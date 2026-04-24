@@ -215,22 +215,6 @@ export function HomeBestSellersSection() {
         ]}
       />
 
-      <div className="mx-auto w-full max-w-6xl px-4 pt-10 sm:px-6 sm:pt-12">
-        <div className="grid gap-3 rounded-3xl border border-black/5 bg-white/70 p-6 shadow-sm sm:grid-cols-2 lg:grid-cols-4">
-          {[
-            "Top rated across categories",
-            "Fast add-to-cart from the card",
-            "Clean, consistent details",
-            "Hover gallery preview before you swipe",
-          ].map((t) => (
-            <div key={t} className="flex items-start gap-2 text-sm text-neutral-700 sm:text-base">
-              <CheckCircle2 className="mt-0.5 h-5 w-5 text-neutral-900" aria-hidden="true" />
-              <span>{t}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="mx-auto w-full max-w-6xl px-4 pt-8 sm:px-6">
         <div className="mb-5 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.22em] text-neutral-500">
@@ -244,14 +228,6 @@ export function HomeBestSellersSection() {
           </p>
         </div>
         <BestSellersMotionSlider items={motionItems} />
-      </div>
-
-      <div className="mx-auto w-full max-w-6xl px-0 sm:px-4">
-        <ImageGallery
-          items={galleryItems}
-          title=""
-          subtitle=""
-        />
       </div>
     </section>
   );
