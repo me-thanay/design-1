@@ -4,6 +4,7 @@ import * as React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ProductCartControl } from "@/components/cart/product-cart-control";
 import type { Product } from "@/lib/products";
+import { X } from "lucide-react";
 
 type BestSellersMotionItem = {
   product: Product;
@@ -120,26 +121,43 @@ export function BestSellersMotionSlider({
 
       <Dialog open={open} onOpenChange={setOpen}>
         {active ? (
-          <DialogContent className="max-w-[92vw] sm:max-w-3xl p-0 overflow-hidden">
+          <DialogContent className="max-w-[94vw] sm:max-w-4xl p-0 overflow-hidden">
             <DialogTitle className="sr-only">{active.product.name}</DialogTitle>
-            <div className="grid sm:grid-cols-2">
-              <div className="relative aspect-[4/5] bg-neutral-100">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={active.imageSrc}
-                  alt={active.product.name}
-                  className="h-full w-full object-contain bg-neutral-50"
-                  decoding="async"
-                />
+            <div className="relative grid max-h-[86vh] grid-rows-[auto_1fr] sm:max-h-[82vh] sm:grid-cols-[1.25fr_1fr] sm:grid-rows-1">
+              {/* Image */}
+              <div className="relative bg-neutral-50 sm:rounded-l-xl">
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-neutral-900 shadow-sm ring-1 ring-black/10 transition hover:bg-white"
+                  aria-label="Close"
+                  title="Close"
+                >
+                  <X className="h-5 w-5" />
+                </button>
+                <div className="relative h-[44vh] w-full sm:h-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={active.imageSrc}
+                    alt={active.product.name}
+                    className="h-full w-full object-contain bg-neutral-50"
+                    decoding="async"
+                  />
+                  <div className="pointer-events-none absolute inset-0 ring-1 ring-black/5 sm:rounded-l-xl" />
+                </div>
               </div>
-              <div className="p-5 sm:p-6">
+
+              {/* Details */}
+              <div className="overflow-y-auto bg-white p-5 sm:p-7">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <h3 className="font-serif text-xl font-bold tracking-tight text-neutral-900">
+                    <h3 className="font-serif text-xl font-bold tracking-tight text-neutral-900 sm:text-2xl">
                       {active.product.name}
                     </h3>
                     {active.product.subcategory ? (
-                      <p className="mt-1 text-sm text-neutral-600">{active.product.subcategory}</p>
+                      <p className="mt-1 text-sm font-medium text-neutral-600">
+                        {active.product.subcategory}
+                      </p>
                     ) : null}
                   </div>
                   {active.badge ? (
@@ -160,17 +178,22 @@ export function BestSellersMotionSlider({
                   </span>
                 </div>
 
-                {active.product.description ? (
-                  <p className="mt-4 text-sm leading-relaxed text-neutral-700">
-                    {active.product.description}
+                <div className="mt-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                    Description
                   </p>
-                ) : (
-                  <p className="mt-4 text-sm text-neutral-600">
-                    Description will appear here once you add it in the Creator dashboard.
-                  </p>
-                )}
+                  {active.product.description ? (
+                    <p className="mt-2 text-sm leading-relaxed text-neutral-700">
+                      {active.product.description}
+                    </p>
+                  ) : (
+                    <p className="mt-2 text-sm text-neutral-600">
+                      Add a description in the Creator dashboard to show it here.
+                    </p>
+                  )}
+                </div>
 
-                <div className="mt-5">
+                <div className="mt-6">
                   <ProductCartControl
                     product={active.product}
                     image={active.imageSrc}

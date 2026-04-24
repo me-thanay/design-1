@@ -118,6 +118,8 @@ export default async function Home({ searchParams }: HomeProps) {
       <HeroLanding {...heroProps} />
       <HomeTrustLogoCloud />
 
+      <HomeAboutSawbhagya />
+
       {showSearchPanel ? (
         <>
           <ScrollToSearchResults />
@@ -192,7 +194,11 @@ export default async function Home({ searchParams }: HomeProps) {
         </div>
       </section>
 
-      <HomeAboutSawbhagya />
+      <ScrollReveal y={36}>
+        <Slideshow className="surface-texture pb-16 pt-2" />
+      </ScrollReveal>
+
+      <HomeTestimonialsMarquee />
 
       <section className="surface-texture border-b border-black/5 pb-14 pt-2">
         <div className="mx-auto w-full max-w-6xl px-4">
@@ -233,12 +239,6 @@ export default async function Home({ searchParams }: HomeProps) {
           </ScrollRevealGroup>
         </div>
       </section>
-
-      <ScrollReveal y={36}>
-        <Slideshow className="surface-texture pb-16 pt-2" />
-      </ScrollReveal>
-
-      <HomeTestimonialsMarquee />
 
       <Footer
         logo={
