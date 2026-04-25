@@ -130,20 +130,23 @@ export function Footer({
 
             {contact ? (
               <div className="mt-6 text-sm leading-6 text-neutral-700 lg:col-[1/4] lg:row-[3/4] lg:mt-4">
-                <div className="space-y-1">
+                <div className="space-y-2">
                   {contact.phone ? (
-                    <div>
-                      <span className="text-neutral-500">Phone:</span>{" "}
-                      <a className="text-neutral-900 underline-offset-4 hover:underline" href={`tel:+91${contact.phone}`}>
+                    <div className="flex flex-col">
+                      <span className="text-neutral-500">Phone</span>
+                      <a
+                        className="text-neutral-900 underline-offset-4 hover:underline"
+                        href={`tel:+91${contact.phone}`}
+                      >
                         +91 {contact.phone}
                       </a>
                     </div>
                   ) : null}
                   {contact.email ? (
-                    <div>
-                      <span className="text-neutral-500">Email:</span>{" "}
+                    <div className="flex flex-col">
+                      <span className="text-neutral-500">Email</span>
                       <a
-                        className="text-neutral-900 underline-offset-4 hover:underline"
+                        className="text-neutral-900 underline-offset-4 hover:underline break-all"
                         href={`mailto:${contact.email}`}
                       >
                         {contact.email}
@@ -151,11 +154,11 @@ export function Footer({
                     </div>
                   ) : null}
                   {contact.address ? (
-                    <div className="text-neutral-600">
-                      <span className="text-neutral-500">Address:</span>{" "}
+                    <div className="flex flex-col text-neutral-600">
+                      <span className="text-neutral-500">Address</span>
                       {contact.mapsHref ? (
                         <a
-                          className="underline-offset-4 hover:underline"
+                          className="underline-offset-4 hover:underline break-words"
                           href={contact.mapsHref}
                           target="_blank"
                           rel="noreferrer"
@@ -163,7 +166,7 @@ export function Footer({
                           {contact.address}
                         </a>
                       ) : (
-                        contact.address
+                        <span className="break-words">{contact.address}</span>
                       )}
                     </div>
                   ) : null}
