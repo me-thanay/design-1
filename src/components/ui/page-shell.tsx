@@ -73,11 +73,7 @@ export function PageShell({
           email: "info@sawbhagya.com",
           address:
             "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
-          mapsHref:
-            "https://www.google.com/maps/search/?api=1&query=" +
-            encodeURIComponent(
-              "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
-            ),
+          mapsHref: "https://maps.app.goo.gl/VP6MioWj7HuQsL839?g_st=iw",
           whatsappHref:
             "https://wa.me/918978237992?text=" +
             encodeURIComponent("Hi Sawbhagya, I want to know more about your products."),
@@ -100,11 +96,7 @@ export function PageShell({
           },
           {
             icon: <MapPin className="h-5 w-5" />,
-            href:
-              "https://www.google.com/maps/search/?api=1&query=" +
-              encodeURIComponent(
-                "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
-              ),
+            href: "https://maps.app.goo.gl/VP6MioWj7HuQsL839?g_st=iw",
             label: "Location",
           },
         ]}
