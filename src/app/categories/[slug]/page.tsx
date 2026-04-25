@@ -358,7 +358,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
       />
 
       {/* No ScrollRevealGroup here: fade-in starts at opacity 0 and can block hero video autoplay in every category. */}
-      <section className="mx-auto w-full max-w-6xl px-4 pb-10 sm:pb-12">
+      <section id="best-sellers" className="mx-auto w-full max-w-6xl px-4 pb-10 sm:pb-12 scroll-mt-24">
         <CategoryBestSellerTestimonials category={category} categoryTitle={cfg.title} limit={6} />
       </section>
 

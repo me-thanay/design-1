@@ -16,6 +16,8 @@ export type ImageGalleryItem = {
   ratingLabel?: string;
   /** Optional CSS object-position (e.g. "50% 16%") for better subject framing. */
   imagePosition?: string;
+  /** Optional fit override for the image (default: cover). */
+  imageFit?: "cover" | "contain";
   /** When provided, renders an add-to-cart control in the card. */
   product?: Product;
   /** Optional image to store in cart (defaults to `src`). */
@@ -115,11 +117,30 @@ export function ImageGallery({
               }}
             >
               <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100">
+                {it.imageFit === "contain" ? (
+                  <>
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={it.src}
+                      alt=""
+                      aria-hidden="true"
+                      className="absolute inset-0 h-full w-full object-cover scale-[1.08] blur-2xl opacity-60"
+                      style={{ objectPosition: it.imagePosition ?? "50% 18%" }}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <div className="absolute inset-0 bg-white/25" aria-hidden="true" />
+                  </>
+                ) : null}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={it.src}
                   alt={it.title}
-                  className="h-full w-full object-cover sm:object-center transition-transform duration-700 ease-out group-hover:scale-[1.075]"
+                  className={[
+                    "h-full w-full transition-transform duration-700 ease-out group-hover:scale-[1.075]",
+                    it.imageFit === "contain" ? "object-contain" : "object-cover",
+                    "sm:object-center",
+                  ].join(" ")}
                   style={{ objectPosition: it.imagePosition ?? "50% 18%" }}
                   loading="lazy"
                   decoding="async"

@@ -46,6 +46,8 @@ function productToGalleryItem(p: Product, category: ClothingCategory, rank: numb
             ? "55% 16%"
             : "50% 16%")
       : undefined;
+  const imageFit: "cover" | "contain" =
+    category === "sarees" ? "cover" : "contain";
   return {
     src,
     title: p.name,
@@ -54,6 +56,7 @@ function productToGalleryItem(p: Product, category: ClothingCategory, rank: numb
     priceLabel: `₹${Math.round(p.price).toLocaleString("en-IN")}`,
     ratingLabel: `${p.rating.toFixed(1)}★`,
     imagePosition,
+    imageFit,
     product: p,
     cartImage: src,
   };

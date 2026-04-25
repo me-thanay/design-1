@@ -87,6 +87,22 @@ function SidebarInner({
   categoryLinks: Array<{ name: string; href: string }>;
   onNavigate?: () => void;
 }) {
+  const navName: Record<ClothingCategory, string> = {
+    sarees: "SAREE",
+    kurtis: "KURTIS",
+    blouses: "BLOUSES",
+    gowns: "GOWNS",
+  };
+  const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
+  const subCards = (subs ?? []).map((s) => {
+    const hit = nav?.items?.find((x) => x.name.toLowerCase() === s.toLowerCase());
+    return {
+      name: s,
+      href: `#${subAnchorId(s)}`,
+      imageSrc: hit?.imageSrc ?? nav?.featuredImageSrc ?? null,
+    };
+  });
+
   return (
     <div className="space-y-6">
       <div>
@@ -95,43 +111,19 @@ function SidebarInner({
         </p>
         <div className="mt-3 grid gap-2">
           <Link
-            href="#all-products"
+            href="#best-sellers"
             onClick={onNavigate}
             className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
           >
-            New arrivals
+            Best sellers
           </Link>
           <Link
             href="#all-products"
             onClick={onNavigate}
             className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
           >
-            Discounts
+            All products
           </Link>
-        </div>
-        <p className="mt-2 text-xs text-neutral-500">
-          (These are quick jumps for now; product-level filtering can be wired next.)
-        </p>
-      </div>
-
-      <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
-          Categories
-        </p>
-        <div className="mt-3 grid gap-2">
-          {categoryLinks.map((c) => (
-            <Link
-              key={c.href}
-              href={c.href}
-              onClick={onNavigate}
-              className={[
-                "rounded-2xl border border-black/10 px-4 py-3 text-sm font-medium hover:bg-neutral-50",
-                c.href.endsWith(`/${category}`) ? "bg-neutral-900 text-white border-neutral-900" : "bg-white text-neutral-900",
-              ].join(" ")}
-            >
-              {c.name}
-            </Link>
-          ))}
         </div>
       </div>
 
@@ -140,14 +132,31 @@ function SidebarInner({
           Subcategories
         </p>
         <div className="mt-3 grid gap-2">
-          {subs.map((s) => (
+          {subCards.map((s) => (
             <Link
-              key={s}
-              href={`#${subAnchorId(s)}`}
+              key={s.name}
+              href={s.href}
               onClick={onNavigate}
-              className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+              className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
             >
-              {s}
+              <span className="relative h-14 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1 ring-black/5">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                {s.imageSrc ? (
+                  <img
+                    src={encodeURI(s.imageSrc)}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                ) : null}
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-semibold">{s.name}</span>
+                <span className="mt-0.5 block text-[11px] font-medium text-neutral-500">
+                  Tap to view
+                </span>
+              </span>
             </Link>
           ))}
         </div>

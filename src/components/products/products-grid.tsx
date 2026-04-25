@@ -58,6 +58,11 @@ function imagePositionFor(category: ClothingCategory | undefined, src: string) {
   return "50% 16%";
 }
 
+function imageFitFor(category: ClothingCategory | undefined) {
+  if (!category) return "cover" as const;
+  return category === "sarees" ? ("cover" as const) : ("contain" as const);
+}
+
 function matchesFilter(p: Product, filterQuery: string) {
   const needle = filterQuery.trim().toLowerCase();
   if (!needle) return true;
@@ -187,6 +192,7 @@ export function ProductsGrid({
               priceLabel: price,
               ratingLabel: `${starsFor(rating)} (${rating.toFixed(1)})`,
               imagePosition: imagePositionFor(p.category, img),
+              imageFit: imageFitFor(p.category),
             };
           })}
         />
@@ -196,6 +202,7 @@ export function ProductsGrid({
             const img = p.image || fallbackImageFor(p.category);
             const rating = Number(p.rating || 4);
             const pos = imagePositionFor(p.category, img);
+            const fit = imageFitFor(p.category);
             return (
               <article
                 key={p.id}
@@ -205,7 +212,10 @@ export function ProductsGrid({
                 <img
                   src={img}
                   alt={p.name}
-                  className="h-40 w-full object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+                  className={[
+                    "w-full transition-transform duration-500 group-hover:scale-[1.02]",
+                    fit === "contain" ? "h-52 object-contain bg-neutral-50" : "h-40 object-cover",
+                  ].join(" ")}
                   style={pos ? { objectPosition: pos } : undefined}
                 />
                 <div className="space-y-2 p-4">
@@ -249,6 +259,7 @@ export function ProductsGrid({
             const img = p.image || fallbackImageFor(p.category);
             const rating = Number(p.rating || 4);
             const pos = imagePositionFor(p.category, img);
+            const fit = imageFitFor(p.category);
             return (
               <article
                 key={p.id}
@@ -258,7 +269,10 @@ export function ProductsGrid({
                 <img
                   src={img}
                   alt={p.name}
-                  className="h-48 w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+                  className={[
+                    "w-full transition-transform duration-500 group-hover:scale-[1.02]",
+                    fit === "contain" ? "h-64 object-contain bg-neutral-50" : "h-48 object-cover",
+                  ].join(" ")}
                   style={pos ? { objectPosition: pos } : undefined}
                 />
                 <div className="space-y-2 p-4">
