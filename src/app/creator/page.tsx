@@ -21,6 +21,7 @@ type ClothingItem = {
   name: string;
   description: string | null;
   price: number;
+  discount_percent?: number | null;
   image_url: string | null;
   in_stock: boolean;
   category?: ClothingCategory;
@@ -46,10 +47,10 @@ function inferCategoryFromText(text: string | null | undefined) {
 function stripCategoryPrefix(description: string | null | undefined) {
   if (!description) return null;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) {
-    const cleanedMeta = withMeta[4]?.trim();
+    const cleanedMeta = withMeta[5]?.trim();
     return cleanedMeta ? cleanedMeta : null;
   }
   const match = description.match(
@@ -63,7 +64,7 @@ function stripCategoryPrefix(description: string | null | undefined) {
 function decodeCategory(description: string | null | undefined) {
   if (!description) return "sarees";
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) return withMeta[1].toLowerCase() as ClothingCategory;
   const match = description.match(
@@ -78,11 +79,13 @@ function encodeCategoryPrefix(
   category: ClothingCategory,
   subcategory: string,
   rating: number,
+  discountPercent: number,
 ) {
   const cleaned = (description ?? "").trim();
   const safeSubcategory = normalizeSubcategory(category, subcategory);
   const safeRating = normalizeRating(rating);
-  return `__meta__:${category}|${safeSubcategory}|${safeRating}__${cleaned}`;
+  const safeDiscount = Math.min(90, Math.max(0, Number(discountPercent) || 0));
+  return `__meta__:${category}|${safeSubcategory}|${safeRating}|${safeDiscount}__${cleaned}`;
 }
 
 function decodeSubcategory(
@@ -91,7 +94,7 @@ function decodeSubcategory(
 ) {
   if (!description) return SUBCATEGORIES[category][0];
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) return normalizeSubcategory(category, withMeta[2]);
 
@@ -103,10 +106,25 @@ function decodeSubcategory(
 function decodeRating(description: string | null | undefined) {
   if (!description) return 4;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta?.[3]) return normalizeRating(withMeta[3]);
   return 4;
+}
+
+function normalizeDiscountPercent(value?: number | string | null) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(90, Math.max(0, Number(n.toFixed(1))));
+}
+
+function decodeDiscountPercent(description: string | null | undefined) {
+  if (!description) return 0;
+  const withMeta = description.match(
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+  );
+  if (withMeta?.[4]) return normalizeDiscountPercent(withMeta[4]);
+  return 0;
 }
 
 function normalizeClothingItem(raw: any): ClothingItem {
@@ -118,12 +136,16 @@ function normalizeClothingItem(raw: any): ClothingItem {
     raw?.subcategory ?? decodeSubcategory(rawDescription, category),
   );
   const rating = normalizeRating(raw?.rating ?? decodeRating(rawDescription));
+  const discount_percent = normalizeDiscountPercent(
+    raw?.discount_percent ?? decodeDiscountPercent(rawDescription),
+  );
   return {
     ...raw,
     description: cleanedDescription,
     category,
     subcategory,
     rating,
+    discount_percent,
   } as ClothingItem;
 }
 
@@ -198,6 +220,7 @@ export default function CreatorPage() {
     name: "",
     description: "",
     price: "",
+    discount_percent: "0",
     category: "sarees" as ClothingCategory,
     subcategory: SUBCATEGORIES.sarees[0],
     rating: "4",
@@ -217,6 +240,7 @@ export default function CreatorPage() {
     name: "",
     description: "",
     price: "",
+    discount_percent: "0",
     category: "sarees" as ClothingCategory,
     subcategory: SUBCATEGORIES.sarees[0],
     rating: "4",
@@ -529,6 +553,7 @@ export default function CreatorPage() {
         return;
       }
       const ratingNumber = normalizeRating(form.rating);
+      const discountNumber = normalizeDiscountPercent(form.discount_percent);
 
       let imageUrl: string | null = null;
       if (formImageFile) {
@@ -550,8 +575,10 @@ export default function CreatorPage() {
             form.category,
             form.subcategory,
             ratingNumber,
+            discountNumber,
           ),
           price: priceNumber,
+          discount_percent: discountNumber,
           image_url: imageUrl,
           in_stock: form.in_stock,
           category: form.category,
@@ -565,6 +592,7 @@ export default function CreatorPage() {
           name: "",
           description: "",
           price: "",
+          discount_percent: "0",
           category: categoryFilter,
           subcategory: SUBCATEGORIES[categoryFilter][0],
           rating: "4",
@@ -583,8 +611,10 @@ export default function CreatorPage() {
           form.category,
           form.subcategory,
           ratingNumber,
+          discountNumber,
         ),
         price: priceNumber,
+        discount_percent: discountNumber,
         image_url: imageUrl,
         in_stock: form.in_stock,
       });
@@ -598,6 +628,7 @@ export default function CreatorPage() {
         name: "",
         description: "",
         price: "",
+        discount_percent: "0",
         category: categoryFilter,
         subcategory: SUBCATEGORIES[categoryFilter][0],
         rating: "4",
@@ -622,6 +653,7 @@ export default function CreatorPage() {
       name: item.name,
       description: item.description ?? "",
       price: item.price.toString(),
+      discount_percent: String(normalizeDiscountPercent(item.discount_percent ?? decodeDiscountPercent(item.description))),
       image_url: item.image_url ?? "",
       in_stock: item.in_stock,
       category: item.category ?? decodeCategory(item.description),
@@ -647,6 +679,7 @@ export default function CreatorPage() {
         return;
       }
       const ratingNumber = normalizeRating(editForm.rating);
+      const discountNumber = normalizeDiscountPercent(editForm.discount_percent);
 
       let nextImageUrl: string | null = editForm.image_url || null;
       if (editImageFile) {
@@ -667,8 +700,10 @@ export default function CreatorPage() {
                   editForm.category,
                   editForm.subcategory,
                   ratingNumber,
+                  discountNumber,
                 ),
                 price: priceNumber,
+                discount_percent: discountNumber,
                 image_url: nextImageUrl,
                 in_stock: editForm.in_stock,
                 category: editForm.category,
@@ -692,8 +727,10 @@ export default function CreatorPage() {
             editForm.category,
             editForm.subcategory,
             ratingNumber,
+            discountNumber,
           ),
           price: priceNumber,
+          discount_percent: discountNumber,
           image_url: nextImageUrl,
           in_stock: editForm.in_stock,
         })
@@ -990,6 +1027,24 @@ export default function CreatorPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-700">
+                    Discount (%)
+                  </label>
+                  <input
+                    name="discount_percent"
+                    type="number"
+                    min="0"
+                    max="90"
+                    step="0.5"
+                    value={form.discount_percent}
+                    onChange={handleChange}
+                    className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                  />
+                  <p className="mt-1 text-xs text-zinc-500">
+                    Optional. We’ll show original price + discounted price on the site.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-zinc-700">
                     Creator rating (1-5)
                   </label>
                   <input
@@ -1236,6 +1291,21 @@ export default function CreatorPage() {
                           value={editForm.price}
                           onChange={handleEditChange}
                           required
+                          className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700">
+                          Discount (%)
+                        </label>
+                        <input
+                          name="discount_percent"
+                          type="number"
+                          min="0"
+                          max="90"
+                          step="0.5"
+                          value={editForm.discount_percent}
+                          onChange={handleEditChange}
                           className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                         />
                       </div>

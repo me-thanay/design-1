@@ -46,7 +46,12 @@ export type Product = {
   id: string;
   name: string;
   description: string | null;
+  /** Final selling price after discount (if any). */
   price: number;
+  /** Original price (MRP) before discount. */
+  originalPrice: number;
+  /** Discount percentage (0-90). */
+  discountPercent: number;
   image: string | null;
   inStock: boolean;
   category: ClothingCategory;
@@ -63,10 +68,10 @@ export function normalizeRating(value?: number | string | null) {
 export function stripMeta(description: string | null | undefined) {
   if (!description) return null;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) {
-    const cleaned = withMeta[4]?.trim();
+    const cleaned = withMeta[5]?.trim();
     return cleaned ? cleaned : null;
   }
   const match = description.match(
@@ -80,7 +85,7 @@ export function stripMeta(description: string | null | undefined) {
 export function decodeCategory(description: string | null | undefined): ClothingCategory {
   if (!description) return "sarees";
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) return withMeta[1].toLowerCase() as ClothingCategory;
   const match = description.match(
@@ -99,7 +104,7 @@ export function decodeCategory(description: string | null | undefined): Clothing
 export function decodeSubcategory(description: string | null | undefined) {
   if (!description) return null;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   return withMeta ? withMeta[2].toLowerCase() : null;
 }
@@ -107,10 +112,20 @@ export function decodeSubcategory(description: string | null | undefined) {
 export function decodeRating(description: string | null | undefined) {
   if (!description) return 4;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta?.[3]) return normalizeRating(withMeta[3]);
   return 4;
+}
+
+export function decodeDiscountPercent(description: string | null | undefined) {
+  if (!description) return 0;
+  const withMeta = description.match(
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+  );
+  const n = Number(withMeta?.[4] ?? 0);
+  if (!Number.isFinite(n)) return 0;
+  return Math.min(90, Math.max(0, Number(n.toFixed(1))));
 }
 
 export function normalizeProductRow(raw: any): Product {
@@ -120,12 +135,26 @@ export function normalizeProductRow(raw: any): Product {
   const subcategory: string | null =
     raw?.subcategory ?? decodeSubcategory(rawDescription);
   const rating = normalizeRating(raw?.rating ?? decodeRating(rawDescription));
+  const discountPercent = Math.min(
+    90,
+    Math.max(
+      0,
+      Number(
+        (raw?.discount_percent ?? raw?.discountPercent ?? decodeDiscountPercent(rawDescription)) ?? 0,
+      ) || 0,
+    ),
+  );
+  const originalPrice = Number(raw?.price ?? 0) || 0;
+  const discounted = Math.round(originalPrice * (1 - discountPercent / 100));
+  const finalPrice = discountPercent > 0 ? Math.max(0, discounted) : originalPrice;
 
   return {
     id: String(raw?.id ?? ""),
     name: String(raw?.name ?? "Item"),
     description: stripMeta(rawDescription),
-    price: Number(raw?.price ?? 0) || 0,
+    price: finalPrice,
+    originalPrice,
+    discountPercent,
     image: (raw?.image_url as string | null) ?? null,
     inStock: raw?.in_stock !== false,
     category,

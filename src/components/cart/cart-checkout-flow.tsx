@@ -60,11 +60,9 @@ export function CartCheckoutFlow() {
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isPlacingOrder, setIsPlacingOrder] = React.useState(false);
   const [phone, setPhone] = React.useState("");
-  const [locationMode, setLocationMode] = React.useState<"current" | "manual">("manual");
+  const [locationMode] = React.useState<"manual">("manual");
   const [manualLocation, setManualLocation] = React.useState("");
-  const [currentLocation, setCurrentLocation] = React.useState<string | null>(null);
-  const [currentMapsUrl, setCurrentMapsUrl] = React.useState<string | null>(null);
-  const [locationStatus, setLocationStatus] = React.useState<string | null>(null);
+  const [locationStatus] = React.useState<string | null>(null);
   const [paymentMethod, setPaymentMethod] = React.useState<"upi" | "card">("upi");
   const [cardName, setCardName] = React.useState("");
   const [cardNumber, setCardNumber] = React.useState("");
@@ -76,45 +74,6 @@ export function CartCheckoutFlow() {
   const progress =
     lastStep <= 0 ? 0 : Math.round((currentStep / lastStep) * 100);
 
-  const handleUseCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      setLocationStatus("Location not supported in this browser.");
-      return;
-    }
-    setLocationStatus("Getting current location...");
-    navigator.geolocation.getCurrentPosition(
-      async (pos) => {
-        const lat = pos.coords.latitude;
-        const lon = pos.coords.longitude;
-        const maps = `https://www.google.com/maps?q=${encodeURIComponent(`${lat},${lon}`)}`;
-        setCurrentMapsUrl(maps);
-        setLocationMode("current");
-        try {
-          setLocationStatus("Getting your address…");
-          const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(String(lat))}&lon=${encodeURIComponent(String(lon))}`;
-          const res = await fetch(url, { headers: { Accept: "application/json" } });
-          const data = (await res.json()) as { display_name?: string };
-          const address = typeof data?.display_name === "string" ? data.display_name : null;
-          const nice =
-            address ??
-            `https://www.google.com/maps?q=${encodeURIComponent(`${lat},${lon}`)}`;
-          setCurrentLocation(nice);
-          setLocationStatus(
-            address ? "Address detected from your location." : "Location captured.",
-          );
-        } catch {
-          setCurrentLocation(maps);
-          setLocationStatus("Location captured. Tap to open in Maps.");
-        }
-      },
-      () => {
-        setLocationStatus(
-          "Could not get location. Please allow permission or use manual address.",
-        );
-      },
-    );
-  };
-
   const isStepValid = () => {
     switch (currentStep) {
       case 0:
@@ -122,8 +81,7 @@ export function CartCheckoutFlow() {
       case 1:
         return phone.trim() !== "";
       case 2:
-        if (locationMode === "manual") return manualLocation.trim() !== "";
-        return Boolean(currentLocation);
+        return manualLocation.trim() !== "";
       case 3:
         return true;
       default:
@@ -175,13 +133,6 @@ export function CartCheckoutFlow() {
       toast.error(msg);
       return;
     }
-    if (locationMode === "current" && !currentLocation) {
-      const msg =
-        "Current location not available. Use ‘Use current location’ or switch to manual address.";
-      setFormError(msg);
-      toast.error(msg);
-      return;
-    }
     if (paymentMethod === "card") {
       const cardNo = cardNumber.replace(/\s+/g, "");
       if (!cardName.trim()) {
@@ -227,12 +178,8 @@ export function CartCheckoutFlow() {
         customer_phone: phone.trim(),
         location_mode: locationMode,
         location_manual:
-          locationMode === "manual"
-            ? manualLocation.trim()
-            : locationMode === "current"
-              ? currentLocation
-              : null,
-        location_coords: locationMode === "current" ? currentMapsUrl ?? currentLocation : null,
+          manualLocation.trim(),
+        location_coords: null,
         payment_method: paymentMethod,
         currency: "INR",
         status: paymentMethod === "card" ? "payment-requested" : "pending",
@@ -462,60 +409,16 @@ export function CartCheckoutFlow() {
                   <CardDescription>Where should we deliver your order?</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <RadioGroup
-                    value={locationMode}
-                    onValueChange={(v) => setLocationMode(v as "current" | "manual")}
-                    className="grid gap-2 sm:grid-cols-2"
-                  >
-                    {[
-                      { value: "current" as const, label: "Use current location" },
-                      { value: "manual" as const, label: "Enter address" },
-                    ].map((opt) => (
-                      <motion.div
-                        key={opt.value}
-                        className={cn(
-                          "flex cursor-pointer items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-accent/60",
-                          locationMode === opt.value ? "border-primary/40 bg-accent/30" : "",
-                        )}
-                        whileHover={reduceMotion ? undefined : { scale: 1.01 }}
-                        whileTap={reduceMotion ? undefined : { scale: 0.99 }}
-                      >
-                        <RadioGroupItem value={opt.value} id={`loc-${opt.value}`} />
-                        <Label htmlFor={`loc-${opt.value}`} className="cursor-pointer text-sm font-medium">
-                          {opt.label}
-                        </Label>
-                      </motion.div>
-                    ))}
-                  </RadioGroup>
-
-                  {locationMode === "manual" ? (
-                    <div className="space-y-2">
-                      <Label htmlFor="addr">Full address</Label>
-                      <Textarea
-                        id="addr"
-                        placeholder="House/flat, street, area, city, pincode"
-                        value={manualLocation}
-                        onChange={(e) => setManualLocation(e.target.value)}
-                        className="min-h-[100px] rounded-xl"
-                      />
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        className="rounded-full"
-                        onClick={handleUseCurrentLocation}
-                      >
-                        Detect my location
-                      </Button>
-                      <p className="text-xs text-muted-foreground">
-                        {currentLocation
-                          ? `Captured: ${currentLocation}`
-                          : "Allow location access in your browser when prompted."}
-                      </p>
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="addr">Full address</Label>
+                    <Textarea
+                      id="addr"
+                      placeholder="House/flat, street, area, city, pincode"
+                      value={manualLocation}
+                      onChange={(e) => setManualLocation(e.target.value)}
+                      className="min-h-[100px] rounded-xl"
+                    />
+                  </div>
                   {locationStatus ? (
                     <p className="text-xs text-neutral-600">{locationStatus}</p>
                   ) : null}
@@ -655,9 +558,7 @@ export function CartCheckoutFlow() {
                     <div className="flex justify-between gap-4">
                       <span className="text-muted-foreground">Delivery</span>
                       <span className="max-w-[65%] text-right text-xs font-medium">
-                        {locationMode === "manual"
-                          ? manualLocation || "—"
-                          : currentLocation || "—"}
+                        {manualLocation || "—"}
                       </span>
                     </div>
                     <div className="flex justify-between">
