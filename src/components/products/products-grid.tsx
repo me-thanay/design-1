@@ -50,6 +50,10 @@ function starsFor(rating: number) {
   return "★".repeat(n);
 }
 
+function formatInr(amount: number) {
+  return `₹${Math.round(amount).toLocaleString("en-IN")}`;
+}
+
 function imagePositionFor(category: ClothingCategory | undefined, src: string) {
   if (category !== "gowns") return undefined;
   const s = src ?? "";
@@ -183,12 +187,20 @@ export function ProductsGrid({
           items={items.map((p) => {
             const img = p.image || fallbackImageFor(p.category);
             const rating = Number(p.rating || 4);
-            const price = `₹${Math.round(p.price).toLocaleString("en-IN")}`;
+            const price =
+              p.discountPercent > 0
+                ? `${formatInr(p.price)} (was ${formatInr(p.originalPrice)})`
+                : formatInr(p.price);
             return {
               src: img,
               title: p.name,
               subtitle: p.subcategory ? p.subcategory : p.category,
-              badge: p.inStock ? "In stock" : "Limited",
+              badge:
+                p.discountPercent > 0
+                  ? `${p.discountPercent}% off`
+                  : p.inStock
+                    ? "In stock"
+                    : "Limited",
               priceLabel: price,
               ratingLabel: `${starsFor(rating)} (${rating.toFixed(1)})`,
               imagePosition: imagePositionFor(p.category, img),
@@ -230,8 +242,26 @@ export function ProductsGrid({
                         </p>
                       ) : null}
                     </div>
-                    <div className="text-sm font-semibold text-neutral-900">
-                      ₹{Math.round(p.price).toLocaleString("en-IN")}
+                    <div className="text-right">
+                      {p.discountPercent > 0 ? (
+                        <div className="space-y-0.5">
+                          <div className="text-sm font-semibold text-neutral-900">
+                            {formatInr(p.price)}
+                          </div>
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-[11px] font-semibold text-emerald-700">
+                              -{p.discountPercent}%
+                            </span>
+                            <span className="text-[11px] text-neutral-500 line-through">
+                              {formatInr(p.originalPrice)}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm font-semibold text-neutral-900">
+                          {formatInr(p.price)}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <p className="text-[11px] font-medium text-amber-700">
@@ -292,8 +322,26 @@ export function ProductsGrid({
                         </p>
                       ) : null}
                     </div>
-                    <div className="text-sm font-semibold text-neutral-900">
-                      ₹{Math.round(p.price).toLocaleString("en-IN")}
+                    <div className="text-right">
+                      {p.discountPercent > 0 ? (
+                        <div className="space-y-0.5">
+                          <div className="text-sm font-semibold text-neutral-900">
+                            {formatInr(p.price)}
+                          </div>
+                          <div className="flex items-center justify-end gap-2">
+                            <span className="text-[11px] font-semibold text-emerald-700">
+                              -{p.discountPercent}%
+                            </span>
+                            <span className="text-[11px] text-neutral-500 line-through">
+                              {formatInr(p.originalPrice)}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-sm font-semibold text-neutral-900">
+                          {formatInr(p.price)}
+                        </div>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center justify-between gap-3">

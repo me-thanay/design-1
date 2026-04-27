@@ -53,6 +53,10 @@ function blurbFromProduct(p: Product) {
   return `${p.subcategory ?? "Premium"} · curated in-store quality.`;
 }
 
+function formatInr(amount: number) {
+  return `₹${Math.round(amount).toLocaleString("en-IN")}`;
+}
+
 /** Enough slides for Swiper loop + coverflow so edges stay filled without blank gutters. */
 function expandSlidesForLoop(slides: BestSellerCarouselSlide[], minSlides = 14) {
   if (!slides.length) return [] as { slide: BestSellerCarouselSlide; reactKey: string }[];
@@ -245,8 +249,18 @@ export function BestSellerCardCarousel({
                               {blurbFromProduct(slide.product)}
                             </p>
                             <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-                              <span className="inline-flex rounded-md bg-white px-2 py-1 text-sm font-bold tabular-nums text-neutral-900 shadow sm:text-base">
-                                ₹{Math.round(slide.product.price).toLocaleString("en-IN")}
+                              <span className="inline-flex items-center gap-2 rounded-md bg-white px-2 py-1 text-sm font-bold tabular-nums text-neutral-900 shadow sm:text-base">
+                                {formatInr(slide.product.price)}
+                                {slide.product.discountPercent > 0 ? (
+                                  <span className="inline-flex items-center gap-2 text-[11px] font-semibold sm:text-xs">
+                                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-emerald-700">
+                                      -{slide.product.discountPercent}%
+                                    </span>
+                                    <span className="text-neutral-500 line-through">
+                                      {formatInr(slide.product.originalPrice)}
+                                    </span>
+                                  </span>
+                                ) : null}
                               </span>
                               <span className="font-semibold text-white">{slide.product.rating.toFixed(1)}★</span>
                               {slide.product.subcategory ? (
