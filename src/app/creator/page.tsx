@@ -604,7 +604,7 @@ export default function CreatorPage() {
         return;
       }
 
-      const { error } = await supabase.from("clothes").insert({
+      const baseRow = {
         name: form.name,
         description: encodeCategoryPrefix(
           form.description || null,
@@ -614,13 +614,28 @@ export default function CreatorPage() {
           discountNumber,
         ),
         price: priceNumber,
-        discount_percent: discountNumber,
         image_url: imageUrl,
         in_stock: form.in_stock,
-      });
+      };
 
-      if (error) {
-        setError(error.message);
+      // Some Supabase setups (or older DB schemas) don't have a dedicated
+      // `discount_percent` column. In that case, we still persist discount in
+      // the description metadata and retry without the missing column.
+      let insertRes = await supabase.from("clothes").insert({
+        ...baseRow,
+        discount_percent: discountNumber,
+      });
+      if (
+        insertRes.error &&
+        /Could not find the 'discount_percent' column of 'clothes'/i.test(
+          insertRes.error.message ?? "",
+        )
+      ) {
+        insertRes = await supabase.from("clothes").insert(baseRow);
+      }
+
+      if (insertRes.error) {
+        setError(insertRes.error.message);
         return;
       }
 
@@ -718,26 +733,42 @@ export default function CreatorPage() {
         return;
       }
 
-      const { error } = await supabase
+      const baseUpdate = {
+        name: editForm.name,
+        description: encodeCategoryPrefix(
+          editForm.description || null,
+          editForm.category,
+          editForm.subcategory,
+          ratingNumber,
+          discountNumber,
+        ),
+        price: priceNumber,
+        image_url: nextImageUrl,
+        in_stock: editForm.in_stock,
+      };
+
+      let updateRes = await supabase
         .from("clothes")
         .update({
-          name: editForm.name,
-          description: encodeCategoryPrefix(
-            editForm.description || null,
-            editForm.category,
-            editForm.subcategory,
-            ratingNumber,
-            discountNumber,
-          ),
-          price: priceNumber,
+          ...baseUpdate,
           discount_percent: discountNumber,
-          image_url: nextImageUrl,
-          in_stock: editForm.in_stock,
         })
         .eq("id", editing.id);
 
-      if (error) {
-        setError(error.message);
+      if (
+        updateRes.error &&
+        /Could not find the 'discount_percent' column of 'clothes'/i.test(
+          updateRes.error.message ?? "",
+        )
+      ) {
+        updateRes = await supabase
+          .from("clothes")
+          .update(baseUpdate)
+          .eq("id", editing.id);
+      }
+
+      if (updateRes.error) {
+        setError(updateRes.error.message);
         return;
       }
 
