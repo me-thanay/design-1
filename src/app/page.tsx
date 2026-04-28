@@ -2,9 +2,9 @@ import { HeroLanding } from "@/components/ui/hero-1";
 import type { HeroLandingProps } from "@/components/ui/hero-1";
 import { HomeTrustLogoCloud } from "@/components/home/home-trust-logo-cloud";
 import { HomeAboutSawbhagya } from "@/components/home/home-about-sawbhagya";
+import { HomeWhySawbhagya } from "@/components/home/home-why-sawbhagya";
 import { HomeBestSellersSection } from "@/components/home/home-best-sellers-section";
 import { HomeTestimonialsMarquee } from "@/components/home/home-testimonials-marquee";
-import { ImageAutoSlider } from "@/components/ui/image-auto-slider";
 import { Footer } from "@/components/ui/footer";
 import Slideshow from "@/components/ui/slideshow";
 import { Mail, Phone, MapPin, MessageCircle } from "lucide-react";
@@ -119,6 +119,7 @@ export default async function Home({ searchParams }: HomeProps) {
       <HomeTrustLogoCloud />
 
       <HomeAboutSawbhagya />
+      <HomeWhySawbhagya />
 
       {showSearchPanel ? (
         <>

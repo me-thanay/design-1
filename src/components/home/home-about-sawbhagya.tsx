@@ -16,8 +16,8 @@ export function HomeAboutSawbhagya() {
         "The brand operates with a clear intent: make stylish ethnic wear accessible, reliable, and relevant to evolving preferences. Fabrics, fits, and finishes are prioritized to ensure consistency across products. Sawbhagya is not driven by fast fashion turnover but by curated choices that retain value over time.",
         "Rooted in Indian aesthetics, Sawbhagya serves women who want versatility in their wardrobe without complexity in decision-making. The goal is straightforward—provide clothing that fits real use, real occasions, and real expectations.",
       ]}
-      imageSrc="/hero_imagesss/hero-1.jpeg"
-      imageAlt="Sawbhagya — elegant ethnic wear draped in soft natural light"
+      imageSrc="/hero_imagesss/about-sawbhagya.png"
+      imageAlt="Sawbhagya — traditional saree in elegant courtyard setting"
       buttonPrimary={{ label: "Shop collections", href: "/#shop" }}
       buttonSecondary={{ label: "Browse categories", href: "/#categories" }}
     />

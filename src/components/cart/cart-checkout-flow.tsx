@@ -59,7 +59,10 @@ export function CartCheckoutFlow() {
 
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isPlacingOrder, setIsPlacingOrder] = React.useState(false);
+  const [fullName, setFullName] = React.useState("");
   const [phone, setPhone] = React.useState("");
+  const [altPhone, setAltPhone] = React.useState("");
+  const [dob, setDob] = React.useState("");
   const [locationMode] = React.useState<"manual">("manual");
   const [manualLocation, setManualLocation] = React.useState("");
   const [locationStatus] = React.useState<string | null>(null);
@@ -79,7 +82,7 @@ export function CartCheckoutFlow() {
       case 0:
         return !isEmpty;
       case 1:
-        return phone.trim() !== "";
+        return fullName.trim() !== "" && phone.trim() !== "";
       case 2:
         return manualLocation.trim() !== "";
       case 3:
@@ -111,6 +114,8 @@ export function CartCheckoutFlow() {
   const handleBuy = async () => {
     if (isEmpty || isPlacingOrder) return;
 
+    type OrderInsertRow = Record<string, unknown>;
+
     if (supabaseEnabled) {
       const {
         data: { user },
@@ -123,6 +128,12 @@ export function CartCheckoutFlow() {
 
     if (!phone.trim()) {
       const msg = "Please enter your phone number.";
+      setFormError(msg);
+      toast.error(msg);
+      return;
+    }
+    if (!fullName.trim()) {
+      const msg = "Please enter your name.";
       setFormError(msg);
       toast.error(msg);
       return;
@@ -176,6 +187,9 @@ export function CartCheckoutFlow() {
       const payload = {
         customer_email: customerEmail,
         customer_phone: phone.trim(),
+        customer_name: fullName.trim(),
+        customer_phone_alt: altPhone.trim() || null,
+        customer_dob: dob.trim() || null,
         location_mode: locationMode,
         location_manual:
           manualLocation.trim(),
@@ -186,14 +200,24 @@ export function CartCheckoutFlow() {
         subtotal,
         shipping,
         total,
-        items: items.map((i) => ({
-          id: i.id,
-          name: i.name,
-          price: i.price,
-          qty: i.qty,
-          image: i.image ?? null,
-          lineTotal: i.price * i.qty,
-        })),
+        // Store as an object so we can always keep customer meta even if the DB
+        // doesn't have separate columns. Creator dashboard already handles this shape.
+        items: {
+          customer: {
+            name: fullName.trim(),
+            phone: phone.trim(),
+            altPhone: altPhone.trim() || null,
+            dob: dob.trim() || null,
+          },
+          items: items.map((i) => ({
+            id: i.id,
+            name: i.name,
+            price: i.price,
+            qty: i.qty,
+            image: i.image ?? null,
+            lineTotal: i.price * i.qty,
+          })),
+        },
       };
 
       if (!supabaseEnabled) {
@@ -205,8 +229,26 @@ export function CartCheckoutFlow() {
           JSON.stringify([order, ...(Array.isArray(prev) ? prev : [])]),
         );
       } else {
-        const { error } = await supabase.from("orders").insert(payload);
-        if (error) throw error;
+        // Try full payload first; if columns don't exist, fall back to the minimal shape.
+        let res = await supabase.from("orders").insert(payload as unknown as OrderInsertRow);
+        if (res.error && /Could not find the 'customer_name' column|Could not find the 'customer_phone_alt' column|Could not find the 'customer_dob' column/i.test(res.error.message ?? "")) {
+          const minimal = {
+            customer_email: payload.customer_email,
+            customer_phone: payload.customer_phone,
+            location_mode: payload.location_mode,
+            location_manual: payload.location_manual,
+            location_coords: payload.location_coords,
+            payment_method: payload.payment_method,
+            currency: payload.currency,
+            status: payload.status,
+            subtotal: payload.subtotal,
+            shipping: payload.shipping,
+            total: payload.total,
+            items: payload.items,
+          };
+          res = await supabase.from("orders").insert(minimal as unknown as OrderInsertRow);
+        }
+        if (res.error) throw res.error;
       }
 
       clear();
@@ -388,6 +430,17 @@ export function CartCheckoutFlow() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div className="space-y-2">
+                    <Label htmlFor="cart-name">Full name</Label>
+                    <Input
+                      id="cart-name"
+                      type="text"
+                      placeholder="Your name"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
                     <Label htmlFor="cart-phone">Phone number</Label>
                     <Input
                       id="cart-phone"
@@ -395,6 +448,27 @@ export function CartCheckoutFlow() {
                       placeholder="+91 99164 77992"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cart-alt-phone">Alternate number (optional)</Label>
+                    <Input
+                      id="cart-alt-phone"
+                      type="tel"
+                      placeholder="+91 90000 00000"
+                      value={altPhone}
+                      onChange={(e) => setAltPhone(e.target.value)}
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cart-dob">Date of birth (optional)</Label>
+                    <Input
+                      id="cart-dob"
+                      type="date"
+                      value={dob}
+                      onChange={(e) => setDob(e.target.value)}
                       className="rounded-xl"
                     />
                   </div>
@@ -552,8 +626,20 @@ export function CartCheckoutFlow() {
                   </div>
                   <div className="grid gap-2 rounded-xl border border-black/10 bg-white/70 p-4 text-neutral-800">
                     <div className="flex justify-between">
+                      <span className="text-muted-foreground">Name</span>
+                      <span className="font-medium">{fullName || "—"}</span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Phone</span>
                       <span className="font-medium">{phone || "—"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">Alternate</span>
+                      <span className="font-medium">{altPhone || "—"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">DOB</span>
+                      <span className="font-medium">{dob || "—"}</span>
                     </div>
                     <div className="flex justify-between gap-4">
                       <span className="text-muted-foreground">Delivery</span>
