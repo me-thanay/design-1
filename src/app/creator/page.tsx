@@ -229,7 +229,9 @@ function parseOrderItems(items: any): Array<any> {
 export default function CreatorPage() {
   const router = useRouter();
   const [items, setItems] = useState<ClothingItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  // This flag is only for product list loading (not auth checking).
+  // If kept `true` during auth checks, the watchdog can fire prematurely.
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentUserEmail, setCurrentUserEmail] = useState<string | null>(null);
   const [authState, setAuthState] = useState<
@@ -305,6 +307,7 @@ export default function CreatorPage() {
         const isDev = process.env.NODE_ENV !== "production";
         if (!isDev) {
           setAuthState("unauthorized");
+          setLoading(false);
           router.replace("/sign-in?to=creator");
           return;
         }
@@ -313,6 +316,7 @@ export default function CreatorPage() {
           window.localStorage.getItem("freelance-1.creator.local") === "true";
         if (!localOk) {
           setAuthState("unauthorized");
+          setLoading(false);
           router.replace("/sign-in?to=creator");
           return;
         }
@@ -350,6 +354,7 @@ export default function CreatorPage() {
 
       if (!user) {
         setAuthState("unauthorized");
+        setLoading(false);
         router.replace("/sign-in?to=creator");
         return;
       }
@@ -368,6 +373,7 @@ export default function CreatorPage() {
       if (allowedEmails.length === 0) {
         await supabase.auth.signOut();
         setAuthState("unauthorized");
+        setLoading(false);
         router.replace("/sign-in?to=creator");
         return;
       }
@@ -375,6 +381,7 @@ export default function CreatorPage() {
       if (!allowedEmails.includes(userEmail)) {
         await supabase.auth.signOut();
         setAuthState("unauthorized");
+        setLoading(false);
         router.replace("/sign-in?to=creator");
         return;
       }
