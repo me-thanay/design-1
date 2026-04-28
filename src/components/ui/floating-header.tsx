@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { ShoppingBag, ShoppingCart } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
@@ -121,12 +122,19 @@ export function FloatingHeader() {
         </div>
 
         <div className="min-w-0 flex shrink-0 items-center justify-center gap-2 sm:gap-3 lg:mr-6 lg:justify-start">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={SITE_LOGO_SRC}
-            alt={SITE_LOGO_ALT}
-            className="h-24 w-auto -my-1 shrink-0 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5"
-          />
+          <Link
+            href="/"
+            className="shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-black/20"
+            aria-label="Go to home"
+            onClick={() => setMenuOpen(false)}
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={SITE_LOGO_SRC}
+              alt={SITE_LOGO_ALT}
+              className="h-24 w-auto -my-1 shrink-0 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5"
+            />
+          </Link>
         </div>
         <div className="hidden items-center gap-5 lg:flex xl:gap-7">
           {PRIMARY_NAV.filter((x) => x.name !== "Cart").map((item) =>
