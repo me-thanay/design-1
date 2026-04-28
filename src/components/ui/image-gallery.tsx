@@ -56,6 +56,9 @@ export function ImageGallery({
   const [activeImageIndexes, setActiveImageIndexes] = React.useState<Record<number, number>>(
     {},
   );
+  const [lastUserInteractionAt, setLastUserInteractionAt] = React.useState<Record<number, number>>(
+    {},
+  );
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -65,6 +68,47 @@ export function ImageGallery({
     mq.addEventListener?.("change", update);
     return () => mq.removeEventListener?.("change", update);
   }, []);
+
+  // Auto-cycle images for a lively gallery feel.
+  // Pauses briefly after user interaction, and while a card is hovered (desktop).
+  React.useEffect(() => {
+    const slice = items.slice(0, Math.max(1, maxItems));
+    if (slice.length === 0) return;
+
+    const intervalMs = 2800;
+    const pauseAfterInteractionMs = 7000;
+
+    const id = window.setInterval(() => {
+      const now = Date.now();
+      setActiveImageIndexes((prev) => {
+        let next = prev;
+        for (let idx = 0; idx < slice.length; idx++) {
+          const it = slice[idx];
+          const imageSources = [
+            ...(it.imageSources ?? []),
+            it.src,
+          ]
+            .map((s) => String(s || "").trim())
+            .filter(Boolean)
+            .filter((s, imageIdx, arr) => arr.indexOf(s) === imageIdx);
+          if (imageSources.length <= 1) continue;
+
+          // Don't fight user intent.
+          if (hovered === idx) continue;
+          const last = lastUserInteractionAt[idx] ?? 0;
+          if (now - last < pauseAfterInteractionMs) continue;
+
+          const current = prev[idx] ?? 0;
+          const advanced = (current + 1) % imageSources.length;
+          if (next === prev) next = { ...prev };
+          next[idx] = advanced;
+        }
+        return next;
+      });
+    }, intervalMs);
+
+    return () => window.clearInterval(id);
+  }, [items, maxItems, hovered, lastUserInteractionAt]);
 
   return (
     <section className={cn("w-full py-10 sm:py-14", className)}>
@@ -188,6 +232,10 @@ export function ImageGallery({
                                 onClick={(e) => {
                                   e.preventDefault();
                                   e.stopPropagation();
+                                  setLastUserInteractionAt((prev) => ({
+                                    ...prev,
+                                    [idx]: Date.now(),
+                                  }));
                                   setActiveImageIndexes((prev) => ({
                                     ...prev,
                                     [idx]: imageIdx,
