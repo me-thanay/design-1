@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ImageGallery } from "@/components/ui/image-gallery";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { ProductCartControl } from "@/components/cart/product-cart-control";
+import { ProductDetailsDialog } from "@/components/products/product-details-dialog";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import type { ClothingCategory, Product } from "@/lib/products";
 import { normalizeProductRow } from "@/lib/products";
@@ -94,6 +95,8 @@ export function ProductsGrid({
   const [items, setItems] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
+  const [activeProduct, setActiveProduct] = React.useState<Product | null>(null);
 
   React.useEffect(() => {
     const load = async () => {
@@ -146,6 +149,11 @@ export function ProductsGrid({
 
     load();
   }, [category, limit, filterQuery, subcategory]);
+
+  const openDetails = (p: Product) => {
+    setActiveProduct(p);
+    setDetailsOpen(true);
+  };
 
   return (
     <section className={className}>
@@ -219,6 +227,12 @@ export function ProductsGrid({
               <article
                 key={p.id}
                 className="group w-[260px] flex-shrink-0 overflow-hidden rounded-3xl border border-black/10 bg-white/60 shadow-sm ring-1 ring-black/[0.03] transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:ring-black/10"
+                onClick={() => openDetails(p)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") openDetails(p);
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -272,12 +286,15 @@ export function ProductsGrid({
                     <Link
                       href={relatedHref(p)}
                       className="text-xs font-semibold text-neutral-700 underline-offset-4 hover:underline"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Related
                     </Link>
                     <span className="text-[11px] text-neutral-500">Free delivery</span>
                   </div>
-                  <ProductCartControl product={p} image={img} tone="card" compact />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ProductCartControl product={p} image={img} tone="card" compact />
+                  </div>
                 </div>
               </article>
             );
@@ -294,6 +311,12 @@ export function ProductsGrid({
               <article
                 key={p.id}
                 className="group overflow-hidden rounded-3xl border border-black/10 bg-white/60 shadow-sm ring-1 ring-black/[0.03] transition-all duration-300 hover:-translate-y-1.5 hover:bg-white hover:shadow-xl hover:ring-black/12"
+                onClick={() => openDetails(p)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") openDetails(p);
+                }}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -352,17 +375,27 @@ export function ProductsGrid({
                     <Link
                       href={relatedHref(p)}
                       className="text-xs font-semibold text-neutral-700 underline-offset-4 hover:underline"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       Related
                     </Link>
                   </div>
-                  <ProductCartControl product={p} image={img} tone="card" />
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <ProductCartControl product={p} image={img} tone="card" />
+                  </div>
                 </div>
               </article>
             );
           })}
         </div>
       )}
+
+      <ProductDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        product={activeProduct}
+        fallbackImage={fallbackImageFor(activeProduct?.category)}
+      />
     </section>
   );
 }

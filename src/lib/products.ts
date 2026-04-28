@@ -52,6 +52,8 @@ export type Product = {
   originalPrice: number;
   /** Discount percentage (0-90). */
   discountPercent: number;
+  /** All images for the product (first is the primary image). */
+  images: string[];
   image: string | null;
   inStock: boolean;
   category: ClothingCategory;
@@ -71,15 +73,69 @@ export function stripMeta(description: string | null | undefined) {
     /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) {
-    const cleaned = withMeta[5]?.trim();
+    const cleaned = stripImagesMeta(withMeta[5])?.trim();
     return cleaned ? cleaned : null;
   }
   const match = description.match(
     /^__category__:(sarees|kurtis|blouses|gowns)__([\s\S]*)$/i,
   );
-  if (!match) return description;
-  const cleaned = match[2]?.trim();
+  if (!match) return stripImagesMeta(description);
+  const cleaned = stripImagesMeta(match[2])?.trim();
   return cleaned ? cleaned : null;
+}
+
+const IMAGES_META_MARKER = "__images__:";
+
+function safeJsonParse(value: string): any {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
+
+export function appendImagesMeta(
+  descriptionWithMeta: string,
+  imageUrls: string[] | null | undefined,
+) {
+  const urls = (imageUrls ?? [])
+    .map((u) => String(u || "").trim())
+    .filter(Boolean);
+  const base = stripImagesMeta(descriptionWithMeta) ?? descriptionWithMeta;
+  if (!urls.length) return base;
+  // Keep it simple and DB-friendly: store extra images as URL-encoded JSON at the end.
+  return `${base}\n${IMAGES_META_MARKER}${encodeURIComponent(
+    JSON.stringify(urls),
+  )}`;
+}
+
+export function decodeImagesMeta(description: string | null | undefined): string[] {
+  if (!description) return [];
+  const idx = description.lastIndexOf(IMAGES_META_MARKER);
+  if (idx === -1) return [];
+  const raw = description.slice(idx + IMAGES_META_MARKER.length).trim();
+  if (!raw) return [];
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  })();
+  const parsed = safeJsonParse(decoded);
+  if (!Array.isArray(parsed)) return [];
+  return parsed
+    .map((u) => String(u || "").trim())
+    .filter(Boolean);
+}
+
+function stripImagesMeta(description: string | null | undefined) {
+  if (!description) return null;
+  const idx = description.lastIndexOf(IMAGES_META_MARKER);
+  if (idx === -1) return description;
+  // Remove marker + everything after it (and a trailing newline).
+  const before = description.slice(0, idx);
+  return before.replace(/\n$/, "");
 }
 
 export function decodeCategory(description: string | null | undefined): ClothingCategory {
@@ -148,6 +204,28 @@ export function normalizeProductRow(raw: any): Product {
   const discounted = Math.round(originalPrice * (1 - discountPercent / 100));
   const finalPrice = discountPercent > 0 ? Math.max(0, discounted) : originalPrice;
 
+  const rawImageUrls = raw?.image_urls ?? raw?.imageUrls ?? null;
+  const imagesFromColumn: string[] = Array.isArray(rawImageUrls)
+    ? rawImageUrls
+    : typeof rawImageUrls === "string"
+      ? (() => {
+          const parsed = safeJsonParse(rawImageUrls);
+          return Array.isArray(parsed) ? parsed : [];
+        })()
+      : [];
+
+  const imagesFromMeta = decodeImagesMeta(rawDescription);
+  const primary = (raw?.image_url as string | null) ?? null;
+  const images = [
+    ...imagesFromColumn,
+    ...imagesFromMeta,
+    ...(primary ? [primary] : []),
+  ]
+    .map((u) => String(u || "").trim())
+    .filter(Boolean)
+    // de-dupe while keeping order
+    .filter((u, i, arr) => arr.indexOf(u) === i);
+
   return {
     id: String(raw?.id ?? ""),
     name: String(raw?.name ?? "Item"),
@@ -155,6 +233,7 @@ export function normalizeProductRow(raw: any): Product {
     price: finalPrice,
     originalPrice,
     discountPercent,
+    images,
     image: (raw?.image_url as string | null) ?? null,
     inStock: raw?.in_stock !== false,
     category,

@@ -69,7 +69,11 @@ export function ProductCartControl({
             "h-8 w-full rounded-full border-2 border-white bg-white/95 px-3 text-xs font-semibold text-neutral-900 shadow-md backdrop-blur-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-neutral-900 hover:bg-neutral-900 hover:text-white hover:shadow-lg active:translate-y-0 sm:h-9 sm:text-sm",
             className,
           )}
-          onClick={handleFirstAdd}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleFirstAdd();
+          }}
         >
           <ShoppingBag className="mr-1.5 h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4" aria-hidden />
           Add to cart
@@ -85,7 +89,11 @@ export function ProductCartControl({
             "inline-flex w-full items-center justify-center gap-2 rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-neutral-800",
             className,
           )}
-          onClick={handleFirstAdd}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            handleFirstAdd();
+          }}
         >
           <ShoppingBag className="h-4 w-4 shrink-0" aria-hidden />
           Add to cart
@@ -97,7 +105,11 @@ export function ProductCartControl({
       <Button
         type="button"
         className={cn("w-full rounded-full font-semibold", className)}
-        onClick={handleFirstAdd}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleFirstAdd();
+        }}
       >
         <ShoppingBag className="mr-2 h-4 w-4 shrink-0" aria-hidden />
         Add to cart

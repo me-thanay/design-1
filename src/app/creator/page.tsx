@@ -12,6 +12,7 @@ import {
   normalizeSubcategory,
   type ClothingCategory,
 } from "@/lib/products";
+import { appendImagesMeta, decodeImagesMeta } from "@/lib/products";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
 const LOCAL_ORDERS_KEY = "freelance-1.local.orders.v1";
@@ -23,6 +24,7 @@ type ClothingItem = {
   price: number;
   discount_percent?: number | null;
   image_url: string | null;
+  image_urls?: string[] | null;
   in_stock: boolean;
   category?: ClothingCategory;
   subcategory?: string;
@@ -139,6 +141,25 @@ function normalizeClothingItem(raw: any): ClothingItem {
   const discount_percent = normalizeDiscountPercent(
     raw?.discount_percent ?? decodeDiscountPercent(rawDescription),
   );
+  const imagesFromMeta = decodeImagesMeta(rawDescription);
+  const rawImageUrls = raw?.image_urls ?? raw?.imageUrls ?? null;
+  const imagesFromColumn: string[] = Array.isArray(rawImageUrls)
+    ? rawImageUrls
+    : typeof rawImageUrls === "string"
+      ? (() => {
+          try {
+            const parsed = JSON.parse(rawImageUrls);
+            return Array.isArray(parsed) ? parsed : [];
+          } catch {
+            return [];
+          }
+        })()
+      : [];
+  const primary = (raw?.image_url as string | null) ?? null;
+  const image_urls = [...imagesFromColumn, ...imagesFromMeta, ...(primary ? [primary] : [])]
+    .map((u) => String(u || "").trim())
+    .filter(Boolean)
+    .filter((u, i, arr) => arr.indexOf(u) === i);
   return {
     ...raw,
     description: cleanedDescription,
@@ -146,6 +167,7 @@ function normalizeClothingItem(raw: any): ClothingItem {
     subcategory,
     rating,
     discount_percent,
+    image_urls,
   } as ClothingItem;
 }
 
@@ -227,10 +249,8 @@ export default function CreatorPage() {
     image_url: "",
     in_stock: true,
   });
-  const [formImageFile, setFormImageFile] = useState<File | null>(null);
-  const [formImagePreviewUrl, setFormImagePreviewUrl] = useState<string | null>(
-    null,
-  );
+  const [formImageFiles, setFormImageFiles] = useState<File[]>([]);
+  const [formImagePreviewUrls, setFormImagePreviewUrls] = useState<string[]>([]);
   const [saving, setSaving] = useState(false);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -247,23 +267,21 @@ export default function CreatorPage() {
     image_url: "",
     in_stock: true,
   });
-  const [editImageFile, setEditImageFile] = useState<File | null>(null);
-  const [
-    editImagePreviewUrl,
-    setEditImagePreviewUrl,
-  ] = useState<string | null>(null);
+  const [editImageFiles, setEditImageFiles] = useState<File[]>([]);
+  const [editImagePreviewUrls, setEditImagePreviewUrls] = useState<string[]>([]);
+  const [editExistingImageUrls, setEditExistingImageUrls] = useState<string[]>([]);
 
   useEffect(() => {
     return () => {
-      if (formImagePreviewUrl) URL.revokeObjectURL(formImagePreviewUrl);
+      formImagePreviewUrls.forEach((u) => URL.revokeObjectURL(u));
     };
-  }, [formImagePreviewUrl]);
+  }, [formImagePreviewUrls]);
 
   useEffect(() => {
     return () => {
-      if (editImagePreviewUrl) URL.revokeObjectURL(editImagePreviewUrl);
+      editImagePreviewUrls.forEach((u) => URL.revokeObjectURL(u));
     };
-  }, [editImagePreviewUrl]);
+  }, [editImagePreviewUrls]);
 
   // Last-resort watchdog: never leave the UI in an infinite loading state.
   // Must be declared BEFORE any early returns to keep hook order stable.
@@ -541,6 +559,17 @@ export default function CreatorPage() {
     return data.publicUrl;
   };
 
+  const uploadImagesToStorage = async (files: File[]) => {
+    const out: string[] = [];
+    for (const f of files) {
+      // sequential upload keeps ordering stable (1st image becomes primary)
+      // and reduces the chance of hitting rate limits
+      // eslint-disable-next-line no-await-in-loop
+      out.push(await uploadImageToStorage(f));
+    }
+    return out;
+  };
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -555,31 +584,37 @@ export default function CreatorPage() {
       const ratingNumber = normalizeRating(form.rating);
       const discountNumber = normalizeDiscountPercent(form.discount_percent);
 
-      let imageUrl: string | null = null;
-      if (formImageFile) {
-        imageUrl = supabaseEnabled
-          ? await uploadImageToStorage(formImageFile)
-          : await readFileAsDataUrl(formImageFile);
+      let imageUrls: string[] = [];
+      if (formImageFiles.length) {
+        imageUrls = supabaseEnabled
+          ? await uploadImagesToStorage(formImageFiles)
+          : await Promise.all(formImageFiles.map((f) => readFileAsDataUrl(f)));
       }
+      const primaryImageUrl: string | null = imageUrls[0] ?? null;
 
       if (!supabaseEnabled) {
         const prev = readLocalClothes();
         const nextId = prev.length
           ? Math.max(...prev.map((p) => p.id)) + 1
           : 1;
-        const nextItem: ClothingItem = {
-          id: nextId,
-          name: form.name,
-          description: encodeCategoryPrefix(
+        const descriptionWithMeta = appendImagesMeta(
+          encodeCategoryPrefix(
             form.description || null,
             form.category,
             form.subcategory,
             ratingNumber,
             discountNumber,
           ),
+          imageUrls,
+        );
+        const nextItem: ClothingItem = {
+          id: nextId,
+          name: form.name,
+          description: descriptionWithMeta,
           price: priceNumber,
           discount_percent: discountNumber,
-          image_url: imageUrl,
+          image_url: primaryImageUrl,
+          image_urls: imageUrls,
           in_stock: form.in_stock,
           category: form.category,
           subcategory: form.subcategory,
@@ -599,22 +634,25 @@ export default function CreatorPage() {
           image_url: "",
           in_stock: true,
         });
-        setFormImageFile(null);
-        setFormImagePreviewUrl(null);
+        setFormImageFiles([]);
+        setFormImagePreviewUrls([]);
         return;
       }
 
       const baseRow = {
         name: form.name,
-        description: encodeCategoryPrefix(
-          form.description || null,
-          form.category,
-          form.subcategory,
-          ratingNumber,
-          discountNumber,
+        description: appendImagesMeta(
+          encodeCategoryPrefix(
+            form.description || null,
+            form.category,
+            form.subcategory,
+            ratingNumber,
+            discountNumber,
+          ),
+          imageUrls,
         ),
         price: priceNumber,
-        image_url: imageUrl,
+        image_url: primaryImageUrl,
         in_stock: form.in_stock,
       };
 
@@ -624,6 +662,7 @@ export default function CreatorPage() {
       let insertRes = await supabase.from("clothes").insert({
         ...baseRow,
         discount_percent: discountNumber,
+        image_urls: imageUrls,
       });
       if (
         insertRes.error &&
@@ -632,6 +671,26 @@ export default function CreatorPage() {
         )
       ) {
         insertRes = await supabase.from("clothes").insert(baseRow);
+      }
+      if (
+        insertRes.error &&
+        /Could not find the 'image_urls' column of 'clothes'/i.test(
+          insertRes.error.message ?? "",
+        )
+      ) {
+        // fall back to only primary `image_url` + description meta
+        insertRes = await supabase.from("clothes").insert({
+          ...baseRow,
+          discount_percent: discountNumber,
+        });
+        if (
+          insertRes.error &&
+          /Could not find the 'discount_percent' column of 'clothes'/i.test(
+            insertRes.error.message ?? "",
+          )
+        ) {
+          insertRes = await supabase.from("clothes").insert(baseRow);
+        }
       }
 
       if (insertRes.error) {
@@ -651,8 +710,8 @@ export default function CreatorPage() {
         in_stock: true,
       });
       await loadItems();
-      setFormImageFile(null);
-      setFormImagePreviewUrl(null);
+      setFormImageFiles([]);
+      setFormImagePreviewUrls([]);
     } catch (err: any) {
       setError(err?.message ?? "Could not save item");
     } finally {
@@ -662,8 +721,17 @@ export default function CreatorPage() {
 
   const openEdit = (item: ClothingItem) => {
     setEditing(item);
-    setEditImageFile(null);
-    setEditImagePreviewUrl(null);
+    setEditImageFiles([]);
+    setEditImagePreviewUrls([]);
+    const existing = [
+      ...(item.image_urls ?? []),
+      ...(item.image_url ? [item.image_url] : []),
+      ...decodeImagesMeta(item.description),
+    ]
+      .map((u) => String(u || "").trim())
+      .filter(Boolean)
+      .filter((u, i, arr) => arr.indexOf(u) === i);
+    setEditExistingImageUrls(existing);
     setEditForm({
       name: item.name,
       description: item.description ?? "",
@@ -696,12 +764,18 @@ export default function CreatorPage() {
       const ratingNumber = normalizeRating(editForm.rating);
       const discountNumber = normalizeDiscountPercent(editForm.discount_percent);
 
-      let nextImageUrl: string | null = editForm.image_url || null;
-      if (editImageFile) {
-        nextImageUrl = supabaseEnabled
-          ? await uploadImageToStorage(editImageFile)
-          : await readFileAsDataUrl(editImageFile);
-      }
+      const hadNewImages = editImageFiles.length > 0;
+      const keepExisting = editExistingImageUrls.length
+        ? editExistingImageUrls
+        : editForm.image_url
+          ? [editForm.image_url]
+          : [];
+      const nextImageUrls = hadNewImages
+        ? (supabaseEnabled
+            ? await uploadImagesToStorage(editImageFiles)
+            : await Promise.all(editImageFiles.map((f) => readFileAsDataUrl(f))))
+        : keepExisting;
+      const nextPrimaryImageUrl: string | null = nextImageUrls[0] ?? null;
 
       if (!supabaseEnabled) {
         const prev = readLocalClothes();
@@ -710,16 +784,20 @@ export default function CreatorPage() {
             ? {
                 ...it,
                 name: editForm.name,
-                description: encodeCategoryPrefix(
-                  editForm.description || null,
-                  editForm.category,
-                  editForm.subcategory,
-                  ratingNumber,
-                  discountNumber,
+                description: appendImagesMeta(
+                  encodeCategoryPrefix(
+                    editForm.description || null,
+                    editForm.category,
+                    editForm.subcategory,
+                    ratingNumber,
+                    discountNumber,
+                  ),
+                  nextImageUrls,
                 ),
                 price: priceNumber,
                 discount_percent: discountNumber,
-                image_url: nextImageUrl,
+                image_url: nextPrimaryImageUrl,
+                image_urls: nextImageUrls,
                 in_stock: editForm.in_stock,
                 category: editForm.category,
                 subcategory: editForm.subcategory,
@@ -735,15 +813,18 @@ export default function CreatorPage() {
 
       const baseUpdate = {
         name: editForm.name,
-        description: encodeCategoryPrefix(
-          editForm.description || null,
-          editForm.category,
-          editForm.subcategory,
-          ratingNumber,
-          discountNumber,
+        description: appendImagesMeta(
+          encodeCategoryPrefix(
+            editForm.description || null,
+            editForm.category,
+            editForm.subcategory,
+            ratingNumber,
+            discountNumber,
+          ),
+          nextImageUrls,
         ),
         price: priceNumber,
-        image_url: nextImageUrl,
+        image_url: nextPrimaryImageUrl,
         in_stock: editForm.in_stock,
       };
 
@@ -752,6 +833,7 @@ export default function CreatorPage() {
         .update({
           ...baseUpdate,
           discount_percent: discountNumber,
+          image_urls: nextImageUrls,
         })
         .eq("id", editing.id);
 
@@ -763,8 +845,30 @@ export default function CreatorPage() {
       ) {
         updateRes = await supabase
           .from("clothes")
-          .update(baseUpdate)
+          .update({ ...baseUpdate, image_urls: nextImageUrls })
           .eq("id", editing.id);
+      }
+      if (
+        updateRes.error &&
+        /Could not find the 'image_urls' column of 'clothes'/i.test(
+          updateRes.error.message ?? "",
+        )
+      ) {
+        updateRes = await supabase
+          .from("clothes")
+          .update({ ...baseUpdate, discount_percent: discountNumber })
+          .eq("id", editing.id);
+        if (
+          updateRes.error &&
+          /Could not find the 'discount_percent' column of 'clothes'/i.test(
+            updateRes.error.message ?? "",
+          )
+        ) {
+          updateRes = await supabase
+            .from("clothes")
+            .update(baseUpdate)
+            .eq("id", editing.id);
+        }
       }
 
       if (updateRes.error) {
@@ -777,8 +881,8 @@ export default function CreatorPage() {
     } catch (err: any) {
       setError(err?.message ?? "Could not update item");
     } finally {
-      setEditImageFile(null);
-      setEditImagePreviewUrl(null);
+      setEditImageFiles([]);
+      setEditImagePreviewUrls([]);
       setSaving(false);
     }
   };
@@ -1091,30 +1195,34 @@ export default function CreatorPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-700">
-                    Upload image (optional)
+                    Upload images (optional)
                   </label>
                   <input
                     type="file"
                     accept="image/*"
+                    multiple
                     onChange={(e) => {
-                      const file = e.target.files?.[0] ?? null;
-                      if (formImagePreviewUrl) {
-                        URL.revokeObjectURL(formImagePreviewUrl);
-                      }
-                      setFormImageFile(file);
-                      setFormImagePreviewUrl(
-                        file ? URL.createObjectURL(file) : null,
+                      formImagePreviewUrls.forEach((u) => URL.revokeObjectURL(u));
+                      const files = Array.from(e.target.files ?? []);
+                      setFormImageFiles(files);
+                      setFormImagePreviewUrls(
+                        files.map((f) => URL.createObjectURL(f)),
                       );
                     }}
                     className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                   />
-                  {formImagePreviewUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={formImagePreviewUrl}
-                      alt="Selected"
-                      className="mt-2 h-24 w-full rounded-lg object-cover"
-                    />
+                  {formImagePreviewUrls.length ? (
+                    <div className="mt-2 grid grid-cols-4 gap-2">
+                      {formImagePreviewUrls.map((src, idx) => (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          key={`${src}-${idx}`}
+                          src={src}
+                          alt={`Selected ${idx + 1}`}
+                          className="h-16 w-full rounded-lg object-cover"
+                        />
+                      ))}
+                    </div>
                   ) : null}
                 </div>
                 <div className="flex items-center gap-2">
@@ -1374,41 +1482,50 @@ export default function CreatorPage() {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-zinc-700">
-                        Replace image (optional)
+                        Replace images (optional)
                       </label>
 
-                      {editForm.image_url ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={editForm.image_url}
-                          alt="Current"
-                          className="mt-2 h-24 w-full rounded-lg object-cover"
-                        />
+                      {editExistingImageUrls.length ? (
+                        <div className="mt-2 grid grid-cols-4 gap-2">
+                          {editExistingImageUrls.slice(0, 8).map((src, idx) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              key={`${src}-${idx}`}
+                              src={src}
+                              alt={`Current ${idx + 1}`}
+                              className="h-16 w-full rounded-lg object-cover"
+                            />
+                          ))}
+                        </div>
                       ) : null}
 
                       <input
                         type="file"
                         accept="image/*"
+                        multiple
                         onChange={(e) => {
-                          const file = e.target.files?.[0] ?? null;
-                          if (editImagePreviewUrl) {
-                            URL.revokeObjectURL(editImagePreviewUrl);
-                          }
-                          setEditImageFile(file);
-                          setEditImagePreviewUrl(
-                            file ? URL.createObjectURL(file) : null,
+                          editImagePreviewUrls.forEach((u) => URL.revokeObjectURL(u));
+                          const files = Array.from(e.target.files ?? []);
+                          setEditImageFiles(files);
+                          setEditImagePreviewUrls(
+                            files.map((f) => URL.createObjectURL(f)),
                           );
                         }}
                         className="mt-3 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                       />
 
-                      {editImagePreviewUrl ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={editImagePreviewUrl}
-                          alt="Selected"
-                          className="mt-2 h-24 w-full rounded-lg object-cover"
-                        />
+                      {editImagePreviewUrls.length ? (
+                        <div className="mt-2 grid grid-cols-4 gap-2">
+                          {editImagePreviewUrls.map((src, idx) => (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              key={`${src}-${idx}`}
+                              src={src}
+                              alt={`Selected ${idx + 1}`}
+                              className="h-16 w-full rounded-lg object-cover"
+                            />
+                          ))}
+                        </div>
                       ) : null}
                     </div>
 

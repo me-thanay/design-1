@@ -44,6 +44,12 @@ export function BestSellersMotionSlider({
   const [open, setOpen] = React.useState(false);
   const [activeIdx, setActiveIdx] = React.useState<number | null>(null);
   const active = activeIdx == null ? null : base[activeIdx] ?? null;
+  const [activeImageIdx, setActiveImageIdx] = React.useState(0);
+
+  React.useEffect(() => {
+    if (!open) return;
+    setActiveImageIdx(0);
+  }, [open, active?.product?.id]);
 
   if (base.length === 0) return null;
 
@@ -136,13 +142,62 @@ export function BestSellersMotionSlider({
                   <X className="h-5 w-5" />
                 </button>
                 <div className="relative h-[44vh] w-full sm:h-full">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={active.imageSrc}
-                    alt={active.product.name}
-                    className="h-full w-full object-contain bg-neutral-50"
-                    decoding="async"
-                  />
+                  {(() => {
+                    const images = [
+                      ...(active.product.images ?? []),
+                      active.imageSrc,
+                      ...(active.product.image ? [active.product.image] : []),
+                    ]
+                      .map((u) => String(u || "").trim())
+                      .filter(Boolean)
+                      .filter((u, i, arr) => arr.indexOf(u) === i);
+                    const chosen =
+                      images[activeImageIdx] ?? images[0] ?? active.imageSrc;
+                    return (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={chosen}
+                          alt={active.product.name}
+                          className="h-full w-full object-contain bg-neutral-50"
+                          decoding="async"
+                        />
+                        {images.length > 1 ? (
+                          <div className="no-scrollbar absolute bottom-0 left-0 right-0 flex gap-2 overflow-x-auto bg-gradient-to-t from-black/35 via-black/10 to-transparent p-3">
+                            {images.map((src, idx) => (
+                              <button
+                                key={`${src}-${idx}`}
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setActiveImageIdx(idx);
+                                }}
+                                className={[
+                                  "h-14 w-14 shrink-0 overflow-hidden rounded-lg ring-1 transition",
+                                  idx === activeImageIdx
+                                    ? "ring-white shadow-md"
+                                    : "ring-white/40 hover:ring-white/70",
+                                ].join(" ")}
+                                aria-label={`View image ${idx + 1}`}
+                                title={`Image ${idx + 1}`}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={src}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="h-full w-full object-cover bg-white/20"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </>
+                    );
+                  })()}
                   <div className="pointer-events-none absolute inset-0 ring-1 ring-black/5 sm:rounded-l-xl" />
                 </div>
               </div>
@@ -196,7 +251,19 @@ export function BestSellersMotionSlider({
                 <div className="mt-6">
                   <ProductCartControl
                     product={active.product}
-                    image={active.imageSrc}
+                    image={
+                      (() => {
+                        const images = [
+                          ...(active.product.images ?? []),
+                          active.imageSrc,
+                          ...(active.product.image ? [active.product.image] : []),
+                        ]
+                          .map((u) => String(u || "").trim())
+                          .filter(Boolean)
+                          .filter((u, i, arr) => arr.indexOf(u) === i);
+                        return images[activeImageIdx] ?? images[0] ?? active.imageSrc;
+                      })()
+                    }
                     tone="card"
                   />
                 </div>
