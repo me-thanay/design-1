@@ -4,6 +4,7 @@ import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { HeroLanding } from "@/components/ui/hero-1";
 import { CategorySidebar } from "@/components/categories/category-sidebar";
 import { CategorySubcategoryProductSections } from "@/components/categories/category-subcategory-shops";
+import { CategoryBestSellerTestimonials } from "@/components/categories/category-best-seller-testimonials";
 import type { CategoryCarouselSlide } from "@/components/categories/category-media-carousel";
 import { CATEGORY_HERO_VIDEO_SRC } from "@/lib/category-hero-video";
 import type { ClothingCategory } from "@/lib/products";
@@ -363,6 +364,11 @@ export default async function CategoryPage({
         backgroundImageFit="cover"
         className={category === "kurtis" ? "min-h-[82svh] sm:min-h-[56svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
       />
+
+      {/* Top-rated strip (renamed so it doesn't duplicate "Best sellers") */}
+      <section id="top-rated" className="mx-auto w-full max-w-6xl px-4 pb-10 sm:pb-12 scroll-mt-24">
+        <CategoryBestSellerTestimonials category={category} categoryTitle={cfg.title} limit={6} />
+      </section>
 
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:py-12">
         <div className="grid gap-5 lg:gap-6 lg:grid-cols-[320px_1fr]">

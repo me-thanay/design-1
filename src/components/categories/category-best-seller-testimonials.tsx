@@ -66,13 +66,21 @@ type Props = {
   category: ClothingCategory;
   categoryTitle: string;
   limit?: number;
+  title?: string;
+  subtitle?: string;
 };
 
 /**
  * Loads highest-rated in-stock products for the category and renders them as
  * testimonial-style cards (image + quote + name + price/rating line).
  */
-export function CategoryBestSellerTestimonials({ category, categoryTitle, limit = 6 }: Props) {
+export function CategoryBestSellerTestimonials({
+  category,
+  categoryTitle,
+  limit = 6,
+  title,
+  subtitle,
+}: Props) {
   const [items, setItems] = React.useState<ReturnType<typeof productToGalleryItem>[]>([]);
   const [loading, setLoading] = React.useState(true);
 
@@ -123,7 +131,9 @@ export function CategoryBestSellerTestimonials({ category, categoryTitle, limit 
   if (items.length === 0) {
     return (
       <section className="w-full rounded-2xl border border-dashed border-black/15 bg-white/50 py-14 text-center">
-        <h2 className="text-2xl font-semibold text-foreground">Best sellers · {categoryTitle}</h2>
+        <h2 className="text-2xl font-semibold text-foreground">
+          {title ?? `Top rated · ${categoryTitle}`}
+        </h2>
         <p className="mx-auto mt-3 max-w-xl text-muted-foreground">
           No products with ratings in this category yet. Add in-stock items and set ratings in the Creator
           dashboard to showcase them here.
@@ -135,8 +145,10 @@ export function CategoryBestSellerTestimonials({ category, categoryTitle, limit 
   return (
     <div className="w-full">
       <ImageGallery
-        title={`Best sellers · ${categoryTitle}`}
-        subtitle="Top-rated pieces in this category — price and rating included."
+        title={title ?? `Top rated · ${categoryTitle}`}
+        subtitle={
+          subtitle ?? "Highest-rated picks in this category — price and rating included."
+        }
         items={items}
         className="py-0"
         containerClassName="w-full px-0"
