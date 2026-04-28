@@ -10,6 +10,7 @@ import {
   CLOTHING_CATEGORIES,
   CLOTHING_SUBCATEGORIES as SUBCATEGORIES,
   normalizeSubcategory,
+  stripMeta,
   type ClothingCategory,
 } from "@/lib/products";
 import { appendImagesMeta, decodeImagesMeta } from "@/lib/products";
@@ -44,23 +45,6 @@ function inferCategoryFromText(text: string | null | undefined) {
   if (t.includes("blouse")) return "blouses";
   if (t.includes("gown")) return "gowns";
   return "sarees";
-}
-
-function stripCategoryPrefix(description: string | null | undefined) {
-  if (!description) return null;
-  const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
-  );
-  if (withMeta) {
-    const cleanedMeta = withMeta[5]?.trim();
-    return cleanedMeta ? cleanedMeta : null;
-  }
-  const match = description.match(
-    /^__category__:(sarees|kurtis|blouses|gowns)__([\s\S]*)$/i,
-  );
-  if (!match) return description;
-  const cleaned = match[2]?.trim();
-  return cleaned ? cleaned : null;
 }
 
 function decodeCategory(description: string | null | undefined) {
@@ -131,7 +115,7 @@ function decodeDiscountPercent(description: string | null | undefined) {
 
 function normalizeClothingItem(raw: any): ClothingItem {
   const rawDescription: string | null = raw?.description ?? null;
-  const cleanedDescription = stripCategoryPrefix(rawDescription);
+  const cleanedDescription = stripMeta(rawDescription);
   const category = raw?.category ?? decodeCategory(rawDescription);
   const subcategory = normalizeSubcategory(
     category,
@@ -1739,6 +1723,17 @@ function CreatorItemCard({
   const reduceMotion = useReducedMotion();
   const [priceInput, setPriceInput] = useState(item.price.toString());
   const [isUpdatingPrice, setIsUpdatingPrice] = useState(false);
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+
+  const imageUrls = [
+    ...(item.image_urls ?? []),
+    ...(item.image_url ? [item.image_url] : []),
+  ]
+    .map((u) => String(u || "").trim())
+    .filter(Boolean)
+    .filter((u, i, arr) => arr.indexOf(u) === i);
+
+  const activeImage = imageUrls[activeImageIdx] ?? imageUrls[0] ?? null;
 
   const handleBlur = async () => {
     const newPrice = Number(priceInput);
@@ -1754,13 +1749,34 @@ function CreatorItemCard({
       whileHover={reduceMotion ? undefined : { y: -4, transition: { type: "spring", stiffness: 400, damping: 28 } }}
     >
       <div className="flex items-start gap-3">
-        {item.image_url ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={item.image_url}
-            alt={item.name}
-            className="h-20 w-20 rounded-lg object-cover transition-transform duration-500 hover:scale-105"
-          />
+        {activeImage ? (
+          <div className="shrink-0 space-y-2">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={activeImage}
+              alt={item.name}
+              className="h-20 w-20 rounded-lg object-cover transition-transform duration-500 hover:scale-105"
+            />
+            {imageUrls.length > 1 ? (
+              <div className="flex max-w-20 gap-1 overflow-x-auto">
+                {imageUrls.map((src, idx) => (
+                  <button
+                    key={`${src}-${idx}`}
+                    type="button"
+                    onClick={() => setActiveImageIdx(idx)}
+                    className={[
+                      "h-4 w-4 shrink-0 rounded-full border transition",
+                      idx === activeImageIdx
+                        ? "border-zinc-900 bg-zinc-900"
+                        : "border-zinc-300 bg-white hover:border-zinc-500",
+                    ].join(" ")}
+                    aria-label={`Show image ${idx + 1}`}
+                    title={`Image ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            ) : null}
+          </div>
         ) : (
           <div className="flex h-20 w-20 items-center justify-center rounded-lg bg-zinc-100 text-xs text-zinc-400">
             No image
