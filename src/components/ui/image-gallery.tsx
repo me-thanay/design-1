@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { ProductCartControl } from "@/components/cart/product-cart-control";
 import type { Product } from "@/lib/products";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import * as React from "react";
 
 export type ImageGalleryItem = {
@@ -136,124 +136,153 @@ export function ImageGallery({
                   }}
                 >
                   <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100">
-                {it.imageFit === "contain" ? (
-                  <>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={activeSrc}
-                      alt=""
-                      aria-hidden="true"
-                      className="absolute inset-0 h-full w-full object-cover scale-[1.08] blur-2xl opacity-60"
-                      style={{ objectPosition: it.imagePosition ?? "50% 18%" }}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <div className="absolute inset-0 bg-white/25" aria-hidden="true" />
-                  </>
-                ) : null}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={activeSrc}
-                  alt={it.title}
-                  className={[
-                    "h-full w-full transition-transform duration-700 ease-out group-hover:scale-[1.075]",
-                    it.imageFit === "contain" ? "object-contain" : "object-cover",
-                    "sm:object-center",
-                  ].join(" ")}
-                  style={{ objectPosition: it.imagePosition ?? "50% 18%" }}
-                  loading="lazy"
-                  decoding="async"
-                  onError={(e) => {
-                    const img = e.currentTarget as HTMLImageElement;
-                    if (img.dataset.fallbackApplied) return;
-                    img.dataset.fallbackApplied = "1";
-                    img.src = fallbackSrc;
-                  }}
-                />
-                {imageSources.length > 1 ? (
-                  <div className="absolute inset-x-0 bottom-3 z-[1] flex justify-center gap-1.5 px-3">
-                    {imageSources.map((src, imageIdx) => (
-                      <button
-                        key={`${src}-${imageIdx}`}
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setActiveImageIndexes((prev) => ({
-                            ...prev,
-                            [idx]: imageIdx,
-                          }));
+                    {it.imageFit === "contain" ? (
+                      <>
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={activeSrc}
+                          alt=""
+                          aria-hidden="true"
+                          className="absolute inset-0 h-full w-full object-cover scale-[1.08] blur-2xl opacity-60"
+                          style={{ objectPosition: it.imagePosition ?? "50% 18%" }}
+                          loading="lazy"
+                          decoding="async"
+                        />
+                        <div className="absolute inset-0 bg-white/25" aria-hidden="true" />
+                      </>
+                    ) : null}
+                    <AnimatePresence mode="wait">
+                      <motion.img
+                        key={activeSrc}
+                        src={activeSrc}
+                        alt={it.title}
+                        className={[
+                          "absolute inset-0 h-full w-full transition-transform duration-700 ease-out group-hover:scale-[1.075]",
+                          it.imageFit === "contain" ? "object-contain" : "object-cover",
+                          "sm:object-center",
+                        ].join(" ")}
+                        style={{ objectPosition: it.imagePosition ?? "50% 18%" }}
+                        loading="lazy"
+                        decoding="async"
+                        initial={{ opacity: 0, scale: 1.04, filter: "blur(4px)" }}
+                        animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                        exit={{ opacity: 0, scale: 1.02, filter: "blur(3px)" }}
+                        transition={{ duration: 0.28, ease: "easeOut" }}
+                        onError={(e) => {
+                          const img = e.currentTarget as HTMLImageElement;
+                          if (img.dataset.fallbackApplied) return;
+                          img.dataset.fallbackApplied = "1";
+                          img.src = fallbackSrc;
                         }}
-                        className={cn(
-                          "h-2.5 w-2.5 rounded-full border border-white/70 transition",
-                          imageIdx === activeImageIdx
-                            ? "bg-white shadow-sm"
-                            : "bg-white/35 hover:bg-white/60",
-                        )}
-                        aria-label={`Show image ${imageIdx + 1}`}
-                        title={`Image ${imageIdx + 1}`}
                       />
-                    ))}
-                  </div>
-                ) : null}
-                <ProgressiveBlur
-                  className="pointer-events-none absolute bottom-0 left-0 h-[70%] w-full"
-                  blurIntensity={0.6}
-                  animate={hovered === idx ? "visible" : "hidden"}
-                  variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
-                  transition={{ duration: 0.2, ease: "easeOut" }}
-                />
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                />
-                <div
-                  aria-hidden="true"
-                  className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                  style={{
-                    background:
-                      "radial-gradient(60% 55% at 50% 35%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 60%)",
-                  }}
-                />
+                    </AnimatePresence>
+                    {imageSources.length > 1 ? (
+                      <>
+                        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/45 via-black/15 to-transparent" />
+                        <div className="absolute inset-x-0 bottom-3 z-[1] px-3">
+                          <div className="no-scrollbar flex items-center justify-center gap-2 overflow-x-auto pb-1">
+                            {imageSources.map((src, imageIdx) => (
+                              <button
+                                key={`${src}-${imageIdx}`}
+                                type="button"
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                  setActiveImageIndexes((prev) => ({
+                                    ...prev,
+                                    [idx]: imageIdx,
+                                  }));
+                                }}
+                                className={cn(
+                                  "relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border transition duration-200",
+                                  imageIdx === activeImageIdx
+                                    ? "scale-105 border-white shadow-lg ring-2 ring-white/70"
+                                    : "border-white/40 opacity-80 hover:opacity-100 hover:border-white/70",
+                                )}
+                                aria-label={`Show image ${imageIdx + 1}`}
+                                title={`Image ${imageIdx + 1}`}
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={src}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="h-full w-full object-cover"
+                                  loading="lazy"
+                                  decoding="async"
+                                />
+                                {imageIdx !== activeImageIdx ? (
+                                  <div className="absolute inset-0 bg-black/20" aria-hidden="true" />
+                                ) : null}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    ) : null}
+                    <ProgressiveBlur
+                      className="pointer-events-none absolute bottom-0 left-0 h-[70%] w-full"
+                      blurIntensity={0.6}
+                      animate={hovered === idx ? "visible" : "hidden"}
+                      variants={{ hidden: { opacity: 0 }, visible: { opacity: 1 } }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    />
+                    <div
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      style={{
+                        background:
+                          "radial-gradient(60% 55% at 50% 35%, rgba(255,255,255,0.10) 0%, rgba(255,255,255,0) 60%)",
+                      }}
+                    />
 
-                {/* Mobile preview overlay (tap-to-toggle). */}
-                {isTouch ? (
-                  <motion.div
-                    className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white"
-                    animate={hovered === idx ? "visible" : "hidden"}
-                    variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                  >
-                    <div className="space-y-2">
-                      <div className="inline-flex max-w-full rounded-lg bg-white/10 px-3 py-1 text-sm font-bold text-white ring-1 ring-white/20 backdrop-blur">
-                        {it.title}
-                      </div>
-                      {it.subtitle ? (
-                        <p className="line-clamp-2 text-sm text-white/85">{it.subtitle}</p>
-                      ) : null}
-                      {(it.priceLabel || it.ratingLabel) ? (
-                        <div className="flex flex-wrap items-center gap-2">
-                          {it.priceLabel ? (
-                            <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow">
-                              {it.priceLabel}
-                            </span>
+                    {/* Mobile preview overlay (tap-to-toggle). */}
+                    {isTouch ? (
+                      <motion.div
+                        className="pointer-events-none absolute inset-x-0 bottom-0 p-4 text-white"
+                        animate={hovered === idx ? "visible" : "hidden"}
+                        variants={{ hidden: { opacity: 0, y: 10 }, visible: { opacity: 1, y: 0 } }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                      >
+                        <div className="space-y-2">
+                          <div className="inline-flex max-w-full rounded-lg bg-white/10 px-3 py-1 text-sm font-bold text-white ring-1 ring-white/20 backdrop-blur">
+                            {it.title}
+                          </div>
+                          {it.subtitle ? (
+                            <p className="line-clamp-2 text-sm text-white/85">{it.subtitle}</p>
                           ) : null}
-                          {it.ratingLabel ? (
-                            <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur">
-                              {it.ratingLabel}
-                            </span>
+                          {(it.priceLabel || it.ratingLabel) ? (
+                            <div className="flex flex-wrap items-center gap-2">
+                              {it.priceLabel ? (
+                                <span className="inline-flex rounded-full bg-white px-3 py-1 text-xs font-bold text-neutral-900 shadow">
+                                  {it.priceLabel}
+                                </span>
+                              ) : null}
+                              {it.ratingLabel ? (
+                                <span className="inline-flex rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur">
+                                  {it.ratingLabel}
+                                </span>
+                              ) : null}
+                            </div>
                           ) : null}
                         </div>
-                      ) : null}
-                    </div>
-                  </motion.div>
-                ) : null}
+                      </motion.div>
+                    ) : null}
 
-                {it.badge ? (
-                  <div className="absolute left-3 top-3 inline-flex items-center rounded-full bg-[#c9a227] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-900 shadow-sm ring-1 ring-black/10">
-                    {it.badge}
-                  </div>
-                ) : null}
+                    {it.badge ? (
+                      <motion.div
+                        initial={{ opacity: 0, y: -8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.25, ease: "easeOut" }}
+                        className="absolute left-3 top-3 inline-flex items-center rounded-full bg-[#c9a227] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-900 shadow-sm ring-1 ring-black/10"
+                      >
+                        {it.badge}
+                      </motion.div>
+                    ) : null}
                   </div>
 
                   <div className="p-4 sm:p-5">
