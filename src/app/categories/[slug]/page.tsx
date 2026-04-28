@@ -4,7 +4,6 @@ import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { HeroLanding } from "@/components/ui/hero-1";
 import { CategorySidebar } from "@/components/categories/category-sidebar";
 import { CategorySubcategoryProductSections } from "@/components/categories/category-subcategory-shops";
-import { CategoryBestSellerTestimonials } from "@/components/categories/category-best-seller-testimonials";
 import type { CategoryCarouselSlide } from "@/components/categories/category-media-carousel";
 import { CATEGORY_HERO_VIDEO_SRC } from "@/lib/category-hero-video";
 import type { ClothingCategory } from "@/lib/products";
@@ -353,7 +352,7 @@ export default async function CategoryPage({
           title: cfg.title,
           description: cfg.subtitle,
           callToActions: [
-            { text: "SHOP NOW", href: "#all-products", variant: "primary" },
+            { text: "SHOP NOW", href: "#best-sellers", variant: "primary" },
             { text: "Explore styles", href: "#shop-by-type", variant: "secondary" },
           ],
         })}
@@ -365,11 +364,6 @@ export default async function CategoryPage({
         className={category === "kurtis" ? "min-h-[82svh] sm:min-h-[56svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
       />
 
-      {/* No ScrollRevealGroup here: fade-in starts at opacity 0 and can block hero video autoplay in every category. */}
-      <section id="best-sellers" className="mx-auto w-full max-w-6xl px-4 pb-10 sm:pb-12 scroll-mt-24">
-        <CategoryBestSellerTestimonials category={category} categoryTitle={cfg.title} limit={6} />
-      </section>
-
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:py-12">
         <div className="grid gap-5 lg:gap-6 lg:grid-cols-[320px_1fr]">
           <div>
@@ -377,18 +371,19 @@ export default async function CategoryPage({
           </div>
           <div>
             <ScrollReveal delay={0.06} y={26} variant="fade-up" duration={0.66} className="mt-5 sm:mt-8">
-              <div id="all-products">
+              <div id="best-sellers" className="scroll-mt-24">
                 <ProductsGrid
-                  title={`All ${cfg.title}`}
+                  title={`Best sellers · ${cfg.title}`}
                   subtitle={
                     selectedSubcategory
                       ? `Filtered to “${selectedSubcategory}”.`
-                      : "Everything in this category from the Creator dashboard — use the sections below to jump by fabric or style."
+                      : "Top-rated pieces in this category — price and rating included."
                   }
                   category={category}
                   subcategory={selectedSubcategory ?? undefined}
                   limit={12}
                   variant="gallery"
+                  sortMode="best"
                 />
               </div>
             </ScrollReveal>

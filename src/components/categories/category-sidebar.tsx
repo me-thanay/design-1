@@ -107,7 +107,7 @@ function SidebarInner({
     const hit = nav?.items?.find((x) => x.name.toLowerCase() === s.toLowerCase());
     return {
       name: s,
-      href: `${basePath}?sub=${encodeURIComponent(s)}#all-products`,
+      href: `${basePath}?sub=${encodeURIComponent(s)}#best-sellers`,
       imageSrc: hit?.imageSrc ?? nav?.featuredImageSrc ?? null,
     };
   });
@@ -125,13 +125,6 @@ function SidebarInner({
             className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
           >
             Best sellers
-          </Link>
-          <Link
-            href={`${basePath}#all-products`}
-            onClick={onNavigate}
-            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
-          >
-            All products
           </Link>
         </div>
       </div>

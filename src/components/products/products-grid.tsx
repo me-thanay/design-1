@@ -20,6 +20,8 @@ type ProductsGridProps = {
   filterQuery?: string;
   /** Exact match on normalized subcategory (case-insensitive), e.g. Creator dashboard tag. */
   subcategory?: string;
+  /** Sorting mode (defaults to latest). */
+  sortMode?: "latest" | "best";
   limit?: number;
   variant?: "grid" | "row" | "gallery";
   className?: string;
@@ -88,6 +90,7 @@ export function ProductsGrid({
   category,
   filterQuery,
   subcategory,
+  sortMode = "latest",
   limit = 6,
   variant = "grid",
   className,
@@ -130,13 +133,22 @@ export function ProductsGrid({
           rows = (data as any[]) ?? [];
         }
 
-        const normalized = rows
+        let normalized = rows
           .map((r) => normalizeProductRow(r))
           .filter((p) => p.inStock)
           .filter((p) => (category ? p.category === category : true))
           .filter((p) => matchesSubcategory(p, subcategory))
-          .filter((p) => (filterQuery ? matchesFilter(p, filterQuery) : true))
-          .slice(0, Math.max(0, limit));
+          .filter((p) => (filterQuery ? matchesFilter(p, filterQuery) : true));
+
+        if (sortMode === "best") {
+          normalized = [...normalized].sort((a, b) => {
+            const rd = (Number(b.rating) || 0) - (Number(a.rating) || 0);
+            if (Math.abs(rd) > 0.001) return rd;
+            return (Number(b.price) || 0) - (Number(a.price) || 0);
+          });
+        }
+
+        normalized = normalized.slice(0, Math.max(0, limit));
 
         setItems(normalized);
       } catch (e: any) {
@@ -148,7 +160,7 @@ export function ProductsGrid({
     };
 
     load();
-  }, [category, limit, filterQuery, subcategory]);
+  }, [category, limit, filterQuery, subcategory, sortMode]);
 
   const openDetails = (p: Product) => {
     setActiveProduct(p);
