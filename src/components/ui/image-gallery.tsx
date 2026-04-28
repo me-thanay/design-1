@@ -9,6 +9,7 @@ import * as React from "react";
 
 export type ImageGalleryItem = {
   src: string;
+  imageSources?: string[];
   title: string;
   subtitle?: string;
   badge?: string;
@@ -52,6 +53,9 @@ export function ImageGallery({
   const [hovered, setHovered] = React.useState<number | null>(null);
   const fallbackSrc = "/stock_images/banarasi%20silk.jpeg";
   const [isTouch, setIsTouch] = React.useState(false);
+  const [activeImageIndexes, setActiveImageIndexes] = React.useState<Record<number, number>>(
+    {},
+  );
 
   React.useEffect(() => {
     if (typeof window === "undefined") return;
@@ -92,39 +96,51 @@ export function ImageGallery({
         {/* Horizontal scroll keeps the layout stable (no reflow on hover). */}
         <div className={cn("no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mx-0 sm:px-0 sm:gap-6 snap-x snap-mandatory", Boolean(title?.trim?.() || subtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0")}>
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
-            <motion.article
-              key={`${it.title}-${idx}`}
-              className={cn(
-                "group relative shrink-0 overflow-hidden rounded-3xl bg-white",
-                "w-[min(78vw,260px)] sm:w-[260px] md:w-[280px]",
-                "ring-1 ring-black/10 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]",
-                "transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.45)]",
-                "snap-start",
-              )}
-              onHoverStart={() => setHovered(idx)}
-              onHoverEnd={() => setHovered((v) => (v === idx ? null : v))}
-              onClick={() => {
-                if (!isTouch) return;
-                setHovered((v) => (v === idx ? null : idx));
-              }}
-              whileTap={isTouch ? { scale: 0.98 } : undefined}
-              role={isTouch ? "button" : undefined}
-              aria-pressed={isTouch ? hovered === idx : undefined}
-              tabIndex={isTouch ? 0 : -1}
-              onKeyDown={(e) => {
-                if (!isTouch) return;
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  setHovered((v) => (v === idx ? null : idx));
-                }
-              }}
-            >
-              <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100">
+            (() => {
+              const imageSources = [
+                ...(it.imageSources ?? []),
+                it.src,
+              ]
+                .map((src) => String(src || "").trim())
+                .filter(Boolean)
+                .filter((src, imageIdx, arr) => arr.indexOf(src) === imageIdx);
+              const activeImageIdx = activeImageIndexes[idx] ?? 0;
+              const activeSrc =
+                imageSources[activeImageIdx] ?? imageSources[0] ?? it.src;
+              return (
+                <motion.article
+                  key={`${it.title}-${idx}`}
+                  className={cn(
+                    "group relative shrink-0 overflow-hidden rounded-3xl bg-white",
+                    "w-[min(78vw,260px)] sm:w-[260px] md:w-[280px]",
+                    "ring-1 ring-black/10 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]",
+                    "transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.45)]",
+                    "snap-start",
+                  )}
+                  onHoverStart={() => setHovered(idx)}
+                  onHoverEnd={() => setHovered((v) => (v === idx ? null : v))}
+                  onClick={() => {
+                    if (!isTouch) return;
+                    setHovered((v) => (v === idx ? null : idx));
+                  }}
+                  whileTap={isTouch ? { scale: 0.98 } : undefined}
+                  role={isTouch ? "button" : undefined}
+                  aria-pressed={isTouch ? hovered === idx : undefined}
+                  tabIndex={isTouch ? 0 : -1}
+                  onKeyDown={(e) => {
+                    if (!isTouch) return;
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setHovered((v) => (v === idx ? null : idx));
+                    }
+                  }}
+                >
+                  <div className="relative aspect-[4/5] w-full overflow-hidden bg-neutral-100">
                 {it.imageFit === "contain" ? (
                   <>
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
-                      src={it.src}
+                      src={activeSrc}
                       alt=""
                       aria-hidden="true"
                       className="absolute inset-0 h-full w-full object-cover scale-[1.08] blur-2xl opacity-60"
@@ -137,7 +153,7 @@ export function ImageGallery({
                 ) : null}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={it.src}
+                  src={activeSrc}
                   alt={it.title}
                   className={[
                     "h-full w-full transition-transform duration-700 ease-out group-hover:scale-[1.075]",
@@ -154,6 +170,32 @@ export function ImageGallery({
                     img.src = fallbackSrc;
                   }}
                 />
+                {imageSources.length > 1 ? (
+                  <div className="absolute inset-x-0 bottom-3 z-[1] flex justify-center gap-1.5 px-3">
+                    {imageSources.map((src, imageIdx) => (
+                      <button
+                        key={`${src}-${imageIdx}`}
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setActiveImageIndexes((prev) => ({
+                            ...prev,
+                            [idx]: imageIdx,
+                          }));
+                        }}
+                        className={cn(
+                          "h-2.5 w-2.5 rounded-full border border-white/70 transition",
+                          imageIdx === activeImageIdx
+                            ? "bg-white shadow-sm"
+                            : "bg-white/35 hover:bg-white/60",
+                        )}
+                        aria-label={`Show image ${imageIdx + 1}`}
+                        title={`Image ${imageIdx + 1}`}
+                      />
+                    ))}
+                  </div>
+                ) : null}
                 <ProgressiveBlur
                   className="pointer-events-none absolute bottom-0 left-0 h-[70%] w-full"
                   blurIntensity={0.6}
@@ -212,58 +254,60 @@ export function ImageGallery({
                     {it.badge}
                   </div>
                 ) : null}
-              </div>
-
-              <div className="p-4 sm:p-5">
-                <div className="min-w-0">
-                  <h3 className="truncate font-serif text-base font-bold text-neutral-900">{it.title}</h3>
-                  {it.subtitle ? (
-                    <p className="mt-1 line-clamp-2 text-sm text-neutral-600">{it.subtitle}</p>
-                  ) : null}
-                </div>
-
-                {(it.priceLabel || it.ratingLabel) ? (
-                  <div className="mt-3 flex flex-wrap items-center gap-2">
-                    {it.priceLabel ? (
-                      <span className="inline-flex rounded-full bg-neutral-900 px-3 py-1 text-xs font-bold text-white shadow-sm">
-                        {it.priceLabel}
-                      </span>
-                    ) : null}
-                    {it.ratingLabel ? (
-                      <span className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-800 ring-1 ring-black/5 shadow-[0_6px_16px_-12px_rgba(0,0,0,0.35)]">
-                        {it.ratingLabel}
-                      </span>
-                    ) : null}
                   </div>
-                ) : null}
 
-                {it.product ? (
-                  <div className="mt-3 space-y-2">
-                    {onItemClick ? (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onItemClick(it);
-                        }}
-                        className="w-full rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50"
-                      >
-                        View details
-                      </button>
-                    ) : null}
-                    <div onClick={(e) => e.stopPropagation()}>
-                      <ProductCartControl
-                        product={it.product}
-                        image={it.cartImage ?? it.src}
-                        tone="card"
-                        compact
-                      />
+                  <div className="p-4 sm:p-5">
+                    <div className="min-w-0">
+                      <h3 className="truncate font-serif text-base font-bold text-neutral-900">{it.title}</h3>
+                      {it.subtitle ? (
+                        <p className="mt-1 line-clamp-2 text-sm text-neutral-600">{it.subtitle}</p>
+                      ) : null}
                     </div>
+
+                    {(it.priceLabel || it.ratingLabel) ? (
+                      <div className="mt-3 flex flex-wrap items-center gap-2">
+                        {it.priceLabel ? (
+                          <span className="inline-flex rounded-full bg-neutral-900 px-3 py-1 text-xs font-bold text-white shadow-sm">
+                            {it.priceLabel}
+                          </span>
+                        ) : null}
+                        {it.ratingLabel ? (
+                          <span className="inline-flex rounded-full bg-neutral-100 px-3 py-1 text-xs font-semibold text-neutral-800 ring-1 ring-black/5 shadow-[0_6px_16px_-12px_rgba(0,0,0,0.35)]">
+                            {it.ratingLabel}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+
+                    {it.product ? (
+                      <div className="mt-3 space-y-2">
+                        {onItemClick ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onItemClick(it);
+                            }}
+                            className="w-full rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50"
+                          >
+                            View details
+                          </button>
+                        ) : null}
+                        <div onClick={(e) => e.stopPropagation()}>
+                          <ProductCartControl
+                            product={it.product}
+                            image={imageSources[activeImageIdx] ?? it.cartImage ?? it.src}
+                            tone="card"
+                            compact
+                          />
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
-                ) : null}
-              </div>
-            </motion.article>
+                </motion.article>
+              );
+            })()
           ))}
         </div>
       </div>

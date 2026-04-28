@@ -204,6 +204,10 @@ export function ProductsGrid({
                 : formatInr(p.price);
             return {
               src: img,
+              imageSources:
+                p.images && p.images.length
+                  ? p.images
+                  : [img],
               title: p.name,
               subtitle: p.subcategory ? p.subcategory : p.category,
               badge:
