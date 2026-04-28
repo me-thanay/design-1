@@ -59,20 +59,44 @@ function subcategoryHeroPosition(category: ClothingCategory, src: string) {
 /** Pill links only — same subcategories as Creator admin (jumps to `#shop-…` sections). */
 export function CategorySubcategoryPills({
   category,
+  selectedSubcategory,
   className = "",
 }: {
   category: ClothingCategory;
+  selectedSubcategory?: string | null;
   className?: string;
 }) {
   const subs = CLOTHING_SUBCATEGORIES[category];
 
   return (
     <nav aria-label="Jump to subcategory" className={cn("flex flex-wrap gap-2", className)}>
+      <Link
+        href="?"
+        className={cn(
+          "font-serif rounded-full border px-3.5 py-1.5 text-xs font-medium shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm",
+          !selectedSubcategory
+            ? "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
+            : "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50",
+        )}
+        aria-label="Show all subcategories"
+      >
+        All
+      </Link>
       {subs.map((sub) => (
         <Link
           key={sub}
-          href={`#${subAnchorId(sub)}`}
-          className="font-serif rounded-full border border-neutral-300 bg-white px-3.5 py-1.5 text-xs font-medium text-neutral-900 shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:bg-neutral-50 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm"
+          href={`?sub=${encodeURIComponent(sub)}`}
+          className={cn(
+            "font-serif rounded-full border px-3.5 py-1.5 text-xs font-medium shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm",
+            selectedSubcategory?.toLowerCase() === sub.toLowerCase()
+              ? "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
+              : "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50",
+          )}
+          aria-current={
+            selectedSubcategory?.toLowerCase() === sub.toLowerCase()
+              ? "page"
+              : undefined
+          }
         >
           {titleCaseLine(sub)}
         </Link>
@@ -98,10 +122,12 @@ export function CategoryPageSpotlight({
 export function CategorySubcategoryIntro({
   category,
   categoryTitle,
+  selectedSubcategory,
   className = "",
 }: {
   category: ClothingCategory;
   categoryTitle: string;
+  selectedSubcategory?: string | null;
   className?: string;
 }) {
   return (
@@ -119,7 +145,11 @@ export function CategorySubcategoryIntro({
             {categoryTitle}.
           </p>
         </div>
-        <CategorySubcategoryPills category={category} className="mt-6" />
+        <CategorySubcategoryPills
+          category={category}
+          selectedSubcategory={selectedSubcategory}
+          className="mt-6"
+        />
       </ScrollReveal>
     </div>
   );
@@ -128,14 +158,22 @@ export function CategorySubcategoryIntro({
 /** Per-subcategory product galleries (anchor targets for `CategorySubcategoryPills`). */
 export function CategorySubcategoryProductSections({
   category,
+  selectedSubcategory,
 }: {
   category: ClothingCategory;
+  selectedSubcategory?: string | null;
 }) {
   const subs = CLOTHING_SUBCATEGORIES[category];
+  // Only show the big subcategory hero blocks when a subcategory is explicitly selected.
+  // Otherwise the category page should stay clean and show the regular product grid.
+  if (!selectedSubcategory) return null;
+  const filteredSubs = selectedSubcategory
+    ? subs.filter((s) => s.toLowerCase() === selectedSubcategory.toLowerCase())
+    : subs;
 
   return (
     <div className="mt-12 space-y-14 sm:space-y-16">
-      {subs.map((sub) => (
+      {filteredSubs.map((sub) => (
         <section
           key={sub}
           id={subAnchorId(sub)}
@@ -191,9 +229,6 @@ export function CategorySubcategoryProductSections({
               />
 
               <div className="flex flex-col gap-3 px-6 py-7 sm:px-8 sm:py-8">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-white/80">
-                  Subcategory
-                </p>
                 <h3 className="text-balance font-serif text-2xl font-bold tracking-tight text-white sm:text-3xl">
                   {titleCaseLine(sub)}
                 </h3>

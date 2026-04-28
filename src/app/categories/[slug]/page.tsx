@@ -295,12 +295,20 @@ const CATEGORY_CONFIG: Record<
   },
 };
 
-export default async function CategoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams?: Promise<{ sub?: string }>;
+}) {
   const { slug } = await params;
+  const sp = (await searchParams) ?? {};
   const cfg = CATEGORY_CONFIG[slug];
   if (!cfg) notFound();
 
   const category = slug as ClothingCategory;
+  const selectedSubcategory = (sp.sub ?? "").trim() || null;
   const heroImages = heroImagesForCategory(category);
   const heroPositions =
     category === "kurtis"
@@ -372,8 +380,13 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
               <div id="all-products">
                 <ProductsGrid
                   title={`All ${cfg.title}`}
-                  subtitle="Everything in this category from the Creator dashboard — use the sections below to jump by fabric or style."
+                  subtitle={
+                    selectedSubcategory
+                      ? `Filtered to “${selectedSubcategory}”.`
+                      : "Everything in this category from the Creator dashboard — use the sections below to jump by fabric or style."
+                  }
                   category={category}
+                  subcategory={selectedSubcategory ?? undefined}
                   limit={12}
                   variant="gallery"
                 />
@@ -407,7 +420,10 @@ export default async function CategoryPage({ params }: { params: Promise<{ slug:
               </div>
             </section>
 
-            <CategorySubcategoryProductSections category={category} />
+            <CategorySubcategoryProductSections
+              category={category}
+              selectedSubcategory={selectedSubcategory}
+            />
           </div>
         </div>
       </div>

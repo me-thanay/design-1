@@ -14,6 +14,7 @@ type CategorySidebarProps = {
 export function CategorySidebar({ category, className }: CategorySidebarProps) {
   const [open, setOpen] = React.useState(false);
   const subs = CLOTHING_SUBCATEGORIES[category] ?? [];
+  const basePath = `/categories/${category}`;
 
   const categoryLinks = PRIMARY_NAV.filter(
     (x) => x.href.startsWith("/categories/") && x.name !== "Shop" && x.name !== "Cart",
@@ -55,6 +56,7 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
                 category={category}
                 subs={subs}
                 categoryLinks={categoryLinks}
+                basePath={basePath}
                 onNavigate={() => setOpen(false)}
               />
             </div>
@@ -70,7 +72,12 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
           className ?? "",
         ].join(" ")}
       >
-        <SidebarInner category={category} subs={subs} categoryLinks={categoryLinks} />
+        <SidebarInner
+          category={category}
+          subs={subs}
+          categoryLinks={categoryLinks}
+          basePath={basePath}
+        />
       </aside>
     </>
   );
@@ -80,11 +87,13 @@ function SidebarInner({
   category,
   subs,
   categoryLinks,
+  basePath,
   onNavigate,
 }: {
   category: ClothingCategory;
   subs: string[];
   categoryLinks: Array<{ name: string; href: string }>;
+  basePath: string;
   onNavigate?: () => void;
 }) {
   const navName: Record<ClothingCategory, string> = {
@@ -98,7 +107,7 @@ function SidebarInner({
     const hit = nav?.items?.find((x) => x.name.toLowerCase() === s.toLowerCase());
     return {
       name: s,
-      href: `#${subAnchorId(s)}`,
+      href: `${basePath}?sub=${encodeURIComponent(s)}#all-products`,
       imageSrc: hit?.imageSrc ?? nav?.featuredImageSrc ?? null,
     };
   });
