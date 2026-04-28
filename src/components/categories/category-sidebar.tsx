@@ -120,14 +120,14 @@ function SidebarInner({
         </p>
         <div className="mt-3 grid gap-2">
           <Link
-            href="#best-sellers"
+            href={`${basePath}#best-sellers`}
             onClick={onNavigate}
             className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
           >
             Best sellers
           </Link>
           <Link
-            href="#all-products"
+            href={`${basePath}#all-products`}
             onClick={onNavigate}
             className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
           >
