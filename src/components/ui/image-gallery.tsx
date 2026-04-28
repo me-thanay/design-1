@@ -29,6 +29,8 @@ export type ImageGalleryProps = {
   subtitle?: string;
   items: ImageGalleryItem[];
   className?: string;
+  /** Optional click handler for "View details". */
+  onItemClick?: (item: ImageGalleryItem) => void;
   /** Wrapper around header + scroller (defaults to centered max-width container). */
   containerClassName?: string;
   /** Header alignment (defaults to centered). */
@@ -42,6 +44,7 @@ export function ImageGallery({
   subtitle = "Hover a card to preview — then browse the collection.",
   items,
   className,
+  onItemClick,
   containerClassName = "mx-auto max-w-6xl px-4",
   headerAlign = "center",
   maxItems = 10,
@@ -235,13 +238,28 @@ export function ImageGallery({
                 ) : null}
 
                 {it.product ? (
-                  <div className="mt-3">
-                    <ProductCartControl
-                      product={it.product}
-                      image={it.cartImage ?? it.src}
-                      tone="card"
-                      compact
-                    />
+                  <div className="mt-3 space-y-2">
+                    {onItemClick ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          onItemClick(it);
+                        }}
+                        className="w-full rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50"
+                      >
+                        View details
+                      </button>
+                    ) : null}
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ProductCartControl
+                        product={it.product}
+                        image={it.cartImage ?? it.src}
+                        tone="card"
+                        compact
+                      />
+                    </div>
                   </div>
                 ) : null}
               </div>

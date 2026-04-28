@@ -192,6 +192,9 @@ export function ProductsGrid({
           className="py-0"
           containerClassName="w-full px-0"
           headerAlign="left"
+          onItemClick={(it) => {
+            if (it.product) openDetails(it.product);
+          }}
           items={items.map((p) => {
             const img = p.image || fallbackImageFor(p.category);
             const rating = Number(p.rating || 4);
@@ -213,6 +216,8 @@ export function ProductsGrid({
               ratingLabel: `${starsFor(rating)} (${rating.toFixed(1)})`,
               imagePosition: imagePositionFor(p.category, img),
               imageFit: imageFitFor(p.category),
+              product: p,
+              cartImage: img,
             };
           })}
         />
