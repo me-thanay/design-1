@@ -141,6 +141,7 @@ export function ImageGallery({
         <div className={cn("no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mx-0 sm:px-0 sm:gap-6 snap-x snap-mandatory", Boolean(title?.trim?.() || subtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0")}>
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
             (() => {
+              const clickable = Boolean(onItemClick && it.product);
               const imageSources = [
                 ...(it.imageSources ?? []),
                 it.src,
@@ -160,18 +161,30 @@ export function ImageGallery({
                     "ring-1 ring-black/10 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]",
                     "transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.45)]",
                     "snap-start",
+                    clickable ? "cursor-pointer" : null,
                   )}
                   onHoverStart={() => setHovered(idx)}
                   onHoverEnd={() => setHovered((v) => (v === idx ? null : v))}
                   onClick={() => {
+                    if (clickable) {
+                      onItemClick?.(it);
+                      return;
+                    }
                     if (!isTouch) return;
                     setHovered((v) => (v === idx ? null : idx));
                   }}
                   whileTap={isTouch ? { scale: 0.98 } : undefined}
-                  role={isTouch ? "button" : undefined}
-                  aria-pressed={isTouch ? hovered === idx : undefined}
-                  tabIndex={isTouch ? 0 : -1}
+                  role={clickable || isTouch ? "button" : undefined}
+                  aria-pressed={!clickable && isTouch ? hovered === idx : undefined}
+                  tabIndex={clickable || isTouch ? 0 : -1}
                   onKeyDown={(e) => {
+                    if (clickable) {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onItemClick?.(it);
+                      }
+                      return;
+                    }
                     if (!isTouch) return;
                     if (e.key === "Enter" || e.key === " ") {
                       e.preventDefault();
@@ -358,19 +371,7 @@ export function ImageGallery({
 
                     {it.product ? (
                       <div className="mt-3 space-y-2">
-                        {onItemClick ? (
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.preventDefault();
-                              e.stopPropagation();
-                              onItemClick(it);
-                            }}
-                            className="w-full rounded-full border border-black/10 bg-white px-4 py-2 text-xs font-semibold text-neutral-900 shadow-sm transition hover:bg-neutral-50"
-                          >
-                            View details
-                          </button>
-                        ) : null}
+                        {/* Card itself opens details when `onItemClick` is provided. */}
                         <div onClick={(e) => e.stopPropagation()}>
                           <ProductCartControl
                             product={it.product}
