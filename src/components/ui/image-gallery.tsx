@@ -247,7 +247,7 @@ export function ImageGallery({
                   onHoverEnd={() => setHovered((v) => (v === idx ? null : v))}
                   onClick={() => {
                     // If this was a drag-to-scroll gesture, don't treat it as a click.
-                    if (dragRef.current.moved || Date.now() - dragRef.current.lastEndAt < 180) return;
+                    if (Date.now() - dragRef.current.lastEndAt < 240) return;
                     if (clickable) {
                       onItemClick?.(it);
                       return;
