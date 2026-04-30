@@ -778,82 +778,34 @@ export default function CreatorPage() {
         in_stock: form.in_stock,
       };
 
-      // Some Supabase setups (or older DB schemas) don't have a dedicated
-      // `discount_percent` column. In that case, we still persist discount in
-      // the description metadata and retry without the missing column.
-      let insertRes = await supabase.from("clothes").insert({
+      // Supabase schemas vary a lot (some installs don't have optional columns).
+      // Always persist full data in description meta, but strip missing columns
+      // from the insert payload until Supabase accepts the write.
+      let insertPayload: Record<string, any> = {
         ...baseRow,
         discount_percent: discountNumber,
         image_urls: imageUrls,
         colors: colorsList,
         sizes: sizesList,
         color_images: colorImages,
-      });
-      if (
-        insertRes.error &&
-        /Could not find the 'color_images' column of 'clothes'/i.test(
-          insertRes.error.message ?? "",
-        )
-      ) {
-        // Fall back to description meta only for color-wise images.
-        insertRes = await supabase.from("clothes").insert({
-          ...baseRow,
-          discount_percent: discountNumber,
-          image_urls: imageUrls,
-          colors: colorsList,
-          sizes: sizesList,
-        });
-      }
-      if (
-        insertRes.error &&
-        /Could not find the 'discount_percent' column of 'clothes'/i.test(
-          insertRes.error.message ?? "",
-        )
-      ) {
-        insertRes = await supabase.from("clothes").insert(baseRow);
-      }
-      if (
-        insertRes.error &&
-        /Could not find the 'image_urls' column of 'clothes'/i.test(
-          insertRes.error.message ?? "",
-        )
-      ) {
-        // fall back to only primary `image_url` + description meta
-        insertRes = await supabase.from("clothes").insert({
-          ...baseRow,
-          discount_percent: discountNumber,
-          colors: colorsList,
-          sizes: sizesList,
-        });
-        if (
-          insertRes.error &&
-          /Could not find the 'discount_percent' column of 'clothes'/i.test(
-            insertRes.error.message ?? "",
-          )
-        ) {
-          insertRes = await supabase.from("clothes").insert(baseRow);
-        }
-      }
-      if (
-        insertRes.error &&
-        /Could not find the 'colors' column of 'clothes'|Could not find the 'sizes' column of 'clothes'/i.test(
-          insertRes.error.message ?? "",
-        )
-      ) {
-        // fall back to description meta only
-        insertRes = await supabase.from("clothes").insert({
-          ...baseRow,
-          discount_percent: discountNumber,
-          image_urls: imageUrls,
-        });
-        if (
-          insertRes.error &&
-          /Could not find the 'discount_percent' column of 'clothes'/i.test(
-            insertRes.error.message ?? "",
-          )
-        ) {
-          insertRes = await supabase.from("clothes").insert(baseRow);
-        }
+      };
+      const stripMissingColumns = (payload: Record<string, any>, message: string) => {
+        const next = { ...payload };
+        const msg = message ?? "";
+        if (/Could not find the 'discount_percent' column of 'clothes'/i.test(msg)) delete next.discount_percent;
+        if (/Could not find the 'image_urls' column of 'clothes'/i.test(msg)) delete next.image_urls;
+        if (/Could not find the 'colors' column of 'clothes'/i.test(msg)) delete next.colors;
+        if (/Could not find the 'sizes' column of 'clothes'/i.test(msg)) delete next.sizes;
+        if (/Could not find the 'color_images' column of 'clothes'/i.test(msg)) delete next.color_images;
+        return next;
+      };
+
+      let insertRes = await supabase.from("clothes").insert(insertPayload);
+      for (let i = 0; i < 6 && insertRes.error; i++) {
+        const next = stripMissingColumns(insertPayload, insertRes.error.message ?? "");
+        if (Object.keys(next).length === Object.keys(insertPayload).length) break;
+        insertPayload = next;
+        insertRes = await supabase.from("clothes").insert(insertPayload);
       }
 
       if (insertRes.error) {
@@ -1063,79 +1015,33 @@ export default function CreatorPage() {
         in_stock: editForm.in_stock,
       };
 
-      let updateRes = await supabase
-        .from("clothes")
-        .update({
-          ...baseUpdate,
-          discount_percent: discountNumber,
-          image_urls: nextImageUrls,
-          colors: colorsList,
-          sizes: sizesList,
-          color_images: nextColorImages,
-        })
-        .eq("id", editing.id);
+      // Same idea as insert: strip missing columns from the payload until the update succeeds.
+      const stripMissingColumns = (payload: Record<string, any>, message: string) => {
+        const next = { ...payload };
+        const msg = message ?? "";
+        if (/Could not find the 'discount_percent' column of 'clothes'/i.test(msg)) delete next.discount_percent;
+        if (/Could not find the 'image_urls' column of 'clothes'/i.test(msg)) delete next.image_urls;
+        if (/Could not find the 'colors' column of 'clothes'/i.test(msg)) delete next.colors;
+        if (/Could not find the 'sizes' column of 'clothes'/i.test(msg)) delete next.sizes;
+        if (/Could not find the 'color_images' column of 'clothes'/i.test(msg)) delete next.color_images;
+        return next;
+      };
 
-      if (
-        updateRes.error &&
-        /Could not find the 'discount_percent' column of 'clothes'/i.test(
-          updateRes.error.message ?? "",
-        )
-      ) {
-        updateRes = await supabase
-          .from("clothes")
-          .update({ ...baseUpdate, image_urls: nextImageUrls })
-          .eq("id", editing.id);
-      }
-      if (
-        updateRes.error &&
-        /Could not find the 'image_urls' column of 'clothes'/i.test(
-          updateRes.error.message ?? "",
-        )
-      ) {
-        updateRes = await supabase
-          .from("clothes")
-          .update({ ...baseUpdate, discount_percent: discountNumber, colors: colorsList, sizes: sizesList })
-          .eq("id", editing.id);
-        if (
-          updateRes.error &&
-          /Could not find the 'discount_percent' column of 'clothes'/i.test(
-            updateRes.error.message ?? "",
-          )
-        ) {
-          updateRes = await supabase
-            .from("clothes")
-            .update(baseUpdate)
-            .eq("id", editing.id);
-        }
-      }
-      if (
-        updateRes.error &&
-        /Could not find the 'colors' column of 'clothes'|Could not find the 'sizes' column of 'clothes'/i.test(
-          updateRes.error.message ?? "",
-        )
-      ) {
-        updateRes = await supabase
-          .from("clothes")
-          .update({ ...baseUpdate, discount_percent: discountNumber, image_urls: nextImageUrls })
-          .eq("id", editing.id);
-      }
-      if (
-        updateRes.error &&
-        /Could not find the 'color_images' column of 'clothes'/i.test(
-          updateRes.error.message ?? "",
-        )
-      ) {
-        // fall back to description meta only
-        updateRes = await supabase
-          .from("clothes")
-          .update({
-            ...baseUpdate,
-            discount_percent: discountNumber,
-            image_urls: nextImageUrls,
-            colors: colorsList,
-            sizes: sizesList,
-          })
-          .eq("id", editing.id);
+      let updatePayload: Record<string, any> = {
+        ...baseUpdate,
+        discount_percent: discountNumber,
+        image_urls: nextImageUrls,
+        colors: colorsList,
+        sizes: sizesList,
+        color_images: nextColorImages,
+      };
+
+      let updateRes = await supabase.from("clothes").update(updatePayload).eq("id", editing.id);
+      for (let i = 0; i < 6 && updateRes.error; i++) {
+        const next = stripMissingColumns(updatePayload, updateRes.error.message ?? "");
+        if (Object.keys(next).length === Object.keys(updatePayload).length) break;
+        updatePayload = next;
+        updateRes = await supabase.from("clothes").update(updatePayload).eq("id", editing.id);
       }
 
       if (updateRes.error) {
