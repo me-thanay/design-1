@@ -133,6 +133,13 @@ function SidebarInner({
           >
             Best sellers
           </Link>
+          <Link
+            href={`${basePath}#all-products`}
+            onClick={onNavigate}
+            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+          >
+            All products
+          </Link>
         </div>
       </div>
 

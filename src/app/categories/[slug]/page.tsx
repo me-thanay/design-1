@@ -394,6 +394,24 @@ export default async function CategoryPage({
               </div>
             </ScrollReveal>
 
+            <ScrollReveal delay={0.08} y={26} variant="fade-up" duration={0.66} className="mt-10 sm:mt-12">
+              <div id="all-products" className="scroll-mt-24">
+                <ProductsGrid
+                  title={`All ${cfg.title}`}
+                  subtitle={
+                    selectedSubcategory
+                      ? `Filtered to “${selectedSubcategory}”.`
+                      : "Newest additions from the Creator dashboard — every product shows here."
+                  }
+                  category={category}
+                  subcategory={selectedSubcategory ?? undefined}
+                  limit={24}
+                  variant="gallery"
+                  sortMode="latest"
+                />
+              </div>
+            </ScrollReveal>
+
             <section className="mt-8 grid gap-4 rounded-3xl border border-black/5 bg-white/70 p-5 shadow-sm backdrop-blur sm:mt-10 sm:grid-cols-3 sm:p-8">
               <div className="rounded-2xl bg-white p-5 shadow-sm ring-1 ring-black/5">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-neutral-500">
