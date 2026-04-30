@@ -208,12 +208,15 @@ export function ImageGallery({
             el.scrollLeft = dragRef.current.startLeft - dx;
           }}
           onPointerUp={() => {
+            const wasDragging = dragRef.current.active && dragRef.current.moved;
             dragRef.current.active = false;
-            dragRef.current.lastEndAt = Date.now();
+            // Only suppress clicks after a real drag gesture.
+            if (wasDragging) dragRef.current.lastEndAt = Date.now();
           }}
           onPointerCancel={() => {
+            const wasDragging = dragRef.current.active && dragRef.current.moved;
             dragRef.current.active = false;
-            dragRef.current.lastEndAt = Date.now();
+            if (wasDragging) dragRef.current.lastEndAt = Date.now();
           }}
         >
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (

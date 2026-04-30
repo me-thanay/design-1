@@ -14,7 +14,14 @@ import {
   stripMeta,
   type ClothingCategory,
 } from "@/lib/products";
-import { appendImagesMeta, appendVariantsMeta, decodeImagesMeta, decodeVariantsMeta } from "@/lib/products";
+import {
+  appendColorImagesMeta,
+  appendImagesMeta,
+  appendVariantsMeta,
+  decodeColorImagesMeta,
+  decodeImagesMeta,
+  decodeVariantsMeta,
+} from "@/lib/products";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
 const LOCAL_ORDERS_KEY = "freelance-1.local.orders.v1";
@@ -29,6 +36,7 @@ type ClothingItem = {
   image_urls?: string[] | null;
   colors?: string[] | null;
   sizes?: string[] | null;
+  color_images?: Record<string, string[]> | null;
   in_stock: boolean;
   category?: ClothingCategory;
   subcategory?: string;
@@ -46,6 +54,10 @@ function parseCommaList(value: string) {
 function prettyListPreview(value: string) {
   const list = parseCommaList(value);
   return list.slice(0, 8);
+}
+
+function buildColorKey(value: string) {
+  return String(value ?? "").trim().toLowerCase();
 }
 
 function normalizeRating(value?: number | string | null) {
@@ -268,6 +280,8 @@ export default function CreatorPage() {
   });
   const [formImageFiles, setFormImageFiles] = useState<File[]>([]);
   const [formImagePreviewUrls, setFormImagePreviewUrls] = useState<string[]>([]);
+  const [formColorImageFiles, setFormColorImageFiles] = useState<Record<string, File[]>>({});
+  const [formColorImagePreviewUrls, setFormColorImagePreviewUrls] = useState<Record<string, string[]>>({});
   const [saving, setSaving] = useState(false);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
@@ -289,6 +303,9 @@ export default function CreatorPage() {
   const [editImageFiles, setEditImageFiles] = useState<File[]>([]);
   const [editImagePreviewUrls, setEditImagePreviewUrls] = useState<string[]>([]);
   const [editExistingImageUrls, setEditExistingImageUrls] = useState<string[]>([]);
+  const [editExistingColorImages, setEditExistingColorImages] = useState<Record<string, string[]>>({});
+  const [editColorImageFiles, setEditColorImageFiles] = useState<Record<string, File[]>>({});
+  const [editColorImagePreviewUrls, setEditColorImagePreviewUrls] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     return () => {
@@ -298,9 +315,21 @@ export default function CreatorPage() {
 
   useEffect(() => {
     return () => {
+      Object.values(formColorImagePreviewUrls).flat().forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [formColorImagePreviewUrls]);
+
+  useEffect(() => {
+    return () => {
       editImagePreviewUrls.forEach((u) => URL.revokeObjectURL(u));
     };
   }, [editImagePreviewUrls]);
+
+  useEffect(() => {
+    return () => {
+      Object.values(editColorImagePreviewUrls).flat().forEach((u) => URL.revokeObjectURL(u));
+    };
+  }, [editColorImagePreviewUrls]);
 
   // Last-resort watchdog: never leave the UI in an infinite loading state.
   // Must be declared BEFORE any early returns to keep hook order stable.
@@ -630,36 +659,50 @@ export default function CreatorPage() {
           ? await uploadImagesToStorage(formImageFiles)
           : await Promise.all(formImageFiles.map((f) => readFileAsDataUrl(f)));
       }
-      const primaryImageUrl: string | null = imageUrls[0] ?? null;
+      const colorImagesEntries = Object.entries(formColorImageFiles ?? {});
+      const colorImages: Record<string, string[]> = {};
+      for (const [colorKey, files] of colorImagesEntries) {
+        if (!files?.length) continue;
+        const urls = supabaseEnabled
+          ? await uploadImagesToStorage(files)
+          : await Promise.all(files.map((f) => readFileAsDataUrl(f)));
+        const key = buildColorKey(colorKey);
+        if (key) colorImages[key] = urls;
+      }
+
+      const primaryImageUrl: string | null =
+        imageUrls[0] ?? Object.values(colorImages)[0]?.[0] ?? null;
 
       if (!supabaseEnabled) {
         const prev = readLocalClothes();
         const nextId = prev.length
           ? Math.max(...prev.map((p) => p.id)) + 1
           : 1;
-        const descriptionWithMeta = appendVariantsMeta(
-          appendImagesMeta(
-            encodeCategoryPrefix(
-              form.description || null,
-              form.category,
-              form.subcategory,
-              ratingNumber,
-              discountNumber,
-            ),
-            imageUrls,
+        const descriptionBase = encodeCategoryPrefix(
+          form.description || null,
+          form.category,
+          form.subcategory,
+          ratingNumber,
+          discountNumber,
+        );
+        const descriptionWithAllMeta = appendColorImagesMeta(
+          appendVariantsMeta(
+            appendImagesMeta(descriptionBase, imageUrls),
+            { colors: colorsList, sizes: sizesList },
           ),
-          { colors: colorsList, sizes: sizesList },
+          colorImages,
         );
         const nextItem: ClothingItem = {
           id: nextId,
           name: form.name,
-          description: descriptionWithMeta,
+          description: descriptionWithAllMeta,
           price: priceNumber,
           discount_percent: discountNumber,
           image_url: primaryImageUrl,
           image_urls: imageUrls,
           colors: colorsList,
           sizes: sizesList,
+          color_images: colorImages,
           in_stock: form.in_stock,
           category: form.category,
           subcategory: form.subcategory,
@@ -707,23 +750,28 @@ export default function CreatorPage() {
         });
         setFormImageFiles([]);
         setFormImagePreviewUrls([]);
+        setFormColorImageFiles({});
+        setFormColorImagePreviewUrls({});
         return;
       }
 
       const baseRow = {
         name: form.name,
-        description: appendVariantsMeta(
-          appendImagesMeta(
-            encodeCategoryPrefix(
-              form.description || null,
-              form.category,
-              form.subcategory,
-              ratingNumber,
-              discountNumber,
+        description: appendColorImagesMeta(
+          appendVariantsMeta(
+            appendImagesMeta(
+              encodeCategoryPrefix(
+                form.description || null,
+                form.category,
+                form.subcategory,
+                ratingNumber,
+                discountNumber,
+              ),
+              imageUrls,
             ),
-            imageUrls,
+            { colors: colorsList, sizes: sizesList },
           ),
-          { colors: colorsList, sizes: sizesList },
+          colorImages,
         ),
         price: priceNumber,
         image_url: primaryImageUrl,
@@ -739,6 +787,7 @@ export default function CreatorPage() {
         image_urls: imageUrls,
         colors: colorsList,
         sizes: sizesList,
+        color_images: colorImages,
       });
       if (
         insertRes.error &&
@@ -836,6 +885,8 @@ export default function CreatorPage() {
       }
       setFormImageFiles([]);
       setFormImagePreviewUrls([]);
+      setFormColorImageFiles({});
+      setFormColorImagePreviewUrls({});
     } catch (err: any) {
       setError(err?.message ?? "Could not save item");
     } finally {
@@ -847,6 +898,8 @@ export default function CreatorPage() {
     setEditing(item);
     setEditImageFiles([]);
     setEditImagePreviewUrls([]);
+    setEditColorImageFiles({});
+    setEditColorImagePreviewUrls({});
     const existing = [
       ...(item.image_urls ?? []),
       ...(item.image_url ? [item.image_url] : []),
@@ -856,6 +909,11 @@ export default function CreatorPage() {
       .filter(Boolean)
       .filter((u, i, arr) => arr.indexOf(u) === i);
     setEditExistingImageUrls(existing);
+    const existingColorImages = {
+      ...(item.color_images ?? {}),
+      ...decodeColorImagesMeta(item.description),
+    };
+    setEditExistingColorImages(existingColorImages);
     setEditForm({
       name: item.name,
       description: item.description ?? "",
@@ -903,7 +961,26 @@ export default function CreatorPage() {
             ? await uploadImagesToStorage(editImageFiles)
             : await Promise.all(editImageFiles.map((f) => readFileAsDataUrl(f))))
         : keepExisting;
-      const nextPrimaryImageUrl: string | null = nextImageUrls[0] ?? null;
+      const nextColorImages: Record<string, string[]> = {};
+      const colorKeysInForm = new Set(colorsList.map(buildColorKey).filter(Boolean));
+      // keep existing mappings for colors still present
+      for (const [k, urls] of Object.entries(editExistingColorImages ?? {})) {
+        const key = buildColorKey(k);
+        if (!key || !colorKeysInForm.has(key)) continue;
+        nextColorImages[key] = (urls ?? []).map((u) => String(u || "").trim()).filter(Boolean);
+      }
+      // apply new uploads (replace per-color)
+      for (const [k, files] of Object.entries(editColorImageFiles ?? {})) {
+        const key = buildColorKey(k);
+        if (!key || !colorKeysInForm.has(key) || !files?.length) continue;
+        const urls = supabaseEnabled
+          ? await uploadImagesToStorage(files)
+          : await Promise.all(files.map((f) => readFileAsDataUrl(f)));
+        nextColorImages[key] = urls;
+      }
+
+      const nextPrimaryImageUrl: string | null =
+        nextImageUrls[0] ?? Object.values(nextColorImages)[0]?.[0] ?? null;
 
       if (!supabaseEnabled) {
         const prev = readLocalClothes();
@@ -912,18 +989,21 @@ export default function CreatorPage() {
             ? {
                 ...it,
                 name: editForm.name,
-                description: appendVariantsMeta(
-                  appendImagesMeta(
-                    encodeCategoryPrefix(
-                      editForm.description || null,
-                      editForm.category,
-                      editForm.subcategory,
-                      ratingNumber,
-                      discountNumber,
+                description: appendColorImagesMeta(
+                  appendVariantsMeta(
+                    appendImagesMeta(
+                      encodeCategoryPrefix(
+                        editForm.description || null,
+                        editForm.category,
+                        editForm.subcategory,
+                        ratingNumber,
+                        discountNumber,
+                      ),
+                      nextImageUrls,
                     ),
-                    nextImageUrls,
+                    { colors: colorsList, sizes: sizesList },
                   ),
-                  { colors: colorsList, sizes: sizesList },
+                  nextColorImages,
                 ),
                 price: priceNumber,
                 discount_percent: discountNumber,
@@ -931,6 +1011,7 @@ export default function CreatorPage() {
                 image_urls: nextImageUrls,
                 colors: colorsList,
                 sizes: sizesList,
+                color_images: nextColorImages,
                 in_stock: editForm.in_stock,
                 category: editForm.category,
                 subcategory: editForm.subcategory,
@@ -946,18 +1027,21 @@ export default function CreatorPage() {
 
       const baseUpdate = {
         name: editForm.name,
-        description: appendVariantsMeta(
-          appendImagesMeta(
-            encodeCategoryPrefix(
-              editForm.description || null,
-              editForm.category,
-              editForm.subcategory,
-              ratingNumber,
-              discountNumber,
+        description: appendColorImagesMeta(
+          appendVariantsMeta(
+            appendImagesMeta(
+              encodeCategoryPrefix(
+                editForm.description || null,
+                editForm.category,
+                editForm.subcategory,
+                ratingNumber,
+                discountNumber,
+              ),
+              nextImageUrls,
             ),
-            nextImageUrls,
+            { colors: colorsList, sizes: sizesList },
           ),
-          { colors: colorsList, sizes: sizesList },
+          nextColorImages,
         ),
         price: priceNumber,
         image_url: nextPrimaryImageUrl,
@@ -972,6 +1056,7 @@ export default function CreatorPage() {
           image_urls: nextImageUrls,
           colors: colorsList,
           sizes: sizesList,
+          color_images: nextColorImages,
         })
         .eq("id", editing.id);
 
@@ -1019,6 +1104,24 @@ export default function CreatorPage() {
           .update({ ...baseUpdate, discount_percent: discountNumber, image_urls: nextImageUrls })
           .eq("id", editing.id);
       }
+      if (
+        updateRes.error &&
+        /Could not find the 'color_images' column of 'clothes'/i.test(
+          updateRes.error.message ?? "",
+        )
+      ) {
+        // fall back to description meta only
+        updateRes = await supabase
+          .from("clothes")
+          .update({
+            ...baseUpdate,
+            discount_percent: discountNumber,
+            image_urls: nextImageUrls,
+            colors: colorsList,
+            sizes: sizesList,
+          })
+          .eq("id", editing.id);
+      }
 
       if (updateRes.error) {
         setError(updateRes.error.message);
@@ -1033,6 +1136,8 @@ export default function CreatorPage() {
     } finally {
       setEditImageFiles([]);
       setEditImagePreviewUrls([]);
+      setEditColorImageFiles({});
+      setEditColorImagePreviewUrls({});
       setSaving(false);
     }
   };
@@ -1303,7 +1408,28 @@ export default function CreatorPage() {
                     <input
                       name="colors"
                       value={(form as any).colors ?? ""}
-                      onChange={handleChange}
+                      onChange={(e) => {
+                        handleChange(e);
+                        const nextColors = parseCommaList(e.target.value ?? "");
+                        const nextKeys = new Set(nextColors.map(buildColorKey).filter(Boolean));
+
+                        // Drop removed colors and revoke their preview URLs.
+                        setFormColorImagePreviewUrls((prev) => {
+                          const next: Record<string, string[]> = {};
+                          for (const [k, urls] of Object.entries(prev)) {
+                            if (nextKeys.has(buildColorKey(k))) next[k] = urls;
+                            else urls.forEach((u) => URL.revokeObjectURL(u));
+                          }
+                          return next;
+                        });
+                        setFormColorImageFiles((prev) => {
+                          const next: Record<string, File[]> = {};
+                          for (const [k, files] of Object.entries(prev)) {
+                            if (nextKeys.has(buildColorKey(k))) next[k] = files;
+                          }
+                          return next;
+                        });
+                      }}
                       placeholder="Red, Green, Black"
                       className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                     />
@@ -1347,6 +1473,78 @@ export default function CreatorPage() {
                     </div>
                   ) : null}
                 </div>
+                {parseCommaList((form as any).colors ?? "").length ? (
+                  <div className="rounded-lg border border-zinc-200 bg-white p-3">
+                    <p className="text-xs font-semibold text-zinc-700">
+                      Color-wise images (optional)
+                    </p>
+                    <p className="mt-1 text-xs text-zinc-500">
+                      Upload images for each color. On the site, selecting a color will show its images.
+                    </p>
+                    <div className="mt-3 space-y-3">
+                      {parseCommaList((form as any).colors ?? "").map((c) => {
+                        const key = buildColorKey(c);
+                        const previews = formColorImagePreviewUrls[key] ?? [];
+                        return (
+                          <div key={key} className="rounded-lg border border-zinc-200 p-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <span className="text-sm font-semibold text-zinc-900">{c}</span>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setFormColorImageFiles((prev) => {
+                                    const next = { ...prev };
+                                    delete next[key];
+                                    return next;
+                                  });
+                                  setFormColorImagePreviewUrls((prev) => {
+                                    const next = { ...prev };
+                                    (next[key] ?? []).forEach((u) => URL.revokeObjectURL(u));
+                                    delete next[key];
+                                    return next;
+                                  });
+                                }}
+                                className="text-xs font-semibold text-zinc-600 hover:text-zinc-900"
+                              >
+                                Clear
+                              </button>
+                            </div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={(e) => {
+                                const files = Array.from(e.target.files ?? []);
+                                setFormColorImageFiles((prev) => ({ ...prev, [key]: files }));
+                                setFormColorImagePreviewUrls((prev) => {
+                                  (prev[key] ?? []).forEach((u) => URL.revokeObjectURL(u));
+                                  return {
+                                    ...prev,
+                                    [key]: files.map((f) => URL.createObjectURL(f)),
+                                  };
+                                });
+                              }}
+                              className="mt-2 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                            />
+                            {previews.length ? (
+                              <div className="mt-2 grid grid-cols-4 gap-2">
+                                {previews.map((src, idx) => (
+                                  // eslint-disable-next-line @next/next/no-img-element
+                                  <img
+                                    key={`${src}-${idx}`}
+                                    src={src}
+                                    alt={`${c} ${idx + 1}`}
+                                    className="h-16 w-full rounded-lg object-cover"
+                                  />
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ) : null}
                 <div>
                   <label className="block text-sm font-medium text-zinc-700">
                     Price (INR)
@@ -1627,7 +1825,34 @@ export default function CreatorPage() {
                         <input
                           name="colors"
                           value={(editForm as any).colors ?? ""}
-                          onChange={handleEditChange}
+                          onChange={(e) => {
+                            handleEditChange(e);
+                            const nextColors = parseCommaList(e.target.value ?? "");
+                            const nextKeys = new Set(nextColors.map(buildColorKey).filter(Boolean));
+
+                            setEditExistingColorImages((prev) => {
+                              const next: Record<string, string[]> = {};
+                              for (const [k, urls] of Object.entries(prev)) {
+                                if (nextKeys.has(buildColorKey(k))) next[k] = urls;
+                              }
+                              return next;
+                            });
+                            setEditColorImageFiles((prev) => {
+                              const next: Record<string, File[]> = {};
+                              for (const [k, files] of Object.entries(prev)) {
+                                if (nextKeys.has(buildColorKey(k))) next[k] = files;
+                              }
+                              return next;
+                            });
+                            setEditColorImagePreviewUrls((prev) => {
+                              const next: Record<string, string[]> = {};
+                              for (const [k, urls] of Object.entries(prev)) {
+                                if (nextKeys.has(buildColorKey(k))) next[k] = urls;
+                                else urls.forEach((u) => URL.revokeObjectURL(u));
+                              }
+                              return next;
+                            });
+                          }}
                           placeholder="Red, Green, Black"
                           className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                         />
@@ -1671,6 +1896,96 @@ export default function CreatorPage() {
                         </div>
                       ) : null}
                     </div>
+                    {parseCommaList((editForm as any).colors ?? "").length ? (
+                      <div className="rounded-lg border border-zinc-200 bg-white p-3">
+                        <p className="text-xs font-semibold text-zinc-700">
+                          Color-wise images (optional)
+                        </p>
+                        <p className="mt-1 text-xs text-zinc-500">
+                          Upload new images for a color to replace its existing set.
+                        </p>
+                        <div className="mt-3 space-y-3">
+                          {parseCommaList((editForm as any).colors ?? "").map((c) => {
+                            const key = buildColorKey(c);
+                            const previews = editColorImagePreviewUrls[key] ?? [];
+                            const existing = editExistingColorImages[key] ?? [];
+                            return (
+                              <div key={key} className="rounded-lg border border-zinc-200 p-3">
+                                <div className="flex items-center justify-between gap-3">
+                                  <span className="text-sm font-semibold text-zinc-900">{c}</span>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditColorImageFiles((prev) => {
+                                        const next = { ...prev };
+                                        delete next[key];
+                                        return next;
+                                      });
+                                      setEditColorImagePreviewUrls((prev) => {
+                                        const next = { ...prev };
+                                        (next[key] ?? []).forEach((u) => URL.revokeObjectURL(u));
+                                        delete next[key];
+                                        return next;
+                                      });
+                                      setEditExistingColorImages((prev) => {
+                                        const next = { ...prev };
+                                        delete next[key];
+                                        return next;
+                                      });
+                                    }}
+                                    className="text-xs font-semibold text-zinc-600 hover:text-zinc-900"
+                                  >
+                                    Clear
+                                  </button>
+                                </div>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  multiple
+                                  onChange={(e) => {
+                                    const files = Array.from(e.target.files ?? []);
+                                    setEditColorImageFiles((prev) => ({ ...prev, [key]: files }));
+                                    setEditColorImagePreviewUrls((prev) => {
+                                      (prev[key] ?? []).forEach((u) => URL.revokeObjectURL(u));
+                                      return {
+                                        ...prev,
+                                        [key]: files.map((f) => URL.createObjectURL(f)),
+                                      };
+                                    });
+                                  }}
+                                  className="mt-2 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                                />
+                                {previews.length ? (
+                                  <div className="mt-2 grid grid-cols-4 gap-2">
+                                    {previews.map((src, idx) => (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        key={`${src}-${idx}`}
+                                        src={src}
+                                        alt={`${c} new ${idx + 1}`}
+                                        className="h-16 w-full rounded-lg object-cover"
+                                      />
+                                    ))}
+                                  </div>
+                                ) : existing.length ? (
+                                  <div className="mt-2 grid grid-cols-4 gap-2">
+                                    {existing.slice(0, 8).map((src, idx) => (
+                                      // eslint-disable-next-line @next/next/no-img-element
+                                      <img
+                                        key={`${src}-${idx}`}
+                                        src={src}
+                                        alt={`${c} existing ${idx + 1}`}
+                                        className="h-16 w-full rounded-lg object-cover"
+                                      />
+                                    ))}
+                                  </div>
+                                ) : null}
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    ) : null}
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>
                         <label className="block text-sm font-medium text-zinc-700">

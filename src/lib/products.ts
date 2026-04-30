@@ -54,6 +54,8 @@ export type Product = {
   discountPercent: number;
   /** All images for the product (first is the primary image). */
   images: string[];
+  /** Optional mapping of color -> images for that color. */
+  colorImages: Record<string, string[]>;
   /** Available color options (optional). */
   colors: string[];
   /** Available size options (optional). */
@@ -77,19 +79,20 @@ export function stripMeta(description: string | null | undefined) {
     /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) {
-    const cleaned = stripVariantsMeta(stripImagesMeta(withMeta[5]))?.trim();
+    const cleaned = stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(withMeta[5])))?.trim();
     return cleaned ? cleaned : null;
   }
   const match = description.match(
     /^__category__:(sarees|kurtis|blouses|gowns)__([\s\S]*)$/i,
   );
-  if (!match) return stripVariantsMeta(stripImagesMeta(description));
-  const cleaned = stripVariantsMeta(stripImagesMeta(match[2]))?.trim();
+  if (!match) return stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(description)));
+  const cleaned = stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(match[2])))?.trim();
   return cleaned ? cleaned : null;
 }
 
 const IMAGES_META_MARKER = "__images__:";
 const VARIANTS_META_MARKER = "__variants__:";
+const COLOR_IMAGES_META_MARKER = "__color_images__:";
 
 function safeJsonParse(value: string): any {
   try {
@@ -151,6 +154,58 @@ function sanitizeList(values: unknown): string[] {
     .map((v) => String(v ?? "").trim())
     .filter(Boolean)
     .filter((v, i, arr) => arr.indexOf(v) === i);
+}
+
+function sanitizeColorKey(value: unknown) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function sanitizeColorImagesMap(input: unknown): Record<string, string[]> {
+  if (!input || typeof input !== "object") return {};
+  const out: Record<string, string[]> = {};
+  for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
+    const key = sanitizeColorKey(k);
+    if (!key) continue;
+    const urls = sanitizeList(v);
+    if (!urls.length) continue;
+    out[key] = urls;
+  }
+  return out;
+}
+
+export function appendColorImagesMeta(
+  descriptionWithMeta: string,
+  colorImages: Record<string, string[] | null | undefined> | null | undefined,
+) {
+  const base = stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(descriptionWithMeta) ?? descriptionWithMeta) ?? descriptionWithMeta) ?? descriptionWithMeta;
+  const mapped = sanitizeColorImagesMap(colorImages ?? {});
+  if (!Object.keys(mapped).length) return base;
+  return `${base}\n${COLOR_IMAGES_META_MARKER}${encodeURIComponent(JSON.stringify(mapped))}`;
+}
+
+export function decodeColorImagesMeta(description: string | null | undefined): Record<string, string[]> {
+  if (!description) return {};
+  const idx = description.lastIndexOf(COLOR_IMAGES_META_MARKER);
+  if (idx === -1) return {};
+  const raw = description.slice(idx + COLOR_IMAGES_META_MARKER.length).trim();
+  if (!raw) return {};
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  })();
+  const parsed = safeJsonParse(decoded);
+  return sanitizeColorImagesMap(parsed);
+}
+
+function stripColorImagesMeta(description: string | null | undefined) {
+  if (!description) return null;
+  const idx = description.lastIndexOf(COLOR_IMAGES_META_MARKER);
+  if (idx === -1) return description;
+  const before = description.slice(0, idx);
+  return before.replace(/\n$/, "");
 }
 
 export function appendVariantsMeta(
@@ -285,6 +340,14 @@ export function normalizeProductRow(raw: any): Product {
   const variantsFromMeta = decodeVariantsMeta(rawDescription);
   const colors = sanitizeList(raw?.colors ?? raw?.color_options ?? variantsFromMeta.colors);
   const sizes = sanitizeList(raw?.sizes ?? raw?.size_options ?? variantsFromMeta.sizes);
+  const colorImages = (() => {
+    const fromColumn =
+      typeof raw?.color_images === "string"
+        ? safeJsonParse(raw.color_images)
+        : raw?.color_images ?? raw?.colorImages;
+    const mapped = sanitizeColorImagesMap(fromColumn);
+    return Object.keys(mapped).length ? mapped : decodeColorImagesMeta(rawDescription);
+  })();
 
   return {
     id: String(raw?.id ?? ""),
@@ -294,6 +357,7 @@ export function normalizeProductRow(raw: any): Product {
     originalPrice,
     discountPercent,
     images,
+    colorImages,
     colors,
     sizes,
     image: (raw?.image_url as string | null) ?? null,

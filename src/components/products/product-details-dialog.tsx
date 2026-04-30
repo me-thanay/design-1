@@ -22,20 +22,25 @@ export function ProductDetailsDialog({
   product: Product | null;
   fallbackImage: string;
 }) {
+  const [activeIdx, setActiveIdx] = React.useState(0);
+  const [selectedColor, setSelectedColor] = React.useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
+
   const images = React.useMemo(() => {
     if (!product) return [] as string[];
-    const base = (product.images ?? []).filter(Boolean);
+    const key = (selectedColor ?? "").trim().toLowerCase();
+    const fromColor =
+      key && product.colorImages?.[key]?.length
+        ? product.colorImages[key]
+        : [];
+    const base = ((fromColor.length ? fromColor : product.images) ?? []).filter(Boolean);
     const primary = product.image ? [product.image] : [];
     const merged = [...base, ...primary]
       .map((u) => String(u || "").trim())
       .filter(Boolean)
       .filter((u, i, arr) => arr.indexOf(u) === i);
     return merged.length ? merged : [fallbackImage];
-  }, [product, fallbackImage]);
-
-  const [activeIdx, setActiveIdx] = React.useState(0);
-  const [selectedColor, setSelectedColor] = React.useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
+  }, [product, fallbackImage, selectedColor]);
 
   React.useEffect(() => {
     if (!open) return;
@@ -43,6 +48,11 @@ export function ProductDetailsDialog({
     setSelectedColor(null);
     setSelectedSize(null);
   }, [open, product?.id]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    setActiveIdx(0);
+  }, [open, selectedColor]);
 
   const activeImage = images[activeIdx] ?? images[0] ?? fallbackImage;
 
