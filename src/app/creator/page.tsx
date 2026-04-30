@@ -791,6 +791,21 @@ export default function CreatorPage() {
       });
       if (
         insertRes.error &&
+        /Could not find the 'color_images' column of 'clothes'/i.test(
+          insertRes.error.message ?? "",
+        )
+      ) {
+        // Fall back to description meta only for color-wise images.
+        insertRes = await supabase.from("clothes").insert({
+          ...baseRow,
+          discount_percent: discountNumber,
+          image_urls: imageUrls,
+          colors: colorsList,
+          sizes: sizesList,
+        });
+      }
+      if (
+        insertRes.error &&
         /Could not find the 'discount_percent' column of 'clothes'/i.test(
           insertRes.error.message ?? "",
         )
