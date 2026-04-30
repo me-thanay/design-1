@@ -122,6 +122,10 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
                 subs={subs}
                 categoryLinks={categoryLinks}
                 basePath={basePath}
+                selectedSub={selectedSub}
+                selectedColor={selectedColor}
+                selectedSize={selectedSize}
+                variantFacets={variantFacets}
                 onNavigate={() => setOpen(false)}
               />
             </div>
