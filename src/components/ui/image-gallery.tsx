@@ -53,6 +53,12 @@ export function ImageGallery({
   const [hovered, setHovered] = React.useState<number | null>(null);
   const fallbackSrc = "/stock_images/banarasi%20silk.jpeg";
   const [isTouch, setIsTouch] = React.useState(false);
+  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
+  const dragRef = React.useRef<{ active: boolean; startX: number; startLeft: number }>({
+    active: false,
+    startX: 0,
+    startLeft: 0,
+  });
   const [activeImageIndexes, setActiveImageIndexes] = React.useState<Record<number, number>>(
     {},
   );
@@ -138,7 +144,38 @@ export function ImageGallery({
         ) : null}
 
         {/* Horizontal scroll keeps the layout stable (no reflow on hover). */}
-        <div className={cn("no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mx-0 sm:px-0 sm:gap-6 snap-x snap-mandatory", Boolean(title?.trim?.() || subtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0")}>
+        <div
+          ref={scrollerRef}
+          className={cn(
+            "no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mx-0 sm:px-0 sm:gap-6 snap-x snap-mandatory",
+            "select-none touch-pan-x",
+            Boolean(title?.trim?.() || subtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0",
+          )}
+          onPointerDown={(e) => {
+            const el = scrollerRef.current;
+            if (!el) return;
+            // Don't hijack interactions inside buttons/links/inputs.
+            const t = e.target as HTMLElement | null;
+            if (t?.closest("button,a,input,textarea,select,[role='button']")) return;
+            dragRef.current.active = true;
+            dragRef.current.startX = e.clientX;
+            dragRef.current.startLeft = el.scrollLeft;
+            el.setPointerCapture?.(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            const el = scrollerRef.current;
+            if (!el) return;
+            if (!dragRef.current.active) return;
+            const dx = e.clientX - dragRef.current.startX;
+            el.scrollLeft = dragRef.current.startLeft - dx;
+          }}
+          onPointerUp={() => {
+            dragRef.current.active = false;
+          }}
+          onPointerCancel={() => {
+            dragRef.current.active = false;
+          }}
+        >
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
             (() => {
               const clickable = Boolean(onItemClick && it.product);
