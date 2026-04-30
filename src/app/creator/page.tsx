@@ -500,6 +500,20 @@ export default function CreatorPage() {
         ),
       ])) as { data: any[] | null; error: { message: string } | null };
 
+      if (res.error && /created_at|column .*created_at/i.test(res.error.message ?? "")) {
+        const fallback = await supabase.from("clothes").select("*").order("id", { ascending: false });
+        if (!fallback.error) {
+          const normalizedFallback = ((fallback.data ?? []) as any[]).map((it) => normalizeClothingItem(it));
+          setItems(normalizedFallback);
+          try {
+            writeLocalClothes(normalizedFallback);
+          } catch {
+            // ignore
+          }
+          return;
+        }
+      }
+
       if (res.error) {
         setError(res.error.message);
         setItems([]);
@@ -657,12 +671,14 @@ export default function CreatorPage() {
         toast.success("Product added", { description: `You added “${form.name}”.` });
         // Optional email to admin (requires SMTP env vars on the server).
         try {
+          const enabled = process.env.NEXT_PUBLIC_ENABLE_EMAIL_NOTIFICATIONS === "true";
+          if (!enabled) throw new Error("disabled");
           const toList = (process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "")
             .split(",")
             .map((e) => e.trim())
             .filter(Boolean);
           if (toList.length) {
-            await fetch("/api/notify", {
+            const resp = await fetch("/api/notify", {
               method: "POST",
               headers: { "content-type": "application/json" },
               body: JSON.stringify({
@@ -671,6 +687,7 @@ export default function CreatorPage() {
                 text: `A product was added in Creator.\n\nName: ${form.name}\nCategory: ${form.category}\nSubcategory: ${form.subcategory}\nPrice: ₹${priceNumber}\nColors: ${colorsList.join(", ") || "—"}\nSizes: ${sizesList.join(", ") || "—"}`,
               }),
             });
+            void resp;
           }
         } catch {
           // ignore
@@ -796,12 +813,14 @@ export default function CreatorPage() {
       await loadItems();
       toast.success("Product added", { description: `You added “${form.name}”.` });
       try {
+        const enabled = process.env.NEXT_PUBLIC_ENABLE_EMAIL_NOTIFICATIONS === "true";
+        if (!enabled) throw new Error("disabled");
         const toList = (process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "")
           .split(",")
           .map((e) => e.trim())
           .filter(Boolean);
         if (toList.length) {
-          await fetch("/api/notify", {
+          const resp = await fetch("/api/notify", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -810,6 +829,7 @@ export default function CreatorPage() {
               text: `A product was added in Creator.\n\nName: ${form.name}\nCategory: ${form.category}\nSubcategory: ${form.subcategory}\nPrice: ₹${priceNumber}\nColors: ${colorsList.join(", ") || "—"}\nSizes: ${sizesList.join(", ") || "—"}`,
             }),
           });
+          void resp;
         }
       } catch {
         // ignore

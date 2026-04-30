@@ -113,20 +113,25 @@ export function ProductsGrid({
           const parsed = raw ? (JSON.parse(raw) as any[]) : [];
           rows = Array.isArray(parsed) ? parsed : [];
         } else {
-          let q = supabase
-            .from("clothes")
-            .select("*")
-            .eq("in_stock", true)
-            .order("created_at", { ascending: false });
+          const base = supabase.from("clothes").select("*").eq("in_stock", true);
+          // Some Supabase tables may not have `created_at`. Try it first for best UX,
+          // then gracefully fall back to ordering by `id`.
+          let res = await base.order("created_at", { ascending: false });
+          if (
+            res.error &&
+            /created_at|column .*created_at/i.test(res.error.message ?? "")
+          ) {
+            res = await base.order("id", { ascending: false });
+          }
 
           if (category) {
             // category may be stored in a column or encoded in description meta.
             // We filter client-side after normalize to support both shapes.
           }
 
-          const { data, error } = await q;
+          const { data, error } = res;
           if (error) {
-            setError(error.message);
+            setError(error.message || "Could not load products");
             setItems([]);
             return;
           }

@@ -138,11 +138,12 @@ export function HomeBestSellersSection() {
           const parsed = raw ? (JSON.parse(raw) as any[]) : [];
           rows = Array.isArray(parsed) ? parsed : [];
         } else {
-          const { data, error } = await supabase
-            .from("clothes")
-            .select("*")
-            .eq("in_stock", true)
-            .order("created_at", { ascending: false });
+          const base = supabase.from("clothes").select("*").eq("in_stock", true);
+          let res = await base.order("created_at", { ascending: false });
+          if (res.error && /created_at|column .*created_at/i.test(res.error.message ?? "")) {
+            res = await base.order("id", { ascending: false });
+          }
+          const { data, error } = res;
           if (error || !data) {
             setSlides(FALLBACK_SLIDES);
             setReady(true);

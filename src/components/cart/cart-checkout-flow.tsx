@@ -253,6 +253,11 @@ export function CartCheckoutFlow() {
 
       // Optional email notifications (requires SMTP env vars on the server).
       try {
+        const enabled = process.env.NEXT_PUBLIC_ENABLE_EMAIL_NOTIFICATIONS === "true";
+        if (!enabled) {
+          // skip calling the API to avoid noisy 501s in console when SMTP isn't configured
+          throw new Error("disabled");
+        }
         const adminTo = process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "";
         const itemLines = items
           .map((i) => {
@@ -291,7 +296,7 @@ export function CartCheckoutFlow() {
         ];
 
         if (toList.length) {
-          await fetch("/api/notify", {
+          const resp = await fetch("/api/notify", {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -300,6 +305,8 @@ export function CartCheckoutFlow() {
               text,
             }),
           });
+          // Ignore failures silently.
+          void resp;
         }
       } catch {
         // ignore email failures (order already placed)

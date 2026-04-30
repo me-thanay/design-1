@@ -186,16 +186,16 @@ export function CategorySubcategoryProductSections({
               whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
               onClick={() => {
-                const el = document.getElementById(`${subAnchorId(sub)}-grid`);
-                el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                const target = document.getElementById(`${subAnchorId(sub)}-grid`);
+                target?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               role="button"
               tabIndex={0}
               onKeyDown={(e) => {
                 if (e.key !== "Enter" && e.key !== " ") return;
                 e.preventDefault();
-                const el = document.getElementById(`${subAnchorId(sub)}-grid`);
-                el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                const target = document.getElementById(`${subAnchorId(sub)}-grid`);
+                target?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
             >
               {(() => {
@@ -240,8 +240,8 @@ export function CategorySubcategoryProductSections({
                     href={`#${subAnchorId(sub)}-grid`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      const el = document.getElementById(`${subAnchorId(sub)}-grid`);
-                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      const target = document.getElementById(`${subAnchorId(sub)}-grid`);
+                      target?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }}
                     className="inline-flex rounded-full bg-black/35 px-3.5 py-1.5 text-xs font-semibold text-white ring-1 ring-white/20 backdrop-blur hover:bg-black/45 active:scale-[0.98] transition"
                     aria-label={`Swipe products below for ${titleCaseLine(sub)}`}
@@ -252,8 +252,8 @@ export function CategorySubcategoryProductSections({
                     href={`#${subAnchorId(sub)}-grid`}
                     onClick={(e) => {
                       e.stopPropagation();
-                      const el = document.getElementById(`${subAnchorId(sub)}-grid`);
-                      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+                      const target = document.getElementById(`${subAnchorId(sub)}-grid`);
+                      target?.scrollIntoView({ behavior: "smooth", block: "start" });
                     }}
                     className="inline-flex rounded-full bg-white px-3.5 py-1.5 text-xs font-bold text-neutral-900 shadow hover:bg-neutral-50 active:scale-[0.98] transition"
                     aria-label={`View items in ${titleCaseLine(sub)}`}
