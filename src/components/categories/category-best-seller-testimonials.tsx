@@ -5,6 +5,7 @@ import ImageGallery from "@/components/ui/image-gallery";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import type { ClothingCategory, Product } from "@/lib/products";
 import { normalizeProductRow } from "@/lib/products";
+import { ProductDetailsDialog } from "@/components/products/product-details-dialog";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
 
@@ -83,6 +84,8 @@ export function CategoryBestSellerTestimonials({
 }: Props) {
   const [items, setItems] = React.useState<ReturnType<typeof productToGalleryItem>[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
+  const [activeProduct, setActiveProduct] = React.useState<Product | null>(null);
 
   React.useEffect(() => {
     const load = async () => {
@@ -153,6 +156,17 @@ export function CategoryBestSellerTestimonials({
         className="py-0"
         containerClassName="w-full px-0"
         headerAlign="left"
+        onItemClick={(it) => {
+          if (!it.product) return;
+          setActiveProduct(it.product);
+          setDetailsOpen(true);
+        }}
+      />
+      <ProductDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        product={activeProduct}
+        fallbackImage={fallbackImageFor(category)}
       />
     </div>
   );

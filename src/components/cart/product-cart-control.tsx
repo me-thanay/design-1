@@ -60,13 +60,19 @@ export function ProductCartControl({
 
   const handleFirstAdd = () => {
     const needsChoice = (product.colors?.length || product.sizes?.length) && !selectedColor && !selectedSize;
-    if (needsChoice && onSelectOptions) {
-      onSelectOptions();
+    if (needsChoice) {
+      if (onSelectOptions) {
+        onSelectOptions();
+        return;
+      }
+      toast.error("Select color/size first", {
+        description: "Open the product details and choose the correct options before adding to cart.",
+      });
       return;
     }
     addItem(cartPayload, 1);
     toast.success("Successfully added to cart", {
-      description: `${product.name} is in your cart.`,
+      description: `${cartPayload.name} is in your cart.`,
     });
   };
 

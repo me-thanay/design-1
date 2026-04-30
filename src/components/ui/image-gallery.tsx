@@ -354,6 +354,23 @@ export function ImageGallery({
                       ) : null}
                     </div>
 
+                    {it.product && (it.product.colors?.length || it.product.sizes?.length) ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5 text-[11px] font-semibold text-neutral-700">
+                        {it.product.colors?.length ? (
+                          <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 ring-1 ring-black/5">
+                            Colors: {it.product.colors.slice(0, 3).join(", ")}
+                            {it.product.colors.length > 3 ? "…" : ""}
+                          </span>
+                        ) : null}
+                        {it.product.sizes?.length ? (
+                          <span className="inline-flex rounded-full bg-neutral-100 px-2.5 py-1 ring-1 ring-black/5">
+                            Sizes: {it.product.sizes.slice(0, 4).join(", ")}
+                            {it.product.sizes.length > 4 ? "…" : ""}
+                          </span>
+                        ) : null}
+                      </div>
+                    ) : null}
+
                     {(it.priceLabel || it.ratingLabel) ? (
                       <div className="mt-3 flex flex-wrap items-center gap-2">
                         {it.priceLabel ? (

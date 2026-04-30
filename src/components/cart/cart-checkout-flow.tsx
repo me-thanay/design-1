@@ -251,6 +251,60 @@ export function CartCheckoutFlow() {
         if (res.error) throw res.error;
       }
 
+      // Optional email notifications (requires SMTP env vars on the server).
+      try {
+        const adminTo = process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "";
+        const itemLines = items
+          .map((i) => {
+            const extra =
+              (i as any).color || (i as any).size
+                ? ` (${[(i as any).color ? `Color: ${(i as any).color}` : null, (i as any).size ? `Size: ${(i as any).size}` : null].filter(Boolean).join(", ")})`
+                : "";
+            return `- ${i.name}${extra} × ${i.qty} = ${formatINR(i.price * i.qty)}`;
+          })
+          .join("\n");
+
+        const text = [
+          "New order placed",
+          "",
+          `Name: ${fullName.trim()}`,
+          `Phone: ${phone.trim()}`,
+          altPhone.trim() ? `Alternate: ${altPhone.trim()}` : null,
+          dob.trim() ? `DOB: ${dob.trim()}` : null,
+          "",
+          `Delivery: ${manualLocation.trim()}`,
+          "",
+          "Items:",
+          itemLines,
+          "",
+          `Total: ${formatINR(total)}`,
+        ]
+          .filter(Boolean)
+          .join("\n");
+
+        const toList = [
+          ...(customerEmail ? [customerEmail] : []),
+          ...adminTo
+            .split(",")
+            .map((e) => e.trim())
+            .filter(Boolean),
+        ];
+
+        if (toList.length) {
+          await fetch("/api/notify", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              to: toList,
+              subject: `Sawbhagya order · ${fullName.trim()}`,
+              text,
+            }),
+          });
+        }
+      } catch {
+        // ignore email failures (order already placed)
+      }
+
       clear();
       toast.success(
         paymentMethod === "card"

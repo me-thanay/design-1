@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
+import { toast } from "sonner";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { PageShell } from "@/components/ui/page-shell";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
@@ -40,6 +41,11 @@ function parseCommaList(value: string) {
     .map((v) => v.trim())
     .filter(Boolean)
     .filter((v, i, arr) => arr.indexOf(v) === i);
+}
+
+function prettyListPreview(value: string) {
+  const list = parseCommaList(value);
+  return list.slice(0, 8);
 }
 
 function normalizeRating(value?: number | string | null) {
@@ -648,6 +654,27 @@ export default function CreatorPage() {
         const next = [nextItem, ...prev];
         writeLocalClothes(next);
         setItems(next.map((it) => normalizeClothingItem(it)));
+        toast.success("Product added", { description: `You added “${form.name}”.` });
+        // Optional email to admin (requires SMTP env vars on the server).
+        try {
+          const toList = (process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "")
+            .split(",")
+            .map((e) => e.trim())
+            .filter(Boolean);
+          if (toList.length) {
+            await fetch("/api/notify", {
+              method: "POST",
+              headers: { "content-type": "application/json" },
+              body: JSON.stringify({
+                to: toList,
+                subject: `Product added · ${form.name}`,
+                text: `A product was added in Creator.\n\nName: ${form.name}\nCategory: ${form.category}\nSubcategory: ${form.subcategory}\nPrice: ₹${priceNumber}\nColors: ${colorsList.join(", ") || "—"}\nSizes: ${sizesList.join(", ") || "—"}`,
+              }),
+            });
+          }
+        } catch {
+          // ignore
+        }
         setForm({
           name: "",
           description: "",
@@ -767,6 +794,26 @@ export default function CreatorPage() {
         in_stock: true,
       });
       await loadItems();
+      toast.success("Product added", { description: `You added “${form.name}”.` });
+      try {
+        const toList = (process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "")
+          .split(",")
+          .map((e) => e.trim())
+          .filter(Boolean);
+        if (toList.length) {
+          await fetch("/api/notify", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+              to: toList,
+              subject: `Product added · ${form.name}`,
+              text: `A product was added in Creator.\n\nName: ${form.name}\nCategory: ${form.category}\nSubcategory: ${form.subcategory}\nPrice: ₹${priceNumber}\nColors: ${colorsList.join(", ") || "—"}\nSizes: ${sizesList.join(", ") || "—"}`,
+            }),
+          });
+        }
+      } catch {
+        // ignore
+      }
       setFormImageFiles([]);
       setFormImagePreviewUrls([]);
     } catch (err: any) {
@@ -960,6 +1007,7 @@ export default function CreatorPage() {
 
       setEditing(null);
       await loadItems();
+      toast.success("Product updated", { description: `Saved “${editForm.name}”.` });
     } catch (err: any) {
       setError(err?.message ?? "Could not update item");
     } finally {
@@ -1239,6 +1287,18 @@ export default function CreatorPage() {
                       placeholder="Red, Green, Black"
                       className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                     />
+                    {prettyListPreview((form as any).colors ?? "").length ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {prettyListPreview((form as any).colors ?? "").map((c) => (
+                          <span
+                            key={c}
+                            className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-black/5"
+                          >
+                            {c}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-zinc-700">
@@ -1251,6 +1311,18 @@ export default function CreatorPage() {
                       placeholder="S, M, L, XL"
                       className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                     />
+                    {prettyListPreview((form as any).sizes ?? "").length ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {prettyListPreview((form as any).sizes ?? "").map((s) => (
+                          <span
+                            key={s}
+                            className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-black/5"
+                          >
+                            {s}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
                 <div>
@@ -1537,6 +1609,18 @@ export default function CreatorPage() {
                           placeholder="Red, Green, Black"
                           className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                         />
+                        {prettyListPreview((editForm as any).colors ?? "").length ? (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {prettyListPreview((editForm as any).colors ?? "").map((c) => (
+                              <span
+                                key={c}
+                                className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-black/5"
+                              >
+                                {c}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
                       <div>
                         <label className="block text-sm font-medium text-zinc-700">
@@ -1549,6 +1633,18 @@ export default function CreatorPage() {
                           placeholder="S, M, L, XL"
                           className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
                         />
+                        {prettyListPreview((editForm as any).sizes ?? "").length ? (
+                          <div className="mt-2 flex flex-wrap gap-1.5">
+                            {prettyListPreview((editForm as any).sizes ?? "").map((s) => (
+                              <span
+                                key={s}
+                                className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-black/5"
+                              >
+                                {s}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null}
                       </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
