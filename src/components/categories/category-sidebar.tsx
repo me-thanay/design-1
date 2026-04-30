@@ -9,6 +9,8 @@ import { useSearchParams } from "next/navigation";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { cn } from "@/lib/utils";
 
+const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
+
 function uniqSorted(values: string[]) {
   const seen = new Set<string>();
   const out: string[] = [];
@@ -54,16 +56,23 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
 
   React.useEffect(() => {
     const load = async () => {
-      if (!supabaseEnabled) return;
       try {
-        const base = supabase.from("clothes").select("*").eq("in_stock", true);
-        let res = await base.order("created_at", { ascending: false });
-        if (res.error && /created_at|column .*created_at/i.test(res.error.message ?? "")) {
-          res = await base.order("id", { ascending: false });
+        let rows: any[] = [];
+        if (!supabaseEnabled) {
+          const raw = window.localStorage.getItem(LOCAL_CLOTHES_KEY);
+          const parsed = raw ? (JSON.parse(raw) as any[]) : [];
+          rows = Array.isArray(parsed) ? parsed : [];
+        } else {
+          const base = supabase.from("clothes").select("*").eq("in_stock", true);
+          let res = await base.order("created_at", { ascending: false });
+          if (res.error && /created_at|column .*created_at/i.test(res.error.message ?? "")) {
+            res = await base.order("id", { ascending: false });
+          }
+          if (res.error || !res.data) return;
+          rows = (res.data as any[]) ?? [];
         }
-        if (res.error || !res.data) return;
 
-        const products = (res.data as any[])
+        const products = rows
           .map((r) => normalizeProductRow(r))
           .filter((p: Product) => p.inStock && p.category === category)
           .filter((p: Product) =>
