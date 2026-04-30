@@ -54,10 +54,18 @@ export function ImageGallery({
   const fallbackSrc = "/stock_images/banarasi%20silk.jpeg";
   const [isTouch, setIsTouch] = React.useState(false);
   const scrollerRef = React.useRef<HTMLDivElement | null>(null);
-  const dragRef = React.useRef<{ active: boolean; startX: number; startLeft: number }>({
+  const dragRef = React.useRef<{
+    active: boolean;
+    moved: boolean;
+    startX: number;
+    startLeft: number;
+    lastEndAt: number;
+  }>({
     active: false,
+    moved: false,
     startX: 0,
     startLeft: 0,
+    lastEndAt: 0,
   });
   const [activeImageIndexes, setActiveImageIndexes] = React.useState<Record<number, number>>(
     {},
@@ -156,8 +164,9 @@ export function ImageGallery({
             if (!el) return;
             // Don't hijack interactions inside buttons/links/inputs.
             const t = e.target as HTMLElement | null;
-            if (t?.closest("button,a,input,textarea,select,[role='button']")) return;
+            if (t?.closest("button,a,input,textarea,select")) return;
             dragRef.current.active = true;
+            dragRef.current.moved = false;
             dragRef.current.startX = e.clientX;
             dragRef.current.startLeft = el.scrollLeft;
             el.setPointerCapture?.(e.pointerId);
@@ -167,13 +176,28 @@ export function ImageGallery({
             if (!el) return;
             if (!dragRef.current.active) return;
             const dx = e.clientX - dragRef.current.startX;
+            if (!dragRef.current.moved && Math.abs(dx) > 6) {
+              dragRef.current.moved = true;
+            }
             el.scrollLeft = dragRef.current.startLeft - dx;
           }}
           onPointerUp={() => {
             dragRef.current.active = false;
+            dragRef.current.lastEndAt = Date.now();
           }}
           onPointerCancel={() => {
             dragRef.current.active = false;
+            dragRef.current.lastEndAt = Date.now();
+          }}
+          onWheel={(e) => {
+            const el = scrollerRef.current;
+            if (!el) return;
+            // Trackpads can scroll horizontally already; for mouse wheels,
+            // map vertical wheel to horizontal scroll so the gallery always moves.
+            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+              el.scrollLeft += e.deltaY;
+              e.preventDefault();
+            }
           }}
         >
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
@@ -203,6 +227,8 @@ export function ImageGallery({
                   onHoverStart={() => setHovered(idx)}
                   onHoverEnd={() => setHovered((v) => (v === idx ? null : v))}
                   onClick={() => {
+                    // If this was a drag-to-scroll gesture, don't treat it as a click.
+                    if (dragRef.current.moved || Date.now() - dragRef.current.lastEndAt < 180) return;
                     if (clickable) {
                       onItemClick?.(it);
                       return;
