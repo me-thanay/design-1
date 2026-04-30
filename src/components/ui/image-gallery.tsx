@@ -26,8 +26,8 @@ export type ImageGalleryItem = {
 };
 
 export type ImageGalleryProps = {
-  title?: string;
-  subtitle?: string;
+  title?: string | null;
+  subtitle?: string | null;
   items: ImageGalleryItem[];
   className?: string;
   /** Optional click handler for "View details". */
@@ -41,8 +41,8 @@ export type ImageGalleryProps = {
 };
 
 export function ImageGallery({
-  title = "Best sellers in detail",
-  subtitle = "Hover a card to preview — then browse the collection.",
+  title,
+  subtitle,
   items,
   className,
   onItemClick,
@@ -50,6 +50,12 @@ export function ImageGallery({
   headerAlign = "center",
   maxItems = 10,
 }: ImageGalleryProps) {
+  const resolvedTitle =
+    title === undefined ? "Best sellers in detail" : title;
+  const resolvedSubtitle =
+    subtitle === undefined
+      ? "Hover a card to preview — then browse the collection."
+      : subtitle;
   const [hovered, setHovered] = React.useState<number | null>(null);
   const fallbackSrc = "/stock_images/banarasi%20silk.jpeg";
   const [isTouch, setIsTouch] = React.useState(false);
@@ -145,7 +151,7 @@ export function ImageGallery({
   return (
     <section className={cn("w-full py-10 sm:py-14", className)}>
       <div className={cn(containerClassName)}>
-        {Boolean(title?.trim?.() || subtitle?.trim?.()) ? (
+        {Boolean(resolvedTitle?.trim?.() || resolvedSubtitle?.trim?.()) ? (
           <div
             className={cn(
               "mx-auto max-w-3xl",
@@ -153,13 +159,15 @@ export function ImageGallery({
               headerAlign === "left" ? "mx-0" : null,
             )}
           >
-            {title ? (
+            {resolvedTitle ? (
               <h2 className="text-balance font-serif text-2xl font-bold tracking-tight text-neutral-900 sm:text-3xl">
-                {title}
+                {resolvedTitle}
               </h2>
             ) : null}
-            {subtitle ? (
-              <p className="mt-2 text-sm text-neutral-600 sm:text-base">{subtitle}</p>
+            {resolvedSubtitle ? (
+              <p className="mt-2 text-sm text-neutral-600 sm:text-base">
+                {resolvedSubtitle}
+              </p>
             ) : null}
             {isTouch ? (
               <p className="mt-2 text-xs font-semibold uppercase tracking-[0.18em] text-neutral-500">
@@ -175,7 +183,7 @@ export function ImageGallery({
           className={cn(
             "no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mx-0 sm:px-0 sm:gap-6 snap-x snap-mandatory",
             "select-none touch-pan-x",
-            Boolean(title?.trim?.() || subtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0",
+            Boolean(resolvedTitle?.trim?.() || resolvedSubtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0",
           )}
           onPointerDown={(e) => {
             const el = scrollerRef.current;

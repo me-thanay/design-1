@@ -206,8 +206,8 @@ export function ProductsGrid({
         </div>
       ) : variant === "gallery" ? (
         <ImageGallery
-          title={undefined}
-          subtitle={undefined}
+          title={null}
+          subtitle={null}
           className="py-0"
           containerClassName="w-full px-0"
           headerAlign="left"
