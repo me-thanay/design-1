@@ -379,9 +379,18 @@ export function CartCheckoutFlow() {
                       </div>
                       <div className="flex min-w-0 flex-1 flex-col justify-between gap-2">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-semibold text-neutral-900 line-clamp-2">
-                            {item.name}
-                          </p>
+                          <div className="min-w-0">
+                            <p className="text-sm font-semibold text-neutral-900 line-clamp-2">
+                              {item.name}
+                            </p>
+                            {(item.color || item.size) ? (
+                              <p className="mt-1 text-[11px] font-medium text-neutral-600">
+                                {item.color ? `Color: ${item.color}` : null}
+                                {item.color && item.size ? " · " : null}
+                                {item.size ? `Size: ${item.size}` : null}
+                              </p>
+                            ) : null}
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"

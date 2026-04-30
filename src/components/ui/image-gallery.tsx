@@ -378,6 +378,7 @@ export function ImageGallery({
                             image={imageSources[activeImageIdx] ?? it.cartImage ?? it.src}
                             tone="card"
                             compact
+                            onSelectOptions={() => onItemClick?.(it)}
                           />
                         </div>
                       </div>

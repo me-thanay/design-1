@@ -34,10 +34,14 @@ export function ProductDetailsDialog({
   }, [product, fallbackImage]);
 
   const [activeIdx, setActiveIdx] = React.useState(0);
+  const [selectedColor, setSelectedColor] = React.useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!open) return;
     setActiveIdx(0);
+    setSelectedColor(null);
+    setSelectedSize(null);
   }, [open, product?.id]);
 
   const activeImage = images[activeIdx] ?? images[0] ?? fallbackImage;
@@ -154,11 +158,67 @@ export function ProductDetailsDialog({
                 )}
               </div>
 
+              {(product.colors?.length || product.sizes?.length) ? (
+                <div className="mt-5 space-y-4">
+                  {product.colors?.length ? (
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                        Color
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {product.colors.map((c) => (
+                          <button
+                            key={c}
+                            type="button"
+                            onClick={() => setSelectedColor(c)}
+                            className={[
+                              "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition",
+                              selectedColor?.toLowerCase() === c.toLowerCase()
+                                ? "border-neutral-900 bg-neutral-900 text-white"
+                                : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
+                            ].join(" ")}
+                          >
+                            {c}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  {product.sizes?.length ? (
+                    <div>
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                        Size
+                      </p>
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {product.sizes.map((s) => (
+                          <button
+                            key={s}
+                            type="button"
+                            onClick={() => setSelectedSize(s)}
+                            className={[
+                              "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition",
+                              selectedSize?.toLowerCase() === s.toLowerCase()
+                                ? "border-neutral-900 bg-neutral-900 text-white"
+                                : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
+                            ].join(" ")}
+                          >
+                            {s}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              ) : null}
+
               <div className="mt-6" onClick={(e) => e.stopPropagation()}>
                 <ProductCartControl
                   product={product}
                   image={activeImage}
                   tone="card"
+                  selectedColor={selectedColor}
+                  selectedSize={selectedSize}
                 />
               </div>
             </div>

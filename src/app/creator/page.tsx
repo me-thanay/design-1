@@ -13,7 +13,7 @@ import {
   stripMeta,
   type ClothingCategory,
 } from "@/lib/products";
-import { appendImagesMeta, decodeImagesMeta } from "@/lib/products";
+import { appendImagesMeta, appendVariantsMeta, decodeImagesMeta, decodeVariantsMeta } from "@/lib/products";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
 const LOCAL_ORDERS_KEY = "freelance-1.local.orders.v1";
@@ -26,11 +26,21 @@ type ClothingItem = {
   discount_percent?: number | null;
   image_url: string | null;
   image_urls?: string[] | null;
+  colors?: string[] | null;
+  sizes?: string[] | null;
   in_stock: boolean;
   category?: ClothingCategory;
   subcategory?: string;
   rating?: number;
 };
+
+function parseCommaList(value: string) {
+  return value
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean)
+    .filter((v, i, arr) => arr.indexOf(v) === i);
+}
 
 function normalizeRating(value?: number | string | null) {
   const n = Number(value);
@@ -144,6 +154,17 @@ function normalizeClothingItem(raw: any): ClothingItem {
     .map((u) => String(u || "").trim())
     .filter(Boolean)
     .filter((u, i, arr) => arr.indexOf(u) === i);
+  const variantsFromMeta = decodeVariantsMeta(rawDescription);
+  const colors = Array.isArray(raw?.colors)
+    ? raw.colors
+    : Array.isArray((variantsFromMeta as any)?.colors)
+      ? (variantsFromMeta as any).colors
+      : [];
+  const sizes = Array.isArray(raw?.sizes)
+    ? raw.sizes
+    : Array.isArray((variantsFromMeta as any)?.sizes)
+      ? (variantsFromMeta as any).sizes
+      : [];
   return {
     ...raw,
     description: cleanedDescription,
@@ -152,6 +173,8 @@ function normalizeClothingItem(raw: any): ClothingItem {
     rating,
     discount_percent,
     image_urls,
+    colors,
+    sizes,
   } as ClothingItem;
 }
 
@@ -233,6 +256,8 @@ export default function CreatorPage() {
     subcategory: SUBCATEGORIES.sarees[0],
     rating: "4",
     image_url: "",
+    colors: "",
+    sizes: "",
     in_stock: true,
   });
   const [formImageFiles, setFormImageFiles] = useState<File[]>([]);
@@ -251,6 +276,8 @@ export default function CreatorPage() {
     subcategory: SUBCATEGORIES.sarees[0],
     rating: "4",
     image_url: "",
+    colors: "",
+    sizes: "",
     in_stock: true,
   });
   const [editImageFiles, setEditImageFiles] = useState<File[]>([]);
@@ -574,6 +601,8 @@ export default function CreatorPage() {
       }
       const ratingNumber = normalizeRating(form.rating);
       const discountNumber = normalizeDiscountPercent(form.discount_percent);
+      const colorsList = parseCommaList(form.colors);
+      const sizesList = parseCommaList(form.sizes);
 
       let imageUrls: string[] = [];
       if (formImageFiles.length) {
@@ -588,15 +617,18 @@ export default function CreatorPage() {
         const nextId = prev.length
           ? Math.max(...prev.map((p) => p.id)) + 1
           : 1;
-        const descriptionWithMeta = appendImagesMeta(
-          encodeCategoryPrefix(
-            form.description || null,
-            form.category,
-            form.subcategory,
-            ratingNumber,
-            discountNumber,
+        const descriptionWithMeta = appendVariantsMeta(
+          appendImagesMeta(
+            encodeCategoryPrefix(
+              form.description || null,
+              form.category,
+              form.subcategory,
+              ratingNumber,
+              discountNumber,
+            ),
+            imageUrls,
           ),
-          imageUrls,
+          { colors: colorsList, sizes: sizesList },
         );
         const nextItem: ClothingItem = {
           id: nextId,
@@ -606,6 +638,8 @@ export default function CreatorPage() {
           discount_percent: discountNumber,
           image_url: primaryImageUrl,
           image_urls: imageUrls,
+          colors: colorsList,
+          sizes: sizesList,
           in_stock: form.in_stock,
           category: form.category,
           subcategory: form.subcategory,
@@ -623,6 +657,8 @@ export default function CreatorPage() {
           subcategory: SUBCATEGORIES[categoryFilter][0],
           rating: "4",
           image_url: "",
+          colors: "",
+          sizes: "",
           in_stock: true,
         });
         setFormImageFiles([]);
@@ -632,15 +668,18 @@ export default function CreatorPage() {
 
       const baseRow = {
         name: form.name,
-        description: appendImagesMeta(
-          encodeCategoryPrefix(
-            form.description || null,
-            form.category,
-            form.subcategory,
-            ratingNumber,
-            discountNumber,
+        description: appendVariantsMeta(
+          appendImagesMeta(
+            encodeCategoryPrefix(
+              form.description || null,
+              form.category,
+              form.subcategory,
+              ratingNumber,
+              discountNumber,
+            ),
+            imageUrls,
           ),
-          imageUrls,
+          { colors: colorsList, sizes: sizesList },
         ),
         price: priceNumber,
         image_url: primaryImageUrl,
@@ -654,6 +693,8 @@ export default function CreatorPage() {
         ...baseRow,
         discount_percent: discountNumber,
         image_urls: imageUrls,
+        colors: colorsList,
+        sizes: sizesList,
       });
       if (
         insertRes.error &&
@@ -673,6 +714,29 @@ export default function CreatorPage() {
         insertRes = await supabase.from("clothes").insert({
           ...baseRow,
           discount_percent: discountNumber,
+          colors: colorsList,
+          sizes: sizesList,
+        });
+        if (
+          insertRes.error &&
+          /Could not find the 'discount_percent' column of 'clothes'/i.test(
+            insertRes.error.message ?? "",
+          )
+        ) {
+          insertRes = await supabase.from("clothes").insert(baseRow);
+        }
+      }
+      if (
+        insertRes.error &&
+        /Could not find the 'colors' column of 'clothes'|Could not find the 'sizes' column of 'clothes'/i.test(
+          insertRes.error.message ?? "",
+        )
+      ) {
+        // fall back to description meta only
+        insertRes = await supabase.from("clothes").insert({
+          ...baseRow,
+          discount_percent: discountNumber,
+          image_urls: imageUrls,
         });
         if (
           insertRes.error &&
@@ -698,6 +762,8 @@ export default function CreatorPage() {
         subcategory: SUBCATEGORIES[categoryFilter][0],
         rating: "4",
         image_url: "",
+        colors: "",
+        sizes: "",
         in_stock: true,
       });
       await loadItems();
@@ -738,6 +804,8 @@ export default function CreatorPage() {
           item.category ?? decodeCategory(item.description),
         ),
       rating: String(normalizeRating(item.rating ?? decodeRating(item.description))),
+      colors: ((item.colors ?? decodeVariantsMeta(item.description).colors ?? []) as string[]).join(", "),
+      sizes: ((item.sizes ?? decodeVariantsMeta(item.description).sizes ?? []) as string[]).join(", "),
     });
   };
 
@@ -754,6 +822,8 @@ export default function CreatorPage() {
       }
       const ratingNumber = normalizeRating(editForm.rating);
       const discountNumber = normalizeDiscountPercent(editForm.discount_percent);
+      const colorsList = parseCommaList(editForm.colors);
+      const sizesList = parseCommaList(editForm.sizes);
 
       const hadNewImages = editImageFiles.length > 0;
       const keepExisting = editExistingImageUrls.length
@@ -775,20 +845,25 @@ export default function CreatorPage() {
             ? {
                 ...it,
                 name: editForm.name,
-                description: appendImagesMeta(
-                  encodeCategoryPrefix(
-                    editForm.description || null,
-                    editForm.category,
-                    editForm.subcategory,
-                    ratingNumber,
-                    discountNumber,
+                description: appendVariantsMeta(
+                  appendImagesMeta(
+                    encodeCategoryPrefix(
+                      editForm.description || null,
+                      editForm.category,
+                      editForm.subcategory,
+                      ratingNumber,
+                      discountNumber,
+                    ),
+                    nextImageUrls,
                   ),
-                  nextImageUrls,
+                  { colors: colorsList, sizes: sizesList },
                 ),
                 price: priceNumber,
                 discount_percent: discountNumber,
                 image_url: nextPrimaryImageUrl,
                 image_urls: nextImageUrls,
+                colors: colorsList,
+                sizes: sizesList,
                 in_stock: editForm.in_stock,
                 category: editForm.category,
                 subcategory: editForm.subcategory,
@@ -804,15 +879,18 @@ export default function CreatorPage() {
 
       const baseUpdate = {
         name: editForm.name,
-        description: appendImagesMeta(
-          encodeCategoryPrefix(
-            editForm.description || null,
-            editForm.category,
-            editForm.subcategory,
-            ratingNumber,
-            discountNumber,
+        description: appendVariantsMeta(
+          appendImagesMeta(
+            encodeCategoryPrefix(
+              editForm.description || null,
+              editForm.category,
+              editForm.subcategory,
+              ratingNumber,
+              discountNumber,
+            ),
+            nextImageUrls,
           ),
-          nextImageUrls,
+          { colors: colorsList, sizes: sizesList },
         ),
         price: priceNumber,
         image_url: nextPrimaryImageUrl,
@@ -825,6 +903,8 @@ export default function CreatorPage() {
           ...baseUpdate,
           discount_percent: discountNumber,
           image_urls: nextImageUrls,
+          colors: colorsList,
+          sizes: sizesList,
         })
         .eq("id", editing.id);
 
@@ -847,7 +927,7 @@ export default function CreatorPage() {
       ) {
         updateRes = await supabase
           .from("clothes")
-          .update({ ...baseUpdate, discount_percent: discountNumber })
+          .update({ ...baseUpdate, discount_percent: discountNumber, colors: colorsList, sizes: sizesList })
           .eq("id", editing.id);
         if (
           updateRes.error &&
@@ -860,6 +940,17 @@ export default function CreatorPage() {
             .update(baseUpdate)
             .eq("id", editing.id);
         }
+      }
+      if (
+        updateRes.error &&
+        /Could not find the 'colors' column of 'clothes'|Could not find the 'sizes' column of 'clothes'/i.test(
+          updateRes.error.message ?? "",
+        )
+      ) {
+        updateRes = await supabase
+          .from("clothes")
+          .update({ ...baseUpdate, discount_percent: discountNumber, image_urls: nextImageUrls })
+          .eq("id", editing.id);
       }
 
       if (updateRes.error) {
@@ -1136,6 +1227,32 @@ export default function CreatorPage() {
                     ))}
                   </select>
                 </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700">
+                      Colors (comma separated)
+                    </label>
+                    <input
+                      name="colors"
+                      value={(form as any).colors ?? ""}
+                      onChange={handleChange}
+                      placeholder="Red, Green, Black"
+                      className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-zinc-700">
+                      Sizes (comma separated)
+                    </label>
+                    <input
+                      name="sizes"
+                      value={(form as any).sizes ?? ""}
+                      onChange={handleChange}
+                      placeholder="S, M, L, XL"
+                      className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                    />
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-700">
                     Price (INR)
@@ -1407,6 +1524,32 @@ export default function CreatorPage() {
                           </option>
                         ))}
                       </select>
+                    </div>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700">
+                          Colors (comma separated)
+                        </label>
+                        <input
+                          name="colors"
+                          value={(editForm as any).colors ?? ""}
+                          onChange={handleEditChange}
+                          placeholder="Red, Green, Black"
+                          className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-zinc-700">
+                          Sizes (comma separated)
+                        </label>
+                        <input
+                          name="sizes"
+                          value={(editForm as any).sizes ?? ""}
+                          onChange={handleEditChange}
+                          placeholder="S, M, L, XL"
+                          className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                        />
+                      </div>
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>

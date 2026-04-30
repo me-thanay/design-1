@@ -54,6 +54,10 @@ export type Product = {
   discountPercent: number;
   /** All images for the product (first is the primary image). */
   images: string[];
+  /** Available color options (optional). */
+  colors: string[];
+  /** Available size options (optional). */
+  sizes: string[];
   image: string | null;
   inStock: boolean;
   category: ClothingCategory;
@@ -73,18 +77,19 @@ export function stripMeta(description: string | null | undefined) {
     /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) {
-    const cleaned = stripImagesMeta(withMeta[5])?.trim();
+    const cleaned = stripVariantsMeta(stripImagesMeta(withMeta[5]))?.trim();
     return cleaned ? cleaned : null;
   }
   const match = description.match(
     /^__category__:(sarees|kurtis|blouses|gowns)__([\s\S]*)$/i,
   );
-  if (!match) return stripImagesMeta(description);
-  const cleaned = stripImagesMeta(match[2])?.trim();
+  if (!match) return stripVariantsMeta(stripImagesMeta(description));
+  const cleaned = stripVariantsMeta(stripImagesMeta(match[2]))?.trim();
   return cleaned ? cleaned : null;
 }
 
 const IMAGES_META_MARKER = "__images__:";
+const VARIANTS_META_MARKER = "__variants__:";
 
 function safeJsonParse(value: string): any {
   try {
@@ -134,6 +139,57 @@ function stripImagesMeta(description: string | null | undefined) {
   const idx = description.lastIndexOf(IMAGES_META_MARKER);
   if (idx === -1) return description;
   // Remove marker + everything after it (and a trailing newline).
+  const before = description.slice(0, idx);
+  return before.replace(/\n$/, "");
+}
+
+type VariantsMeta = { colors?: string[]; sizes?: string[] };
+
+function sanitizeList(values: unknown): string[] {
+  if (!Array.isArray(values)) return [];
+  return values
+    .map((v) => String(v ?? "").trim())
+    .filter(Boolean)
+    .filter((v, i, arr) => arr.indexOf(v) === i);
+}
+
+export function appendVariantsMeta(
+  descriptionWithMeta: string,
+  variants: VariantsMeta | null | undefined,
+) {
+  const colors = sanitizeList(variants?.colors);
+  const sizes = sanitizeList(variants?.sizes);
+  const base = stripVariantsMeta(stripImagesMeta(descriptionWithMeta) ?? descriptionWithMeta) ?? descriptionWithMeta;
+  if (!colors.length && !sizes.length) return base;
+  const payload = { colors, sizes };
+  return `${base}\n${VARIANTS_META_MARKER}${encodeURIComponent(JSON.stringify(payload))}`;
+}
+
+export function decodeVariantsMeta(description: string | null | undefined): VariantsMeta {
+  if (!description) return {};
+  const idx = description.lastIndexOf(VARIANTS_META_MARKER);
+  if (idx === -1) return {};
+  const raw = description.slice(idx + VARIANTS_META_MARKER.length).trim();
+  if (!raw) return {};
+  const decoded = (() => {
+    try {
+      return decodeURIComponent(raw);
+    } catch {
+      return raw;
+    }
+  })();
+  const parsed = safeJsonParse(decoded);
+  if (!parsed || typeof parsed !== "object") return {};
+  return {
+    colors: sanitizeList((parsed as any).colors),
+    sizes: sanitizeList((parsed as any).sizes),
+  };
+}
+
+function stripVariantsMeta(description: string | null | undefined) {
+  if (!description) return null;
+  const idx = description.lastIndexOf(VARIANTS_META_MARKER);
+  if (idx === -1) return description;
   const before = description.slice(0, idx);
   return before.replace(/\n$/, "");
 }
@@ -226,6 +282,10 @@ export function normalizeProductRow(raw: any): Product {
     // de-dupe while keeping order
     .filter((u, i, arr) => arr.indexOf(u) === i);
 
+  const variantsFromMeta = decodeVariantsMeta(rawDescription);
+  const colors = sanitizeList(raw?.colors ?? raw?.color_options ?? variantsFromMeta.colors);
+  const sizes = sanitizeList(raw?.sizes ?? raw?.size_options ?? variantsFromMeta.sizes);
+
   return {
     id: String(raw?.id ?? ""),
     name: String(raw?.name ?? "Item"),
@@ -234,6 +294,8 @@ export function normalizeProductRow(raw: any): Product {
     originalPrice,
     discountPercent,
     images,
+    colors,
+    sizes,
     image: (raw?.image_url as string | null) ?? null,
     inStock: raw?.in_stock !== false,
     category,

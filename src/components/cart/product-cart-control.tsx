@@ -17,6 +17,10 @@ type ProductCartControlProps = {
   className?: string;
   /** Tighter paddings for gallery captions */
   compact?: boolean;
+  selectedColor?: string | null;
+  selectedSize?: string | null;
+  /** When product has options and none selected, call this instead of adding. */
+  onSelectOptions?: () => void;
 };
 
 export function ProductCartControl({
@@ -25,21 +29,41 @@ export function ProductCartControl({
   tone = "card",
   className,
   compact = false,
+  selectedColor = null,
+  selectedSize = null,
+  onSelectOptions,
 }: ProductCartControlProps) {
   const { addItem, qtyForProduct, increase, decrease } = useCart();
-  const qty = qtyForProduct(product.id);
+  const lineId = React.useMemo(() => {
+    const c = (selectedColor ?? "").trim().toLowerCase();
+    const s = (selectedSize ?? "").trim().toLowerCase();
+    if (!c && !s) return product.id;
+    return `${product.id}__${encodeURIComponent(c)}__${encodeURIComponent(s)}`;
+  }, [product.id, selectedColor, selectedSize]);
+  const qty = qtyForProduct(lineId);
 
   const cartPayload = React.useMemo(
     () => ({
-      id: product.id,
-      name: product.name,
+      id: lineId,
+      productId: product.id,
+      name:
+        (selectedColor || selectedSize)
+          ? `${product.name}${selectedColor ? ` · ${selectedColor}` : ""}${selectedSize ? ` · ${selectedSize}` : ""}`
+          : product.name,
       price: product.price,
       image,
+      color: selectedColor,
+      size: selectedSize,
     }),
-    [product.id, product.name, product.price, image],
+    [lineId, product.id, product.name, product.price, image, selectedColor, selectedSize],
   );
 
   const handleFirstAdd = () => {
+    const needsChoice = (product.colors?.length || product.sizes?.length) && !selectedColor && !selectedSize;
+    if (needsChoice && onSelectOptions) {
+      onSelectOptions();
+      return;
+    }
     addItem(cartPayload, 1);
     toast.success("Successfully added to cart", {
       description: `${product.name} is in your cart.`,
@@ -49,13 +73,13 @@ export function ProductCartControl({
   const onMinus = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    decrease(product.id);
+    decrease(lineId);
   };
 
   const onPlus = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    increase(product.id);
+    increase(lineId);
   };
 
   if (qty === 0) {

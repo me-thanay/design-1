@@ -4,10 +4,13 @@ import * as React from "react";
 
 export type CartItem = {
   id: string;
+  productId: string;
   name: string;
   price: number; // numeric amount in INR
   image?: string;
   qty: number;
+  color?: string | null;
+  size?: string | null;
 };
 
 type CartState = {
@@ -19,7 +22,7 @@ type CartContextValue = {
   itemCount: number;
   subtotal: number;
   /** Quantity of this product line in the cart (0 if not in cart). */
-  qtyForProduct: (productId: string) => number;
+  qtyForProduct: (lineId: string) => number;
   addItem: (item: Omit<CartItem, "qty">, qty?: number) => void;
   removeItem: (id: string) => void;
   setQty: (id: string, qty: number) => void;
@@ -97,8 +100,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const value = React.useMemo<CartContextValue>(() => {
     const itemCount = items.reduce((sum, i) => sum + i.qty, 0);
     const subtotal = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-    const qtyForProduct = (productId: string) =>
-      items.find((i) => i.id === productId)?.qty ?? 0;
+    const qtyForProduct = (lineId: string) =>
+      items.find((i) => i.id === lineId)?.qty ?? 0;
     return {
       items,
       itemCount,
