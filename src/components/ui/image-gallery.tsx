@@ -83,6 +83,24 @@ export function ImageGallery({
     return () => mq.removeEventListener?.("change", update);
   }, []);
 
+  // Make mouse-wheel scrolling move the horizontal scroller.
+  // Must be a non-passive listener to allow preventDefault without console warnings.
+  React.useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+
+    const onWheel = (e: WheelEvent) => {
+      // Trackpads often provide deltaX; for mouse wheels use deltaY.
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        el.scrollLeft += e.deltaY;
+        e.preventDefault();
+      }
+    };
+
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel as any);
+  }, []);
+
   // Auto-cycle images for a lively gallery feel.
   // Pauses briefly after user interaction, and while a card is hovered (desktop).
   React.useEffect(() => {
@@ -188,16 +206,6 @@ export function ImageGallery({
           onPointerCancel={() => {
             dragRef.current.active = false;
             dragRef.current.lastEndAt = Date.now();
-          }}
-          onWheel={(e) => {
-            const el = scrollerRef.current;
-            if (!el) return;
-            // Trackpads can scroll horizontally already; for mouse wheels,
-            // map vertical wheel to horizontal scroll so the gallery always moves.
-            if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-              el.scrollLeft += e.deltaY;
-              e.preventDefault();
-            }
           }}
         >
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
