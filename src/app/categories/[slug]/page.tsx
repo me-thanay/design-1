@@ -300,7 +300,7 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ sub?: string }>;
+  searchParams?: Promise<{ sub?: string; color?: string; size?: string }>;
 }) {
   const { slug } = await params;
   const sp = (await searchParams) ?? {};
@@ -309,6 +309,8 @@ export default async function CategoryPage({
 
   const category = slug as ClothingCategory;
   const selectedSubcategory = (sp.sub ?? "").trim() || null;
+  const selectedColor = (sp.color ?? "").trim() || null;
+  const selectedSize = category === "sarees" ? null : (sp.size ?? "").trim() || null;
   const heroImages = heroImagesForCategory(category);
   const heroPositions =
     category === "kurtis"
@@ -365,11 +367,6 @@ export default async function CategoryPage({
         className={category === "kurtis" ? "min-h-[82svh] sm:min-h-[56svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
       />
 
-      {/* Top-rated strip (renamed so it doesn't duplicate "Best sellers") */}
-      <section id="top-rated" className="mx-auto w-full max-w-6xl px-4 pb-10 sm:pb-12 scroll-mt-24">
-        <CategoryBestSellerTestimonials category={category} categoryTitle={cfg.title} limit={6} />
-      </section>
-
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:py-12">
         <div className="grid gap-5 lg:gap-6 lg:grid-cols-[320px_1fr]">
           <div>
@@ -387,6 +384,8 @@ export default async function CategoryPage({
                   }
                   category={category}
                   subcategory={selectedSubcategory ?? undefined}
+                  color={selectedColor ?? undefined}
+                  size={selectedSize ?? undefined}
                   limit={12}
                   variant="gallery"
                   sortMode="best"
@@ -405,6 +404,8 @@ export default async function CategoryPage({
                   }
                   category={category}
                   subcategory={selectedSubcategory ?? undefined}
+                  color={selectedColor ?? undefined}
+                  size={selectedSize ?? undefined}
                   limit={24}
                   variant="gallery"
                   sortMode="latest"

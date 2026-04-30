@@ -20,6 +20,10 @@ type ProductsGridProps = {
   filterQuery?: string;
   /** Exact match on normalized subcategory (case-insensitive), e.g. Creator dashboard tag. */
   subcategory?: string;
+  /** Optional variant filters (client-side). */
+  color?: string;
+  /** Size filter is ignored for sarees. */
+  size?: string;
   /** Sorting mode (defaults to latest). */
   sortMode?: "latest" | "best";
   limit?: number;
@@ -84,12 +88,27 @@ function matchesSubcategory(p: Product, subcategory: string | undefined) {
   return a === b;
 }
 
+function matchesColor(p: Product, color?: string) {
+  const needle = (color ?? "").trim().toLowerCase();
+  if (!needle) return true;
+  return (p.colors ?? []).some((c) => String(c).trim().toLowerCase() === needle);
+}
+
+function matchesSize(p: Product, size?: string) {
+  const needle = (size ?? "").trim().toLowerCase();
+  if (!needle) return true;
+  if (p.category === "sarees") return true;
+  return (p.sizes ?? []).some((s) => String(s).trim().toLowerCase() === needle);
+}
+
 export function ProductsGrid({
   title,
   subtitle,
   category,
   filterQuery,
   subcategory,
+  color,
+  size,
   sortMode = "latest",
   limit = 6,
   variant = "grid",
@@ -143,6 +162,8 @@ export function ProductsGrid({
           .filter((p) => p.inStock)
           .filter((p) => (category ? p.category === category : true))
           .filter((p) => matchesSubcategory(p, subcategory))
+          .filter((p) => matchesColor(p, color))
+          .filter((p) => matchesSize(p, size))
           .filter((p) => (filterQuery ? matchesFilter(p, filterQuery) : true));
 
         if (sortMode === "best") {
@@ -165,7 +186,7 @@ export function ProductsGrid({
     };
 
     load();
-  }, [category, limit, filterQuery, subcategory, sortMode]);
+  }, [category, limit, filterQuery, subcategory, sortMode, color, size]);
 
   const openDetails = (p: Product) => {
     setActiveProduct(p);

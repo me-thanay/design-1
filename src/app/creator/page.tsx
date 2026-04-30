@@ -622,7 +622,7 @@ export default function CreatorPage() {
       const ratingNumber = normalizeRating(form.rating);
       const discountNumber = normalizeDiscountPercent(form.discount_percent);
       const colorsList = parseCommaList(form.colors);
-      const sizesList = parseCommaList(form.sizes);
+      const sizesList = form.category === "sarees" ? [] : parseCommaList(form.sizes);
 
       let imageUrls: string[] = [];
       if (formImageFiles.length) {
@@ -890,7 +890,7 @@ export default function CreatorPage() {
       const ratingNumber = normalizeRating(editForm.rating);
       const discountNumber = normalizeDiscountPercent(editForm.discount_percent);
       const colorsList = parseCommaList(editForm.colors);
-      const sizesList = parseCommaList(editForm.sizes);
+      const sizesList = editForm.category === "sarees" ? [] : parseCommaList(editForm.sizes);
 
       const hadNewImages = editImageFiles.length > 0;
       const keepExisting = editExistingImageUrls.length
@@ -1320,30 +1320,32 @@ export default function CreatorPage() {
                       </div>
                     ) : null}
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-zinc-700">
-                      Sizes (comma separated)
-                    </label>
-                    <input
-                      name="sizes"
-                      value={(form as any).sizes ?? ""}
-                      onChange={handleChange}
-                      placeholder="S, M, L, XL"
-                      className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
-                    />
-                    {prettyListPreview((form as any).sizes ?? "").length ? (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {prettyListPreview((form as any).sizes ?? "").map((s) => (
-                          <span
-                            key={s}
-                            className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-black/5"
-                          >
-                            {s}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
+                  {form.category !== "sarees" ? (
+                    <div>
+                      <label className="block text-sm font-medium text-zinc-700">
+                        Sizes (comma separated)
+                      </label>
+                      <input
+                        name="sizes"
+                        value={(form as any).sizes ?? ""}
+                        onChange={handleChange}
+                        placeholder="S, M, L, XL"
+                        className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                      />
+                      {prettyListPreview((form as any).sizes ?? "").length ? (
+                        <div className="mt-2 flex flex-wrap gap-1.5">
+                          {prettyListPreview((form as any).sizes ?? "").map((s) => (
+                            <span
+                              key={s}
+                              className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-black/5"
+                            >
+                              {s}
+                            </span>
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-zinc-700">
@@ -1642,30 +1644,32 @@ export default function CreatorPage() {
                           </div>
                         ) : null}
                       </div>
-                      <div>
-                        <label className="block text-sm font-medium text-zinc-700">
-                          Sizes (comma separated)
-                        </label>
-                        <input
-                          name="sizes"
-                          value={(editForm as any).sizes ?? ""}
-                          onChange={handleEditChange}
-                          placeholder="S, M, L, XL"
-                          className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
-                        />
-                        {prettyListPreview((editForm as any).sizes ?? "").length ? (
-                          <div className="mt-2 flex flex-wrap gap-1.5">
-                            {prettyListPreview((editForm as any).sizes ?? "").map((s) => (
-                              <span
-                                key={s}
-                                className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-black/5"
-                              >
-                                {s}
-                              </span>
-                            ))}
-                          </div>
-                        ) : null}
-                      </div>
+                      {editForm.category !== "sarees" ? (
+                        <div>
+                          <label className="block text-sm font-medium text-zinc-700">
+                            Sizes (comma separated)
+                          </label>
+                          <input
+                            name="sizes"
+                            value={(editForm as any).sizes ?? ""}
+                            onChange={handleEditChange}
+                            placeholder="S, M, L, XL"
+                            className="mt-1 w-full rounded-lg border border-zinc-200 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                          />
+                          {prettyListPreview((editForm as any).sizes ?? "").length ? (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {prettyListPreview((editForm as any).sizes ?? "").map((s) => (
+                                <span
+                                  key={s}
+                                  className="inline-flex rounded-full bg-zinc-100 px-2.5 py-1 text-[11px] font-semibold text-zinc-700 ring-1 ring-black/5"
+                                >
+                                  {s}
+                                </span>
+                              ))}
+                            </div>
+                          ) : null}
+                        </div>
+                      ) : null}
                     </div>
                     <div className="grid gap-4 sm:grid-cols-2">
                       <div>

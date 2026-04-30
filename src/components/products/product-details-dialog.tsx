@@ -158,7 +158,7 @@ export function ProductDetailsDialog({
                 )}
               </div>
 
-              {(product.colors?.length || product.sizes?.length) ? (
+              {(product.colors?.length || (product.category !== "sarees" && product.sizes?.length)) ? (
                 <div className="mt-5 space-y-4">
                   {product.colors?.length ? (
                     <div>
@@ -185,7 +185,7 @@ export function ProductDetailsDialog({
                     </div>
                   ) : null}
 
-                  {product.sizes?.length ? (
+                  {product.category !== "sarees" && product.sizes?.length ? (
                     <div>
                       <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
                         Size
