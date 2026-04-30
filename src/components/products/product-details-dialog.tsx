@@ -45,7 +45,18 @@ export function ProductDetailsDialog({
   React.useEffect(() => {
     if (!open) return;
     setActiveIdx(0);
-    setSelectedColor(null);
+    // If we have color-wise images, default to the first available color
+    // so customers immediately see the correct photos.
+    const firstColor = (() => {
+      const fromList = (product?.colors ?? []).find((c) => {
+        const key = String(c ?? "").trim().toLowerCase();
+        return key && (product?.colorImages?.[key]?.length ?? 0) > 0;
+      });
+      if (fromList) return fromList;
+      const fromMap = Object.keys(product?.colorImages ?? {})[0];
+      return fromMap ? fromMap : null;
+    })();
+    setSelectedColor(firstColor);
     setSelectedSize(null);
   }, [open, product?.id]);
 

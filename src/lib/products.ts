@@ -156,6 +156,20 @@ function sanitizeList(values: unknown): string[] {
     .filter((v, i, arr) => arr.indexOf(v) === i);
 }
 
+function uniqSorted(values: string[]) {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const v of values) {
+    const s = String(v ?? "").trim();
+    if (!s) continue;
+    const key = s.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(s);
+  }
+  return out.sort((a, b) => a.localeCompare(b));
+}
+
 function sanitizeColorKey(value: unknown) {
   return String(value ?? "").trim().toLowerCase();
 }
@@ -177,7 +191,9 @@ export function appendColorImagesMeta(
   descriptionWithMeta: string,
   colorImages: Record<string, string[] | null | undefined> | null | undefined,
 ) {
-  const base = stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(descriptionWithMeta) ?? descriptionWithMeta) ?? descriptionWithMeta) ?? descriptionWithMeta;
+  // Only strip the color-images marker. Do NOT strip other meta (images/variants),
+  // otherwise we'd accidentally erase sizes/colors or multi-image data.
+  const base = stripColorImagesMeta(descriptionWithMeta) ?? descriptionWithMeta;
   const mapped = sanitizeColorImagesMap(colorImages ?? {});
   if (!Object.keys(mapped).length) return base;
   return `${base}\n${COLOR_IMAGES_META_MARKER}${encodeURIComponent(JSON.stringify(mapped))}`;
@@ -338,7 +354,7 @@ export function normalizeProductRow(raw: any): Product {
     .filter((u, i, arr) => arr.indexOf(u) === i);
 
   const variantsFromMeta = decodeVariantsMeta(rawDescription);
-  const colors = sanitizeList(raw?.colors ?? raw?.color_options ?? variantsFromMeta.colors);
+  let colors = sanitizeList(raw?.colors ?? raw?.color_options ?? variantsFromMeta.colors);
   const sizes = sanitizeList(raw?.sizes ?? raw?.size_options ?? variantsFromMeta.sizes);
   const colorImages = (() => {
     const fromColumn =
@@ -348,6 +364,11 @@ export function normalizeProductRow(raw: any): Product {
     const mapped = sanitizeColorImagesMap(fromColumn);
     return Object.keys(mapped).length ? mapped : decodeColorImagesMeta(rawDescription);
   })();
+  if (!colors.length) {
+    // If the DB doesn't have a colors column and variants meta is missing,
+    // infer colors from colorImages keys so the UI can still show color options.
+    colors = uniqSorted(Object.keys(colorImages ?? {}));
+  }
 
   return {
     id: String(raw?.id ?? ""),
