@@ -62,16 +62,20 @@ export function ImageGallery({
   const scrollerRef = React.useRef<HTMLDivElement | null>(null);
   const dragRef = React.useRef<{
     active: boolean;
+    pending: boolean;
     moved: boolean;
     startX: number;
     startLeft: number;
     lastEndAt: number;
+    pointerId: number | null;
   }>({
     active: false,
+    pending: false,
     moved: false,
     startX: 0,
     startLeft: 0,
     lastEndAt: 0,
+    pointerId: null,
   });
   const [activeImageIndexes, setActiveImageIndexes] = React.useState<Record<number, number>>(
     {},
@@ -191,31 +195,42 @@ export function ImageGallery({
             // Don't hijack interactions inside buttons/links/inputs.
             const t = e.target as HTMLElement | null;
             if (t?.closest("button,a,input,textarea,select")) return;
-            dragRef.current.active = true;
+            // Don't capture pointer on tap; only after a real drag starts.
+            dragRef.current.pending = true;
+            dragRef.current.active = false;
             dragRef.current.moved = false;
             dragRef.current.startX = e.clientX;
             dragRef.current.startLeft = el.scrollLeft;
-            el.setPointerCapture?.(e.pointerId);
+            dragRef.current.pointerId = e.pointerId;
           }}
           onPointerMove={(e) => {
             const el = scrollerRef.current;
             if (!el) return;
-            if (!dragRef.current.active) return;
+            if (!dragRef.current.pending && !dragRef.current.active) return;
             const dx = e.clientX - dragRef.current.startX;
             if (!dragRef.current.moved && Math.abs(dx) > 6) {
               dragRef.current.moved = true;
+              // Now we know it's a drag gesture — capture pointer and start dragging.
+              dragRef.current.active = true;
+              dragRef.current.pending = false;
+              el.setPointerCapture?.(dragRef.current.pointerId ?? e.pointerId);
             }
+            if (!dragRef.current.active) return;
             el.scrollLeft = dragRef.current.startLeft - dx;
           }}
           onPointerUp={() => {
             const wasDragging = dragRef.current.active && dragRef.current.moved;
             dragRef.current.active = false;
+            dragRef.current.pending = false;
+            dragRef.current.pointerId = null;
             // Only suppress clicks after a real drag gesture.
             if (wasDragging) dragRef.current.lastEndAt = Date.now();
           }}
           onPointerCancel={() => {
             const wasDragging = dragRef.current.active && dragRef.current.moved;
             dragRef.current.active = false;
+            dragRef.current.pending = false;
+            dragRef.current.pointerId = null;
             if (wasDragging) dragRef.current.lastEndAt = Date.now();
           }}
         >
