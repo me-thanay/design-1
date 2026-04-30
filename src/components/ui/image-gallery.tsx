@@ -189,7 +189,10 @@ export function ImageGallery({
             "select-none touch-pan-x",
             Boolean(resolvedTitle?.trim?.() || resolvedSubtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0",
           )}
+          style={{ touchAction: "pan-x" }}
           onPointerDown={(e) => {
+            // On touch devices, prefer native swipe scrolling (more reliable).
+            if (isTouch) return;
             const el = scrollerRef.current;
             if (!el) return;
             // Don't hijack interactions inside buttons/links/inputs.
@@ -204,6 +207,7 @@ export function ImageGallery({
             dragRef.current.pointerId = e.pointerId;
           }}
           onPointerMove={(e) => {
+            if (isTouch) return;
             const el = scrollerRef.current;
             if (!el) return;
             if (!dragRef.current.pending && !dragRef.current.active) return;
@@ -219,6 +223,7 @@ export function ImageGallery({
             el.scrollLeft = dragRef.current.startLeft - dx;
           }}
           onPointerUp={() => {
+            if (isTouch) return;
             const wasDragging = dragRef.current.active && dragRef.current.moved;
             dragRef.current.active = false;
             dragRef.current.pending = false;
@@ -227,6 +232,7 @@ export function ImageGallery({
             if (wasDragging) dragRef.current.lastEndAt = Date.now();
           }}
           onPointerCancel={() => {
+            if (isTouch) return;
             const wasDragging = dragRef.current.active && dragRef.current.moved;
             dragRef.current.active = false;
             dragRef.current.pending = false;
