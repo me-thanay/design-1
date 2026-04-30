@@ -185,7 +185,9 @@ export function ImageGallery({
         <div
           ref={scrollerRef}
           className={cn(
-            "no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-3 pt-1 scroll-smooth sm:mx-0 sm:px-0 sm:gap-6 snap-x snap-mandatory",
+            // Mobile-first: wrap cards to next line (no horizontal scrolling).
+            // On larger screens keep the horizontal gallery.
+            "no-scrollbar -mx-4 flex flex-wrap justify-center gap-4 overflow-x-visible px-4 pb-3 pt-1 sm:mx-0 sm:flex-nowrap sm:justify-start sm:overflow-x-auto sm:px-0 sm:gap-6 sm:snap-x sm:snap-mandatory",
             "select-none touch-pan-x",
             Boolean(resolvedTitle?.trim?.() || resolvedSubtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0",
           )}
@@ -197,6 +199,8 @@ export function ImageGallery({
           onPointerDown={(e) => {
             // On touch pointers, prefer native swipe scrolling (more reliable).
             if ((e as any).pointerType === "touch") return;
+            // When wrapped (mobile), don't start drag-to-scroll.
+            if (window.matchMedia?.("(max-width: 639px)")?.matches) return;
             const el = scrollerRef.current;
             if (!el) return;
             // Don't hijack interactions inside buttons/links/inputs.
@@ -212,6 +216,7 @@ export function ImageGallery({
           }}
           onPointerMove={(e) => {
             if ((e as any).pointerType === "touch") return;
+            if (window.matchMedia?.("(max-width: 639px)")?.matches) return;
             const el = scrollerRef.current;
             if (!el) return;
             if (!dragRef.current.pending && !dragRef.current.active) return;
