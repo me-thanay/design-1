@@ -181,13 +181,12 @@ export function ImageGallery({
           </div>
         ) : null}
 
-        {/* Horizontal scroll keeps the layout stable (no reflow on hover). */}
+        {/* Wrapping layout (no horizontal scroll). */}
         <div
           ref={scrollerRef}
           className={cn(
-            // Mobile-first: wrap cards to next line (no horizontal scrolling).
-            // On larger screens keep the horizontal gallery.
-            "no-scrollbar -mx-4 flex flex-wrap justify-center gap-4 overflow-x-visible px-4 pb-3 pt-1 sm:mx-0 sm:flex-nowrap sm:justify-start sm:overflow-x-auto sm:px-0 sm:gap-6 sm:snap-x sm:snap-mandatory",
+            // Wrap cards onto next line on ALL screen sizes.
+            "no-scrollbar -mx-4 flex flex-wrap justify-center gap-4 overflow-x-visible px-4 pb-3 pt-1 sm:mx-0 sm:justify-start sm:px-0 sm:gap-6",
             "select-none touch-pan-x",
             Boolean(resolvedTitle?.trim?.() || resolvedSubtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0",
           )}
@@ -195,58 +194,6 @@ export function ImageGallery({
             touchAction: "pan-x",
             WebkitOverflowScrolling: "touch",
             overscrollBehaviorX: "contain",
-          }}
-          onPointerDown={(e) => {
-            // On touch pointers, prefer native swipe scrolling (more reliable).
-            if ((e as any).pointerType === "touch") return;
-            // When wrapped (mobile), don't start drag-to-scroll.
-            if (window.matchMedia?.("(max-width: 639px)")?.matches) return;
-            const el = scrollerRef.current;
-            if (!el) return;
-            // Don't hijack interactions inside buttons/links/inputs.
-            const t = e.target as HTMLElement | null;
-            if (t?.closest("button,a,input,textarea,select")) return;
-            // Don't capture pointer on tap; only after a real drag starts.
-            dragRef.current.pending = true;
-            dragRef.current.active = false;
-            dragRef.current.moved = false;
-            dragRef.current.startX = e.clientX;
-            dragRef.current.startLeft = el.scrollLeft;
-            dragRef.current.pointerId = e.pointerId;
-          }}
-          onPointerMove={(e) => {
-            if ((e as any).pointerType === "touch") return;
-            if (window.matchMedia?.("(max-width: 639px)")?.matches) return;
-            const el = scrollerRef.current;
-            if (!el) return;
-            if (!dragRef.current.pending && !dragRef.current.active) return;
-            const dx = e.clientX - dragRef.current.startX;
-            if (!dragRef.current.moved && Math.abs(dx) > 6) {
-              dragRef.current.moved = true;
-              // Now we know it's a drag gesture — capture pointer and start dragging.
-              dragRef.current.active = true;
-              dragRef.current.pending = false;
-              el.setPointerCapture?.(dragRef.current.pointerId ?? e.pointerId);
-            }
-            if (!dragRef.current.active) return;
-            el.scrollLeft = dragRef.current.startLeft - dx;
-          }}
-          onPointerUp={() => {
-            // If the pointer type is touch, we never started a drag.
-            const wasDragging = dragRef.current.active && dragRef.current.moved;
-            dragRef.current.active = false;
-            dragRef.current.pending = false;
-            dragRef.current.pointerId = null;
-            // Only suppress clicks after a real drag gesture.
-            if (wasDragging) dragRef.current.lastEndAt = Date.now();
-          }}
-          onPointerCancel={() => {
-            // If the pointer type is touch, we never started a drag.
-            const wasDragging = dragRef.current.active && dragRef.current.moved;
-            dragRef.current.active = false;
-            dragRef.current.pending = false;
-            dragRef.current.pointerId = null;
-            if (wasDragging) dragRef.current.lastEndAt = Date.now();
           }}
         >
           {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
@@ -267,10 +214,10 @@ export function ImageGallery({
                   key={`${it.title}-${idx}`}
                   className={cn(
                     "group relative shrink-0 overflow-hidden rounded-3xl bg-white",
-                    "w-[min(78vw,260px)] sm:w-[260px] md:w-[280px]",
+                    // Responsive wrapping card width.
+                    "w-full max-w-[340px] flex-[1_1_260px]",
                     "ring-1 ring-black/10 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.35)]",
                     "transition-[transform,box-shadow] duration-300 ease-out hover:-translate-y-1.5 hover:shadow-[0_22px_44px_-22px_rgba(0,0,0,0.45)]",
-                    "snap-start",
                     clickable ? "cursor-pointer" : null,
                   )}
                   onHoverStart={() => setHovered(idx)}
