@@ -171,6 +171,19 @@
     background-attachment: scroll;
   }
 
+  /* Coarse pointers (phones/tablets): simplify paint-heavy texture for smoother scrolling. */
+  @media (pointer: coarse) {
+    .surface-texture {
+      background-image:
+        radial-gradient(circle at 20% 20%, rgba(0, 0, 0, 0.025) 0px, rgba(0, 0, 0, 0) 260px),
+        radial-gradient(circle at 85% 15%, rgba(0, 0, 0, 0.02) 0px, rgba(0, 0, 0, 0) 320px),
+        linear-gradient(to bottom, rgb(255 255 255), rgb(255 255 255));
+      background-repeat: no-repeat, no-repeat, no-repeat;
+      background-size: auto, auto, auto;
+      background-blend-mode: normal, normal, normal;
+    }
+  }
+
   .image-auto-slider__track {
     animation: image-auto-slider-scroll-right var(--image-auto-slider-duration, 20s) linear infinite;
   }
@@ -190,6 +203,7 @@
 html,
 body {
   overflow-x: hidden;
+  overscroll-behavior-x: none;
 }
 
 @media (prefers-reduced-motion: no-preference) {

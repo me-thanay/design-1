@@ -187,11 +187,11 @@ export function ImageGallery({
           className={cn(
             // Wrap cards onto next line on ALL screen sizes.
             "no-scrollbar -mx-4 flex flex-wrap justify-center gap-4 overflow-x-visible px-4 pb-3 pt-1 sm:mx-0 sm:justify-start sm:px-0 sm:gap-6",
-            "select-none touch-pan-x",
+            "select-none",
             Boolean(resolvedTitle?.trim?.() || resolvedSubtitle?.trim?.()) ? "mt-6 sm:mt-8" : "mt-0",
           )}
           style={{
-            touchAction: "pan-x",
+            touchAction: "pan-y",
             WebkitOverflowScrolling: "touch",
             overscrollBehaviorX: "contain",
           }}
