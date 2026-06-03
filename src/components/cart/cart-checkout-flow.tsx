@@ -211,10 +211,13 @@ export function CartCheckoutFlow() {
           },
           items: items.map((i) => ({
             id: i.id,
+            productId: i.productId,
             name: i.name,
             price: i.price,
             qty: i.qty,
             image: i.image ?? null,
+            color: i.color ?? null,
+            size: i.size ?? null,
             lineTotal: i.price * i.qty,
           })),
         },

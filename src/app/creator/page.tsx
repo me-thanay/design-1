@@ -225,30 +225,95 @@ function formatPaymentMethod(method?: OrderRow["payment_method"]) {
 
 function parseOrderItems(items: any): Array<any> {
   if (!items) return [];
-  if (Array.isArray(items)) return items;
+
+  let parsed = items;
   if (typeof items === "string") {
     try {
-      const parsed = JSON.parse(items);
-      if (Array.isArray(parsed)) return parsed;
+      parsed = JSON.parse(items);
     } catch {
-      // ignore parse errors and fall back to empty list
+      return [];
     }
   }
-  // Some JSONB drivers may return objects instead of arrays.
-  if (typeof items === "object") {
-    const maybeInner = (items as any)?.items;
-    if (Array.isArray(maybeInner)) return maybeInner;
+
+  if (Array.isArray(parsed)) return parsed;
+
+  if (typeof parsed === "object" && parsed !== null) {
+    const inner = (parsed as any).items;
+    if (Array.isArray(inner)) return inner;
 
     // Handle objects with numeric keys (e.g. {"0": {...}, "1": {...}})
-    const keys = Object.keys(items);
+    const keys = Object.keys(parsed).filter((k) => k !== "customer");
     const numericKeys = keys
       .filter((k) => String(Number(k)) === k)
       .sort((a, b) => Number(a) - Number(b));
     if (numericKeys.length) {
-      return numericKeys.map((k) => (items as any)[k]);
+      return numericKeys.map((k) => (parsed as any)[k]);
     }
   }
+
   return [];
+}
+
+function orderItemImage(it: any): string | null {
+  const raw = it?.image ?? it?.image_url ?? it?.imageUrl ?? null;
+  const src = String(raw ?? "").trim();
+  return src || null;
+}
+
+function OrderLineItemView({ it }: { it: any }) {
+  const qty = Number(it.qty ?? 1) || 1;
+  const price = Number(it.price ?? 0) || 0;
+  const lineTotal =
+    it.lineTotal != null ? Number(it.lineTotal) : price * qty;
+  const image = orderItemImage(it);
+  const color = it.color ? String(it.color) : null;
+  const size = it.size ? String(it.size) : null;
+
+  return (
+    <div className="flex items-start gap-3 rounded-lg border border-zinc-200 bg-white p-2.5">
+      <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-zinc-100 ring-1 ring-black/5">
+        {image ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            src={image}
+            alt={it.name || "Ordered item"}
+            className="h-full w-full object-cover"
+            loading="lazy"
+            decoding="async"
+          />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center text-[10px] font-semibold uppercase tracking-wider text-zinc-400">
+            No image
+          </div>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <div className="font-medium text-zinc-900">{it.name || "Item"}</div>
+        {(color || size) ? (
+          <div className="mt-0.5 text-zinc-600">
+            {[color ? `Color: ${color}` : null, size ? `Size: ${size}` : null]
+              .filter(Boolean)
+              .join(" · ")}
+          </div>
+        ) : null}
+        <div className="mt-0.5 text-zinc-600">
+          Qty: {qty}
+          {price > 0 ? (
+            <>
+              {" "}
+              · ₹{Math.round(price).toLocaleString("en-IN")} each
+            </>
+          ) : null}
+        </div>
+      </div>
+      <div className="shrink-0 text-right font-medium text-zinc-900">
+        ₹
+        {Number.isFinite(lineTotal)
+          ? Math.round(lineTotal).toLocaleString("en-IN")
+          : "—"}
+      </div>
+    </div>
+  );
 }
 
 export default function CreatorPage() {
@@ -2098,7 +2163,9 @@ export default function CreatorPage() {
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((o) => (
+                    {orders.map((o) => {
+                      const lineItems = parseOrderItems(o.items);
+                      return (
                       <tr key={String(o.id)} className="text-sm">
                         <td className="border-b border-zinc-100 py-3 pr-4 text-zinc-700">
                           {new Date(o.created_at).toLocaleString()}
@@ -2147,41 +2214,15 @@ export default function CreatorPage() {
                             <summary className="text-sm text-zinc-700 underline underline-offset-4">
                               View
                             </summary>
-                            <div className="mt-2 max-h-64 overflow-auto rounded-lg bg-zinc-50 p-3 text-xs text-zinc-700">
-                              {parseOrderItems(o.items).length ? (
+                            <div className="mt-2 max-h-80 overflow-auto rounded-lg bg-zinc-50 p-3 text-xs text-zinc-700">
+                              {lineItems.length ? (
                                 <div className="space-y-2">
-                                  {parseOrderItems(o.items).map((it, idx) => {
-                                    const qty = Number(it.qty ?? 1) || 1;
-                                    const price = Number(it.price ?? 0) || 0;
-                                    const lineTotal =
-                                      it.lineTotal != null
-                                        ? Number(it.lineTotal)
-                                        : price * qty;
-
-                                    return (
-                                      <div
-                                        key={`${o.id}-${idx}`}
-                                        className="flex items-start justify-between gap-3"
-                                      >
-                                        <div>
-                                          <div className="font-medium text-zinc-900">
-                                            {it.name || "Item"}
-                                          </div>
-                                          <div className="text-zinc-600">
-                                            Qty: {qty}
-                                          </div>
-                                        </div>
-                                        <div className="text-right font-medium text-zinc-900">
-                                          ₹
-                                          {Number.isFinite(lineTotal)
-                                            ? Math.round(lineTotal).toLocaleString(
-                                                "en-IN",
-                                              )
-                                            : "—"}
-                                        </div>
-                                      </div>
-                                    );
-                                  })}
+                                  {lineItems.map((it, idx) => (
+                                    <OrderLineItemView
+                                      key={`${o.id}-${idx}`}
+                                      it={it}
+                                    />
+                                  ))}
                                 </div>
                               ) : (
                                 <pre className="max-h-64 overflow-auto rounded-lg p-2">
@@ -2192,7 +2233,8 @@ export default function CreatorPage() {
                           </details>
                         </td>
                       </tr>
-                    ))}
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>

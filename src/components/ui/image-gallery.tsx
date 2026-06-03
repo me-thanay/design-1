@@ -59,7 +59,6 @@ export function ImageGallery({
   const [hovered, setHovered] = React.useState<number | null>(null);
   const fallbackSrc = "/stock_images/banarasi%20silk.jpeg";
   const [isTouch, setIsTouch] = React.useState(false);
-  const scrollerRef = React.useRef<HTMLDivElement | null>(null);
   const dragRef = React.useRef<{
     active: boolean;
     pending: boolean;
@@ -91,24 +90,6 @@ export function ImageGallery({
     update();
     mq.addEventListener?.("change", update);
     return () => mq.removeEventListener?.("change", update);
-  }, []);
-
-  // Make mouse-wheel scrolling move the horizontal scroller.
-  // Must be a non-passive listener to allow preventDefault without console warnings.
-  React.useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-
-    const onWheel = (e: WheelEvent) => {
-      // Trackpads often provide deltaX; for mouse wheels use deltaY.
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        el.scrollLeft += e.deltaY;
-        e.preventDefault();
-      }
-    };
-
-    el.addEventListener("wheel", onWheel, { passive: false });
-    return () => el.removeEventListener("wheel", onWheel as any);
   }, []);
 
   // Auto-cycle images for a lively gallery feel.
@@ -183,7 +164,6 @@ export function ImageGallery({
 
         {/* Wrapping layout (no horizontal scroll). */}
         <div
-          ref={scrollerRef}
           className={cn(
             // Wrap cards onto next line on ALL screen sizes.
             "no-scrollbar -mx-4 flex flex-wrap justify-center gap-4 overflow-x-visible px-4 pb-3 pt-1 sm:mx-0 sm:justify-start sm:px-0 sm:gap-6",
