@@ -315,23 +315,13 @@ const CATEGORY_CONFIG: Record<
       slides: [
         {
           src: stockImagesUrl(STOCK_IMAGES_FILES[0]),
-          alt: "Soft cotton coord set for daily wear",
-          title: "Cotton",
-        },
-        {
-          src: stockImagesUrl(STOCK_IMAGES_FILES[1]),
-          alt: "Fluid rayon coord set with easy drape",
-          title: "Rayon",
+          alt: "Relaxed coord set for easy weekends",
+          title: "Casual wear",
         },
         {
           src: stockImagesUrl(STOCK_IMAGES_FILES[2]),
           alt: "Festive coord set with elevated detail",
           title: "Party wear",
-        },
-        {
-          src: stockImagesUrl(STOCK_IMAGES_FILES[3]),
-          alt: "Relaxed coord set for easy weekends",
-          title: "Casual wear",
         },
       ],
     },

@@ -14,7 +14,7 @@ export const CLOTHING_SUBCATEGORIES: Record<ClothingCategory, string[]> = {
   kurtis: ["cotton", "rayon", "georgette", "party wear"],
   blouses: ["party wear", "cotton", "silk", "ajrakh"],
   gowns: ["party wear", "casual wear"],
-  coord_sets: ["cotton", "rayon", "party wear", "casual wear"],
+  coord_sets: ["casual wear", "party wear"],
 };
 
 const CATEGORY_META_PATTERN =

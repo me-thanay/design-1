@@ -54,10 +54,8 @@ export const PRIMARY_NAV: NavItem[] = [
     href: "/categories/coord_sets",
     featuredImageSrc: "/catogary-slider/coordset/cotton coord set.jpeg",
     items: [
-      { name: "Cotton", href: "/categories/coord_sets?q=cotton", imageSrc: "/catogary-slider/coordset/cotton coord set.jpeg" },
-      { name: "Rayon", href: "/categories/coord_sets?q=rayon", imageSrc: "/stock_images/Rayon Kurtis.jpeg" },
-      { name: "Party wear", href: "/categories/coord_sets?q=party", imageSrc: "/stock_images/PARTY WEAR KURTI.jpeg" },
       { name: "Casual wear", href: "/categories/coord_sets?q=casual", imageSrc: "/stock_images/COTTON KURTI.jpeg" },
+      { name: "Party wear", href: "/categories/coord_sets?q=party", imageSrc: "/stock_images/PARTY WEAR KURTI.jpeg" },
     ],
   },
   { name: "Shop", href: "/#shop" },

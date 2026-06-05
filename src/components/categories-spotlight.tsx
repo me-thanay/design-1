@@ -48,7 +48,7 @@ const SLIDES: CategorySlide[] = [
     slug: "coord_sets",
     eyebrow: "Categories",
     title: "Coord set edit",
-    subtitle: "Cotton · rayon · party · casual",
+    subtitle: "Casual · party wear",
     imageSrc: "/stock_images/showcase-1.jpeg",
   },
 ];
