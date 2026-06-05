@@ -41,6 +41,7 @@ function heroImagesForCategory(category: ClothingCategory) {
     kurtis: "KURTIS",
     blouses: "BLOUSES",
     gowns: "GOWNS",
+    coord_sets: "COORD SET",
   };
 
   const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
@@ -77,6 +78,7 @@ function heroPositionsFor(category: ClothingCategory, count: number, override?: 
     kurtis: "50% 18%",
     // Gowns images often have faces lower; bias upward so the subject stays centered under the title.
     gowns: "50% 22%",
+    coord_sets: "50% 20%",
   };
 
   const base =
@@ -288,6 +290,48 @@ const CATEGORY_CONFIG: Record<
           src: stockImagesUrl(STOCK_IMAGES_FILES[8]),
           alt: "High-impact evening styling",
           title: "Statement evenings",
+        },
+      ],
+    },
+  },
+  coord_sets: {
+    title: "Coord Set",
+    subtitle: "Matching tops and bottoms — polished looks with zero effort.",
+    heroImagePositions: ["50% 20%", "50% 18%", "50% 22%", "50% 20%"],
+    spotlight: {
+      label: "Featured",
+      titleLine1: "Coord",
+      titleLine2: "Set",
+      description:
+        "Effortless matching sets for work, brunch, and evenings — comfortable fabrics with a put-together finish.",
+      ctaText: "Shop",
+      mediaType: "video",
+      mediaSrc: CATEGORY_HERO_VIDEO_SRC.coord_sets,
+      mediaAlt: "Featured coord set video",
+      indexLabel: "05",
+    },
+    carousel: {
+      eyebrow: "Shop by type",
+      slides: [
+        {
+          src: stockImagesUrl(STOCK_IMAGES_FILES[0]),
+          alt: "Soft cotton coord set for daily wear",
+          title: "Cotton",
+        },
+        {
+          src: stockImagesUrl(STOCK_IMAGES_FILES[1]),
+          alt: "Fluid rayon coord set with easy drape",
+          title: "Rayon",
+        },
+        {
+          src: stockImagesUrl(STOCK_IMAGES_FILES[2]),
+          alt: "Festive coord set with elevated detail",
+          title: "Party wear",
+        },
+        {
+          src: stockImagesUrl(STOCK_IMAGES_FILES[3]),
+          alt: "Relaxed coord set for easy weekends",
+          title: "Casual wear",
         },
       ],
     },

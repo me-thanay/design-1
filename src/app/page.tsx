@@ -43,6 +43,7 @@ const CATEGORY_LABEL: Record<ClothingCategory, string> = {
   kurtis: "Kurtis",
   blouses: "Blouses",
   gowns: "Gowns",
+  coord_sets: "Coord Set",
 };
 
 const MOOD_CATEGORY_ITEMS: MoodCategoryItem[] = [
@@ -69,6 +70,12 @@ const MOOD_CATEGORY_ITEMS: MoodCategoryItem[] = [
     sub: "Party · casual",
     href: "/categories/gowns",
     img: "/shopbymood/gown.jpeg",
+  },
+  {
+    title: "Coord Set",
+    sub: "Matching · effortless",
+    href: "/categories/coord_sets",
+    img: "/shopbymood/coordset.jpeg",
   },
 ];
 
@@ -171,7 +178,7 @@ export default async function Home({ searchParams }: HomeProps) {
             </div>
             <ProductsGrid
               title="Latest picks"
-              subtitle="Fresh drops across sarees, blouses, kurtis, and gowns."
+              subtitle="Fresh drops across sarees, blouses, kurtis, gowns, and coord sets."
               limit={8}
               variant="row"
             />

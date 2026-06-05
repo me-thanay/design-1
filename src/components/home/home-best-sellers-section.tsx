@@ -64,6 +64,8 @@ function fallbackImageForProduct(p: Product) {
       return "/stock_images/COTTON%20KURTI.jpeg";
     case "gowns":
       return "/stock_images/PARTY%20WEAR%20GOWN.jpeg";
+    case "coord_sets":
+      return "/stock_images/showcase-1.jpeg";
     case "sarees":
     default:
       return "/stock_images/banarasi%20silk.jpeg";

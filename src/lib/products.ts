@@ -1,6 +1,12 @@
-export type ClothingCategory = "sarees" | "kurtis" | "blouses" | "gowns";
+export type ClothingCategory = "sarees" | "kurtis" | "blouses" | "gowns" | "coord_sets";
 
-export const CLOTHING_CATEGORIES: ClothingCategory[] = ["sarees", "kurtis", "blouses", "gowns"];
+export const CLOTHING_CATEGORIES: ClothingCategory[] = [
+  "sarees",
+  "kurtis",
+  "blouses",
+  "gowns",
+  "coord_sets",
+];
 
 /** Subcategory options — keep in sync with Creator dashboard selects and category page sections. */
 export const CLOTHING_SUBCATEGORIES: Record<ClothingCategory, string[]> = {
@@ -8,7 +14,11 @@ export const CLOTHING_SUBCATEGORIES: Record<ClothingCategory, string[]> = {
   kurtis: ["cotton", "rayon", "georgette", "party wear"],
   blouses: ["party wear", "cotton", "silk", "ajrakh"],
   gowns: ["party wear", "casual wear"],
+  coord_sets: ["cotton", "rayon", "party wear", "casual wear"],
 };
+
+const CATEGORY_META_PATTERN =
+  "(sarees|kurtis|blouses|gowns|coord_sets)";
 
 export function normalizeSubcategory(category: ClothingCategory, value?: string | null): string {
   const options = CLOTHING_SUBCATEGORIES[category];
@@ -26,6 +36,7 @@ export function inferCategoryFromSearchQuery(query: string): ClothingCategory | 
   if (/\bkurti?s?\b/.test(s) || /\bkurta?s?\b/.test(s) || s.includes("kurthi")) return "kurtis";
   if (/\bblouse?s?\b/.test(s)) return "blouses";
   if (/\bgown?s?\b/.test(s)) return "gowns";
+  if (/\bco[-\s]?ord\s*sets?\b/.test(s) || /\bcoord\s*sets?\b/.test(s)) return "coord_sets";
   return null;
 }
 
@@ -38,6 +49,7 @@ export function isCategoryOnlyQuery(query: string, cat: ClothingCategory): boole
     kurtis: ["kurti", "kurtis", "kurta", "kurtas", "kurthi"],
     blouses: ["blouse", "blouses"],
     gowns: ["gown", "gowns"],
+    coord_sets: ["coord set", "coord sets", "coordset", "coordsets", "co-ord set", "co-ord sets"],
   };
   return keywords[cat].includes(s);
 }
@@ -76,14 +88,14 @@ export function normalizeRating(value?: number | string | null) {
 export function stripMeta(description: string | null | undefined) {
   if (!description) return null;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    new RegExp(`^__meta__:${CATEGORY_META_PATTERN}\\|([^|_]+)(?:\\|([0-9.]+))?(?:\\|([0-9.]+))?__([\\s\\S]*)$`, "i"),
   );
   if (withMeta) {
     const cleaned = stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(withMeta[5])))?.trim();
     return cleaned ? cleaned : null;
   }
   const match = description.match(
-    /^__category__:(sarees|kurtis|blouses|gowns)__([\s\S]*)$/i,
+    new RegExp(`^__category__:${CATEGORY_META_PATTERN}__([\\s\\S]*)$`, "i"),
   );
   if (!match) return stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(description)));
   const cleaned = stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(match[2])))?.trim();
@@ -268,11 +280,11 @@ function stripVariantsMeta(description: string | null | undefined) {
 export function decodeCategory(description: string | null | undefined): ClothingCategory {
   if (!description) return "sarees";
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    new RegExp(`^__meta__:${CATEGORY_META_PATTERN}\\|([^|_]+)(?:\\|([0-9.]+))?(?:\\|([0-9.]+))?__([\\s\\S]*)$`, "i"),
   );
   if (withMeta) return withMeta[1].toLowerCase() as ClothingCategory;
   const match = description.match(
-    /^__category__:(sarees|kurtis|blouses|gowns)__/i,
+    new RegExp(`^__category__:${CATEGORY_META_PATTERN}__`, "i"),
   );
   if (match) return match[1].toLowerCase() as ClothingCategory;
 
@@ -281,13 +293,14 @@ export function decodeCategory(description: string | null | undefined): Clothing
   if (t.includes("kurti")) return "kurtis";
   if (t.includes("blouse")) return "blouses";
   if (t.includes("gown")) return "gowns";
+  if (t.includes("coord")) return "coord_sets";
   return "sarees";
 }
 
 export function decodeSubcategory(description: string | null | undefined) {
   if (!description) return null;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    new RegExp(`^__meta__:${CATEGORY_META_PATTERN}\\|([^|_]+)(?:\\|([0-9.]+))?(?:\\|([0-9.]+))?__([\\s\\S]*)$`, "i"),
   );
   return withMeta ? withMeta[2].toLowerCase() : null;
 }
@@ -295,7 +308,7 @@ export function decodeSubcategory(description: string | null | undefined) {
 export function decodeRating(description: string | null | undefined) {
   if (!description) return 4;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    new RegExp(`^__meta__:${CATEGORY_META_PATTERN}\\|([^|_]+)(?:\\|([0-9.]+))?(?:\\|([0-9.]+))?__([\\s\\S]*)$`, "i"),
   );
   if (withMeta?.[3]) return normalizeRating(withMeta[3]);
   return 4;
@@ -304,7 +317,7 @@ export function decodeRating(description: string | null | undefined) {
 export function decodeDiscountPercent(description: string | null | undefined) {
   if (!description) return 0;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    new RegExp(`^__meta__:${CATEGORY_META_PATTERN}\\|([^|_]+)(?:\\|([0-9.]+))?(?:\\|([0-9.]+))?__([\\s\\S]*)$`, "i"),
   );
   const n = Number(withMeta?.[4] ?? 0);
   if (!Number.isFinite(n)) return 0;

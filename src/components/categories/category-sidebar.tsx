@@ -191,6 +191,7 @@ function SidebarInner({
     kurtis: "KURTIS",
     blouses: "BLOUSES",
     gowns: "GOWNS",
+    coord_sets: "COORD SET",
   };
   const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
   const subCards = (subs ?? []).map((s) => {

@@ -12,7 +12,7 @@ export function HomeAboutSawbhagya() {
       title="Everyday elegance, rooted in who you are."
       titleEmphasis="Clothing that fits real life—and real occasions."
       paragraphs={[
-        "Sawbhagya is a women’s fashion brand built around everyday elegance and cultural identity. The focus is on delivering sarees, ready-made blouses, kurtis, and gowns that balance tradition with modern design. Each collection is selected to suit daily wear, office needs, and special occasions without compromising on comfort or quality.",
+        "Sawbhagya is a women’s fashion brand built around everyday elegance and cultural identity. The focus is on delivering sarees, ready-made blouses, kurtis, gowns, and coord sets that balance tradition with modern design. Each collection is selected to suit daily wear, office needs, and special occasions without compromising on comfort or quality.",
         "The brand operates with a clear intent: make stylish ethnic wear accessible, reliable, and relevant to evolving preferences. Fabrics, fits, and finishes are prioritized to ensure consistency across products. Sawbhagya is not driven by fast fashion turnover but by curated choices that retain value over time.",
         "Rooted in Indian aesthetics, Sawbhagya serves women who want versatility in their wardrobe without complexity in decision-making. The goal is straightforward—provide clothing that fits real use, real occasions, and real expectations.",
       ]}

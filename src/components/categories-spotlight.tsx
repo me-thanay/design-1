@@ -8,7 +8,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 type CategorySlide = {
-  slug: "sarees" | "blouses" | "kurtis" | "gowns";
+  slug: "sarees" | "blouses" | "kurtis" | "gowns" | "coord_sets";
   eyebrow: string;
   title: string;
   subtitle: string;
@@ -43,6 +43,13 @@ const SLIDES: CategorySlide[] = [
     title: "Gown spotlight",
     subtitle: "Party · casual · flowy silhouettes",
     imageSrc: "/stock_images/PARTY%20WEAR%20GOWN.jpeg",
+  },
+  {
+    slug: "coord_sets",
+    eyebrow: "Categories",
+    title: "Coord set edit",
+    subtitle: "Cotton · rayon · party · casual",
+    imageSrc: "/stock_images/showcase-1.jpeg",
   },
 ];
 
