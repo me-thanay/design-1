@@ -8,6 +8,7 @@ import type { CategoryCarouselSlide } from "@/components/categories/category-med
 import { CATEGORY_HERO_VIDEO_SRC } from "@/lib/category-hero-video";
 import type { ClothingCategory } from "@/lib/products";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
+import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
 import { PRIMARY_NAV } from "@/lib/navigation";
 
 function encodePublicSrc(src?: string | null) {
@@ -60,7 +61,9 @@ function heroImagesForCategory(category: ClothingCategory) {
           "/kurtis/pexels-dhanno-28949643.jpg",
           "/kurtis/pexels-dhanno-28949655.jpg",
         ].map(encodePublicSrc).filter(Boolean) as string[])
-      : [];
+      : category === "coord_sets"
+        ? (COORD_CATEGORY_MEDIA.hero.map(encodePublicSrc).filter(Boolean) as string[])
+        : [];
 
   // Unique + stable order
   const seen = new Set<string>();
@@ -297,7 +300,7 @@ const CATEGORY_CONFIG: Record<
   coord_sets: {
     title: "Coord Set",
     subtitle: "Matching tops and bottoms — polished looks with zero effort.",
-    heroImagePositions: ["50% 20%", "50% 18%", "50% 22%", "50% 20%"],
+    heroImagePositions: ["50% 50%", "50% 50%", "50% 50%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Coord",
@@ -305,21 +308,21 @@ const CATEGORY_CONFIG: Record<
       description:
         "Effortless matching sets for work, brunch, and evenings — comfortable fabrics with a put-together finish.",
       ctaText: "Shop",
-      mediaType: "video",
-      mediaSrc: CATEGORY_HERO_VIDEO_SRC.coord_sets,
-      mediaAlt: "Featured coord set video",
+      mediaType: "image",
+      mediaSrc: COORD_CATEGORY_MEDIA.featured,
+      mediaAlt: "Featured coord set look",
       indexLabel: "05",
     },
     carousel: {
       eyebrow: "Shop by type",
       slides: [
         {
-          src: stockImagesUrl(STOCK_IMAGES_FILES[0]),
+          src: COORD_CATEGORY_MEDIA.casual,
           alt: "Relaxed coord set for easy weekends",
           title: "Casual wear",
         },
         {
-          src: stockImagesUrl(STOCK_IMAGES_FILES[2]),
+          src: COORD_CATEGORY_MEDIA.party,
           alt: "Festive coord set with elevated detail",
           title: "Party wear",
         },
@@ -396,8 +399,15 @@ export default async function CategoryPage({
         backgroundImagePositions={heroPositions}
         backgroundImagePositionsMobile={heroMobilePositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-        backgroundImageFit="cover"
-        className={category === "kurtis" ? "min-h-[82svh] sm:min-h-[56svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
+        backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
+        backgroundImageFitMobile={category === "coord_sets" ? "contain" : undefined}
+        className={
+          category === "kurtis"
+            ? "min-h-[82svh] sm:min-h-[56svh]"
+            : category === "coord_sets"
+              ? "min-h-[72svh] sm:min-h-[58svh]"
+              : "min-h-[56svh] sm:min-h-[52svh]"
+        }
       />
 
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:py-12">

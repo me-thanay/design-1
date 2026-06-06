@@ -20,6 +20,7 @@ import {
   isCategoryOnlyQuery,
   type ClothingCategory,
 } from "@/lib/products";
+import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
 import { SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
 
@@ -75,7 +76,8 @@ const MOOD_CATEGORY_ITEMS: MoodCategoryItem[] = [
     title: "Coord Set",
     sub: "Matching · effortless",
     href: "/categories/coord_sets",
-    img: "/shopbymood/coordset.jpeg",
+    img: COORD_CATEGORY_MEDIA.featured,
+    imageFit: "contain" as const,
   },
 ];
 

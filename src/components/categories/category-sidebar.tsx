@@ -318,13 +318,21 @@ function SidebarInner({
               onClick={onNavigate}
               className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
             >
-              <span className="relative h-14 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1 ring-black/5">
+              <span
+                className={cn(
+                  "relative shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1 ring-black/5",
+                  category === "coord_sets" ? "h-14 w-24" : "h-14 w-20",
+                )}
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {s.imageSrc ? (
                   <img
                     src={encodeURI(s.imageSrc)}
                     alt=""
-                    className="h-full w-full object-cover"
+                    className={cn(
+                      "h-full w-full",
+                      category === "coord_sets" ? "object-contain object-center" : "object-cover",
+                    )}
                     loading="lazy"
                     decoding="async"
                   />
