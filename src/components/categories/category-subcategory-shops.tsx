@@ -6,7 +6,7 @@ import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { FeaturedSpotlight, type FeaturedSpotlightProps } from "@/components/ui/feature-spotlight";
 import { CLOTHING_SUBCATEGORIES, type ClothingCategory } from "@/lib/products";
 import { PRIMARY_NAV } from "@/lib/navigation";
-import { cn } from "@/lib/utils";
+import { cn, publicAssetUrl } from "@/lib/utils";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { motion } from "motion/react";
 
@@ -19,10 +19,7 @@ function titleCaseLine(s: string) {
 }
 
 function normalizeSrc(src?: string) {
-  if (!src) return null;
-  if (/^https?:\/\//i.test(src)) return src;
-  if (!src.startsWith("/")) return src;
-  return encodeURI(src);
+  return publicAssetUrl(src ?? null) || null;
 }
 
 function subcategoryHeroImage(category: ClothingCategory, sub: string) {

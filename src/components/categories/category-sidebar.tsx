@@ -7,7 +7,7 @@ import { PRIMARY_NAV } from "@/lib/navigation";
 import { subAnchorId } from "@/components/categories/category-subcategory-shops";
 import { useSearchParams } from "next/navigation";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
-import { cn } from "@/lib/utils";
+import { cn, publicAssetUrl } from "@/lib/utils";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
 
@@ -327,7 +327,7 @@ function SidebarInner({
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {s.imageSrc ? (
                   <img
-                    src={encodeURI(s.imageSrc)}
+                    src={publicAssetUrl(s.imageSrc)}
                     alt=""
                     className={cn(
                       "h-full w-full",

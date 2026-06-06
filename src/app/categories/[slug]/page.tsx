@@ -10,12 +10,10 @@ import type { ClothingCategory } from "@/lib/products";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
 import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
 import { PRIMARY_NAV } from "@/lib/navigation";
+import { publicAssetUrl } from "@/lib/utils";
 
 function encodePublicSrc(src?: string | null) {
-  if (!src) return null;
-  if (/^https?:\/\//i.test(src)) return src;
-  if (!src.startsWith("/")) return src;
-  return encodeURI(src);
+  return publicAssetUrl(src) || null;
 }
 
 const STOCK_IMAGES_DIR_WITH_SPACE = "/stock images" as const;

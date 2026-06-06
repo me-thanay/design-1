@@ -6,6 +6,7 @@ import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import type { ClothingCategory, Product } from "@/lib/products";
 import { normalizeProductRow } from "@/lib/products";
 import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
+import { publicAssetUrl } from "@/lib/utils";
 import { ProductDetailsDialog } from "@/components/products/product-details-dialog";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
@@ -36,7 +37,7 @@ function normalizeSrc(src: string) {
   if (!src) return src;
   if (/^https?:\/\//i.test(src)) return src;
   if (!src.startsWith("/")) return src;
-  return encodeURI(src);
+  return publicAssetUrl(src);
 }
 
 function productToGalleryItem(p: Product, category: ClothingCategory, rank: number) {
