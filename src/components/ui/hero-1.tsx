@@ -168,6 +168,7 @@ export function HeroLanding(props: HeroLandingProps) {
   const [validBgSlides, setValidBgSlides] = useState(bgSlides);
   const bgFitDesktop = backgroundImageFit ?? "cover";
   const bgFit = (isMobile ? (backgroundImageFitMobile ?? bgFitDesktop) : bgFitDesktop) as "cover" | "contain";
+  const useContainFit = bgFit === "contain";
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
@@ -180,6 +181,7 @@ export function HeroLanding(props: HeroLandingProps) {
   // Remove broken images so the hero never rotates into a blank slide.
   useEffect(() => {
     setValidBgSlides(bgSlides);
+    setBgIndex(0);
     if (bgSlides.length === 0) return;
 
     let cancelled = false;
@@ -437,8 +439,9 @@ export function HeroLanding(props: HeroLandingProps) {
     >
       {validBgSlides.length > 0 && (
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-          {bgFit === "contain" && (
+          {useContainFit && (
             <>
+              <div className="absolute inset-0 bg-[#E7DFD6]" />
               {validBgSlides.map((s, index) => (
                 // eslint-disable-next-line @next/next/no-img-element -- backdrop layer only
                 <img
@@ -448,19 +451,19 @@ export function HeroLanding(props: HeroLandingProps) {
                   decoding="async"
                   fetchPriority="low"
                   className={[
-                    "absolute inset-0 h-full w-full object-cover",
-                    "scale-[1.06] blur-2xl opacity-70",
+                    "absolute inset-0 h-full w-full object-contain object-center",
+                    "scale-[1.03] blur-2xl opacity-60",
                     "transition-opacity motion-reduce:transition-none",
-                    index === (bgIndex % validBgSlides.length) ? "opacity-70" : "opacity-0",
+                    index === (bgIndex % validBgSlides.length) ? "opacity-60" : "opacity-0",
                   ].join(" ")}
                   style={{
-                    objectPosition: isMobile ? s.posMobile : s.posDesktop,
+                    objectPosition: "center center",
                     transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
                     filter: "saturate(1.05) contrast(1.05)",
                   }}
                 />
               ))}
-              <div className="absolute inset-0 bg-black/10" />
+              <div className="absolute inset-0 bg-black/5" />
             </>
           )}
           {validBgSlides.map((s, index) => (
@@ -472,27 +475,40 @@ export function HeroLanding(props: HeroLandingProps) {
               decoding={index === 0 ? "sync" : "async"}
               fetchPriority={index === 0 ? "high" : "low"}
               className={[
-                "absolute inset-0 h-full w-full will-change-transform will-change-opacity",
-                bgFit === "contain" ? "object-contain" : "object-cover",
-                "origin-top motion-reduce:origin-center",
+                "absolute inset-0 h-full w-full will-change-opacity",
+                useContainFit ? "object-contain object-center p-4 sm:p-8 lg:p-10" : "object-cover will-change-transform",
+                useContainFit ? "origin-center motion-reduce:origin-center" : "origin-top motion-reduce:origin-center",
                 "transition-[opacity,transform] motion-reduce:transition-none",
                 index === (bgIndex % validBgSlides.length)
-                  ? "opacity-100 scale-[1.02] motion-reduce:scale-100"
-                  : "opacity-0 scale-[1.01] motion-reduce:scale-100",
+                  ? useContainFit
+                    ? "opacity-100 motion-reduce:scale-100"
+                    : "opacity-100 scale-[1.02] motion-reduce:scale-100"
+                  : useContainFit
+                    ? "opacity-0 motion-reduce:scale-100"
+                    : "opacity-0 scale-[1.01] motion-reduce:scale-100",
               ].join(" ")}
               style={{
-                objectPosition: isMobile ? s.posMobile : s.posDesktop,
+                objectPosition: useContainFit ? "center center" : isMobile ? s.posMobile : s.posDesktop,
                 transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
                 animation:
-                  index === (bgIndex % validBgSlides.length) && !reduceMotionFramer
+                  !useContainFit &&
+                  index === (bgIndex % validBgSlides.length) &&
+                  !reduceMotionFramer
                     ? "kenburns-slow 10s linear both"
                     : undefined,
-                filter: "saturate(1.08) contrast(1.08)",
+                filter: useContainFit ? "none" : "saturate(1.08) contrast(1.08)",
               }}
             />
           ))}
           {/* keep background clean; only a subtle bottom fade for text */}
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" />
+          <div
+            className={[
+              "absolute inset-0",
+              useContainFit
+                ? "bg-gradient-to-b from-transparent via-transparent to-black/25"
+                : "bg-gradient-to-b from-transparent via-transparent to-black/35",
+            ].join(" ")}
+          />
         </div>
       )}
 
@@ -647,7 +663,12 @@ export function HeroLanding(props: HeroLandingProps) {
                                   <img
                                     src={src}
                                     alt=""
-                                    className="h-40 w-full rounded-xl object-cover"
+                                    className={[
+                                      "h-40 w-full rounded-xl",
+                                      item.href.includes("/coord_sets")
+                                        ? "object-contain object-center bg-neutral-100"
+                                        : "object-cover",
+                                    ].join(" ")}
                                     style={hasImageBackground ? { filter: "saturate(1.05) contrast(1.05)" } : undefined}
                                   />
                                 );
@@ -903,8 +924,8 @@ export function HeroLanding(props: HeroLandingProps) {
         </header>
       )}
 
-      <div className="relative z-10 px-6 pt-4 overflow-hidden min-h-screen flex flex-col justify-center">
-        <div className="mx-auto w-full max-w-6xl pt-24 sm:pt-32">
+      <div className="relative z-10 flex min-h-[inherit] flex-col justify-center px-6 pt-4 overflow-hidden">
+        <div className="mx-auto w-full max-w-6xl pt-20 sm:pt-28">
           {announcementBanner && (
             <div className="hidden sm:mb-6 sm:flex sm:justify-center">
               <div

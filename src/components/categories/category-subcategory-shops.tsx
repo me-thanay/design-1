@@ -182,7 +182,7 @@ export function CategorySubcategoryProductSections({
               className={cn(
                 "group relative isolate overflow-hidden",
                 category === "coord_sets"
-                  ? "min-h-[280px] bg-neutral-100 sm:min-h-[340px]"
+                  ? "min-h-[280px] bg-neutral-100 sm:min-h-[380px] lg:min-h-[440px]"
                   : "min-h-[220px] sm:min-h-[260px]",
               )}
               whileHover={{ y: -2 }}
@@ -210,10 +210,10 @@ export function CategorySubcategoryProductSections({
                     src={img}
                     alt=""
                     className={cn(
-                      "absolute inset-0 -z-10 h-full w-full transition-transform duration-700 ease-out motion-reduce:transition-none group-hover:scale-[1.04]",
+                      "absolute inset-0 -z-10 h-full w-full motion-reduce:transition-none",
                       category === "coord_sets"
-                        ? "object-contain object-center bg-neutral-100"
-                        : "object-cover",
+                        ? "object-contain object-center bg-neutral-100 p-4 sm:p-6 lg:p-10"
+                        : "object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]",
                     )}
                     style={
                       category === "coord_sets"

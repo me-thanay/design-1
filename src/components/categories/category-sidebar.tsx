@@ -321,7 +321,7 @@ function SidebarInner({
               <span
                 className={cn(
                   "relative shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1 ring-black/5",
-                  category === "coord_sets" ? "h-14 w-24" : "h-14 w-20",
+                  category === "coord_sets" ? "h-14 w-24 lg:h-16 lg:w-32" : "h-14 w-20",
                 )}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}

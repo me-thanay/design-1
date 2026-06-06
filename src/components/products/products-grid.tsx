@@ -64,17 +64,18 @@ function formatInr(amount: number) {
   return `₹${Math.round(amount).toLocaleString("en-IN")}`;
 }
 
+function imageFitFor(category: ClothingCategory | undefined) {
+  if (!category) return "cover" as const;
+  return category === "sarees" ? ("cover" as const) : ("contain" as const);
+}
+
 function imagePositionFor(category: ClothingCategory | undefined, src: string) {
+  if (category === "coord_sets") return "center center";
   if (category !== "gowns") return undefined;
   const s = src ?? "";
   if (s.includes("PARTY%20WEAR%20GOWN") || s.includes("PARTY WEAR GOWN")) return "46% 16%";
   if (s.includes("CASUAL%20WEAR%20GOWN") || s.includes("CASUAL WEAR GOWN")) return "55% 16%";
   return "50% 16%";
-}
-
-function imageFitFor(category: ClothingCategory | undefined) {
-  if (!category) return "cover" as const;
-  return category === "sarees" ? ("cover" as const) : ("contain" as const);
 }
 
 function matchesFilter(p: Product, filterQuery: string) {
