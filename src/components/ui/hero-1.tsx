@@ -200,26 +200,7 @@ export function HeroLanding(props: HeroLandingProps) {
     setBgIndex(0);
     setBrokenSrcs(new Set());
     setLoadedSrcs(new Set());
-
-    const first = bgSlides[0]?.src;
-    if (!first) return;
-
-    const probe = new Image();
-    const onReady = () => markSlideLoaded(first);
-    const onFail = () => markSlideBroken(first);
-    probe.addEventListener("load", onReady);
-    probe.addEventListener("error", onFail);
-    probe.src = first;
-    if (probe.complete) {
-      if (probe.naturalWidth > 0) onReady();
-      else onFail();
-    }
-
-    return () => {
-      probe.removeEventListener("load", onReady);
-      probe.removeEventListener("error", onFail);
-    };
-  }, [slidesKey, bgSlides]);
+  }, [slidesKey]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
@@ -389,6 +370,7 @@ export function HeroLanding(props: HeroLandingProps) {
   }, [openDesktopDropdown]);
 
   const hasImageBackground = validBgSlides.length > 0;
+  const heroImageVisible = hasImageBackground && activeSlideReady;
   const navTextClass = hasImageBackground
     ? "text-zinc-700 hover:text-zinc-900 transition-colors"
     : "text-foreground hover:text-muted-foreground transition-colors";
@@ -398,8 +380,8 @@ export function HeroLanding(props: HeroLandingProps) {
   const navIconClassName = "h-[18px] w-[18px] sm:h-5 sm:w-5 lg:h-[22px] lg:w-[22px]";
   const isShopItem = (item: NavigationItem) => item.name.toLowerCase() === "shop";
   const isCartItem = (item: NavigationItem) => item.name.toLowerCase() === "cart";
-  const titleTextClass = hasImageBackground ? "text-[#F7F3EE]" : "text-foreground";
-  const descTextClass = hasImageBackground ? "text-[#E7DFD6]" : "text-muted-foreground";
+  const titleTextClass = heroImageVisible ? "text-[#F7F3EE]" : "text-foreground";
+  const descTextClass = heroImageVisible ? "text-[#E7DFD6]" : "text-muted-foreground";
 
   const getTitleSizeClasses = () => {
     switch (titleSize) {
@@ -423,7 +405,7 @@ export function HeroLanding(props: HeroLandingProps) {
           className={[
             "inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold sm:w-auto sm:py-2.5 sm:text-sm",
             "shadow-sm transition-colors",
-            hasImageBackground
+            heroImageVisible
               ? "bg-white text-black hover:bg-white/90"
               : "bg-primary text-primary-foreground hover:bg-primary/90",
             "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
@@ -443,8 +425,8 @@ export function HeroLanding(props: HeroLandingProps) {
           href={cta.href}
           className={[
             "inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold sm:w-auto sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm/6",
-            hasImageBackground ? "bg-white/10 ring-1 ring-white/20 backdrop-blur sm:ring-0" : "bg-black/5 ring-1 ring-black/10 sm:ring-0",
-            hasImageBackground ? "text-white/90 hover:text-white" : "text-foreground hover:text-muted-foreground",
+            heroImageVisible ? "bg-white/10 ring-1 ring-white/20 backdrop-blur sm:ring-0" : "bg-black/5 ring-1 ring-black/10 sm:ring-0",
+            heroImageVisible ? "text-white/90 hover:text-white" : "text-foreground hover:text-muted-foreground",
           ].join(" ")}
           whileHover={motionOff ? undefined : { x: 4 }}
           whileTap={motionOff ? undefined : { scale: 0.98 }}
@@ -463,46 +445,51 @@ export function HeroLanding(props: HeroLandingProps) {
       {validBgSlides.length > 0 && (
         <div
           aria-hidden="true"
-          className={[
-            "pointer-events-none absolute inset-0 z-0 overflow-hidden bg-neutral-900/20",
-            activeSlideReady ? "opacity-100" : "opacity-0",
-          ].join(" ")}
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#E7DFD6]"
         >
           {bgFit === "contain" && (
             <>
-              {validBgSlides.map((s, index) => (
-                // eslint-disable-next-line @next/next/no-img-element -- backdrop layer only
-                <img
-                  key={`backdrop-${s.src}-${index}`}
-                  src={s.src}
-                  alt=""
-                  decoding="async"
-                  fetchPriority="low"
-                  className={[
-                    "absolute inset-0 h-full w-full object-cover",
-                    "scale-[1.06] blur-2xl opacity-70",
-                    "transition-opacity motion-reduce:transition-none",
-                    index === activeSlideIndex ? "opacity-70" : "opacity-0",
-                  ].join(" ")}
-                  style={{
-                    objectFit: "cover",
-                    objectPosition: isMobile ? s.posMobile : s.posDesktop,
-                    transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
-                    filter: "saturate(1.05) contrast(1.05)",
-                  }}
-                  onLoad={() => markSlideLoaded(s.src)}
-                  onError={() => markSlideBroken(s.src)}
-                />
-              ))}
+              {validBgSlides.map((s, index) => {
+                const isActive = index === activeSlideIndex;
+                const isLoaded = loadedSrcs.has(s.src);
+                return (
+                  // eslint-disable-next-line @next/next/no-img-element -- backdrop layer only
+                  <img
+                    key={`backdrop-${s.src}-${index}`}
+                    src={s.src}
+                    alt=""
+                    decoding="async"
+                    fetchPriority="low"
+                    className={[
+                      "absolute inset-0 h-full w-full object-cover",
+                      "scale-[1.06] blur-2xl opacity-70",
+                      "transition-opacity motion-reduce:transition-none",
+                      isActive && isLoaded ? "opacity-70" : "opacity-0",
+                    ].join(" ")}
+                    style={{
+                      objectFit: "cover",
+                      objectPosition: isMobile ? s.posMobile : s.posDesktop,
+                      transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
+                      filter: "saturate(1.05) contrast(1.05)",
+                    }}
+                    onLoad={() => markSlideLoaded(s.src)}
+                    onError={() => markSlideBroken(s.src)}
+                  />
+                );
+              })}
               <div className="absolute inset-0 bg-black/10" />
             </>
           )}
           {validBgSlides.map((s, index) => {
             const isActive = index === activeSlideIndex;
+            const isLoaded = loadedSrcs.has(s.src);
             return (
               // eslint-disable-next-line @next/next/no-img-element -- full-bleed hero carousel; LCP handled by first slide
               <img
                 key={`${s.src}-${index}`}
+                ref={(node) => {
+                  if (node?.complete && node.naturalWidth > 0) markSlideLoaded(s.src);
+                }}
                 src={s.src}
                 alt=""
                 decoding={index === 0 ? "sync" : "async"}
@@ -512,14 +499,14 @@ export function HeroLanding(props: HeroLandingProps) {
                   bgFit === "contain" ? "object-contain" : "object-cover",
                   "origin-center motion-reduce:origin-center",
                   "transition-opacity motion-reduce:transition-none",
-                  isActive ? "opacity-100" : "opacity-0",
+                  isActive && isLoaded ? "opacity-100" : "opacity-0",
                 ].join(" ")}
                 style={{
                   objectFit: bgFit,
                   objectPosition: isMobile ? s.posMobile : s.posDesktop,
                   transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
                   animation:
-                    isActive && activeSlideReady && !reduceMotionFramer && bgFit === "cover"
+                    isActive && isLoaded && !reduceMotionFramer && bgFit === "cover"
                       ? "kenburns-slow 10s linear both"
                       : undefined,
                   filter: "saturate(1.08) contrast(1.08)",
@@ -974,7 +961,7 @@ export function HeroLanding(props: HeroLandingProps) {
           )}
 
           <div className="mx-auto max-w-4xl text-center">
-            {hasImageBackground && (
+            {hasImageBackground && activeSlideReady && (
               <div
                 aria-hidden="true"
                 className="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto h-[520px] max-w-5xl rounded-[2rem] sm:h-[560px] [background:radial-gradient(60%_60%_at_50%_35%,rgba(0,0,0,0.35)_0%,rgba(0,0,0,0.20)_35%,rgba(0,0,0,0.10)_60%,rgba(0,0,0,0.0)_100%)]"
@@ -984,7 +971,7 @@ export function HeroLanding(props: HeroLandingProps) {
               className={[
                 getTitleSizeClasses(),
                 "font-bold tracking-[-0.02em] text-balance",
-                hasImageBackground ? "drop-shadow-[0_10px_32px_rgba(0,0,0,0.35)]" : "",
+                heroImageVisible ? "drop-shadow-[0_10px_32px_rgba(0,0,0,0.35)]" : "",
                 titleTextClass,
               ].join(" ")}
               aria-label={title}
@@ -994,7 +981,7 @@ export function HeroLanding(props: HeroLandingProps) {
                 <span
                   className={[
                     "ml-0.5 inline-block w-[2px] animate-pulse align-baseline sm:w-[3px]",
-                    hasImageBackground ? "bg-white/90" : "bg-foreground/80",
+                    heroImageVisible ? "bg-white/90" : "bg-foreground/80",
                   ].join(" ")}
                   style={{ height: "0.85em" }}
                   aria-hidden
@@ -1005,7 +992,7 @@ export function HeroLanding(props: HeroLandingProps) {
               className={[
                 "mt-5 sm:mt-7 mx-auto max-w-2xl",
                 "text-base sm:text-lg font-semibold text-pretty sm:text-xl/8 lg:text-2xl/9 xl:text-2xl/9",
-                hasImageBackground ? "drop-shadow-[0_8px_22px_rgba(0,0,0,0.35)]" : "",
+                heroImageVisible ? "drop-shadow-[0_8px_22px_rgba(0,0,0,0.35)]" : "",
                 descTextClass,
               ].join(" ")}
             >
