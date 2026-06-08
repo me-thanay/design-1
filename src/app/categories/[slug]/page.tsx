@@ -385,6 +385,7 @@ export default async function CategoryPage({
   return (
     <main className="surface-texture">
       <HeroLanding
+        key={category}
         {...buildHeroThemeProps({
           title: cfg.title,
           description: cfg.subtitle,
@@ -399,7 +400,7 @@ export default async function CategoryPage({
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
         backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
         backgroundImageFitMobile={category === "coord_sets" ? "contain" : undefined}
-        className={
+        minHeightClassName={
           category === "kurtis"
             ? "min-h-[82svh] sm:min-h-[56svh]"
             : category === "coord_sets"

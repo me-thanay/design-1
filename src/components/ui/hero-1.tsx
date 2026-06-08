@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Menu, ShoppingBag, ShoppingCart, X } from "lucide-react";
@@ -165,9 +165,61 @@ export function HeroLanding(props: HeroLandingProps) {
     [normalizedBackgroundImages, backgroundImagePositions, backgroundImagePositionsMobile],
   );
 
-  const [validBgSlides, setValidBgSlides] = useState(bgSlides);
+  const slidesKey = useMemo(() => bgSlides.map((s) => s.src).join("|"), [bgSlides]);
+  const [brokenSrcs, setBrokenSrcs] = useState<Set<string>>(() => new Set());
+  const [loadedSrcs, setLoadedSrcs] = useState<Set<string>>(() => new Set());
+  const validBgSlides = useMemo(
+    () => bgSlides.filter((s) => !brokenSrcs.has(s.src)),
+    [bgSlides, brokenSrcs],
+  );
+  const activeSlideIndex = validBgSlides.length ? bgIndex % validBgSlides.length : 0;
+  const activeSlideSrc = validBgSlides[activeSlideIndex]?.src ?? null;
+  const activeSlideReady = activeSlideSrc ? loadedSrcs.has(activeSlideSrc) : false;
   const bgFitDesktop = backgroundImageFit ?? "cover";
   const bgFit = (isMobile ? (backgroundImageFitMobile ?? bgFitDesktop) : bgFitDesktop) as "cover" | "contain";
+
+  const markSlideLoaded = (src: string) => {
+    setLoadedSrcs((prev) => {
+      if (prev.has(src)) return prev;
+      const next = new Set(prev);
+      next.add(src);
+      return next;
+    });
+  };
+
+  const markSlideBroken = (src: string) => {
+    setBrokenSrcs((prev) => {
+      if (prev.has(src)) return prev;
+      const next = new Set(prev);
+      next.add(src);
+      return next;
+    });
+  };
+
+  useLayoutEffect(() => {
+    setBgIndex(0);
+    setBrokenSrcs(new Set());
+    setLoadedSrcs(new Set());
+
+    const first = bgSlides[0]?.src;
+    if (!first) return;
+
+    const probe = new Image();
+    const onReady = () => markSlideLoaded(first);
+    const onFail = () => markSlideBroken(first);
+    probe.addEventListener("load", onReady);
+    probe.addEventListener("error", onFail);
+    probe.src = first;
+    if (probe.complete) {
+      if (probe.naturalWidth > 0) onReady();
+      else onFail();
+    }
+
+    return () => {
+      probe.removeEventListener("load", onReady);
+      probe.removeEventListener("error", onFail);
+    };
+  }, [slidesKey, bgSlides]);
 
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 639px)");
@@ -176,33 +228,6 @@ export function HeroLanding(props: HeroLandingProps) {
     mq.addEventListener("change", update);
     return () => mq.removeEventListener("change", update);
   }, []);
-
-  // Remove broken images so the hero never rotates into a blank slide.
-  useEffect(() => {
-    setValidBgSlides(bgSlides);
-    if (bgSlides.length === 0) return;
-
-    let cancelled = false;
-    const pending = new Set(bgSlides.map((s) => s.src));
-
-    for (const s of bgSlides) {
-      const img = new Image();
-      img.onload = () => {
-        pending.delete(s.src);
-      };
-      img.onerror = () => {
-        pending.delete(s.src);
-        if (cancelled) return;
-        setValidBgSlides((prev) => prev.filter((x) => x.src !== s.src));
-      };
-      img.src = s.src;
-    }
-
-    return () => {
-      cancelled = true;
-      pending.clear();
-    };
-  }, [bgSlides]);
 
   const allowedAdmins = useMemo(() => {
     const raw = process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "";
@@ -436,7 +461,13 @@ export function HeroLanding(props: HeroLandingProps) {
       className={`${minHeightClassName ?? "min-h-[100svh]"} w-full overflow-hidden relative isolate ${className || ""}`}
     >
       {validBgSlides.length > 0 && (
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
+        <div
+          aria-hidden="true"
+          className={[
+            "pointer-events-none absolute inset-0 z-0 overflow-hidden bg-neutral-900/20",
+            activeSlideReady ? "opacity-100" : "opacity-0",
+          ].join(" ")}
+        >
           {bgFit === "contain" && (
             <>
               {validBgSlides.map((s, index) => (
@@ -451,46 +482,53 @@ export function HeroLanding(props: HeroLandingProps) {
                     "absolute inset-0 h-full w-full object-cover",
                     "scale-[1.06] blur-2xl opacity-70",
                     "transition-opacity motion-reduce:transition-none",
-                    index === (bgIndex % validBgSlides.length) ? "opacity-70" : "opacity-0",
+                    index === activeSlideIndex ? "opacity-70" : "opacity-0",
                   ].join(" ")}
                   style={{
+                    objectFit: "cover",
                     objectPosition: isMobile ? s.posMobile : s.posDesktop,
                     transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
                     filter: "saturate(1.05) contrast(1.05)",
                   }}
+                  onLoad={() => markSlideLoaded(s.src)}
+                  onError={() => markSlideBroken(s.src)}
                 />
               ))}
               <div className="absolute inset-0 bg-black/10" />
             </>
           )}
-          {validBgSlides.map((s, index) => (
-            // eslint-disable-next-line @next/next/no-img-element -- full-bleed hero carousel; LCP handled by first slide
-            <img
-              key={`${s.src}-${index}`}
-              src={s.src}
-              alt=""
-              decoding={index === 0 ? "sync" : "async"}
-              fetchPriority={index === 0 ? "high" : "low"}
-              className={[
-                "absolute inset-0 h-full w-full will-change-transform will-change-opacity",
-                bgFit === "contain" ? "object-contain" : "object-cover",
-                "origin-top motion-reduce:origin-center",
-                "transition-[opacity,transform] motion-reduce:transition-none",
-                index === (bgIndex % validBgSlides.length)
-                  ? "opacity-100 scale-[1.02] motion-reduce:scale-100"
-                  : "opacity-0 scale-[1.01] motion-reduce:scale-100",
-              ].join(" ")}
-              style={{
-                objectPosition: isMobile ? s.posMobile : s.posDesktop,
-                transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
-                animation:
-                  index === (bgIndex % validBgSlides.length) && !reduceMotionFramer
-                    ? "kenburns-slow 10s linear both"
-                    : undefined,
-                filter: "saturate(1.08) contrast(1.08)",
-              }}
-            />
-          ))}
+          {validBgSlides.map((s, index) => {
+            const isActive = index === activeSlideIndex;
+            return (
+              // eslint-disable-next-line @next/next/no-img-element -- full-bleed hero carousel; LCP handled by first slide
+              <img
+                key={`${s.src}-${index}`}
+                src={s.src}
+                alt=""
+                decoding={index === 0 ? "sync" : "async"}
+                fetchPriority={index === 0 ? "high" : "low"}
+                className={[
+                  "absolute inset-0 h-full w-full",
+                  bgFit === "contain" ? "object-contain" : "object-cover",
+                  "origin-center motion-reduce:origin-center",
+                  "transition-opacity motion-reduce:transition-none",
+                  isActive ? "opacity-100" : "opacity-0",
+                ].join(" ")}
+                style={{
+                  objectFit: bgFit,
+                  objectPosition: isMobile ? s.posMobile : s.posDesktop,
+                  transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
+                  animation:
+                    isActive && activeSlideReady && !reduceMotionFramer && bgFit === "cover"
+                      ? "kenburns-slow 10s linear both"
+                      : undefined,
+                  filter: "saturate(1.08) contrast(1.08)",
+                }}
+                onLoad={() => markSlideLoaded(s.src)}
+                onError={() => markSlideBroken(s.src)}
+              />
+            );
+          })}
           {/* keep background clean; only a subtle bottom fade for text */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" />
         </div>
@@ -903,7 +941,12 @@ export function HeroLanding(props: HeroLandingProps) {
         </header>
       )}
 
-      <div className="relative z-10 px-6 pt-4 overflow-hidden min-h-screen flex flex-col justify-center">
+      <div
+        className={[
+          "relative z-10 flex flex-col justify-center overflow-hidden px-6 pt-4",
+          minHeightClassName ? "min-h-[inherit]" : "min-h-screen",
+        ].join(" ")}
+      >
         <div className="mx-auto w-full max-w-6xl pt-24 sm:pt-32">
           {announcementBanner && (
             <div className="hidden sm:mb-6 sm:flex sm:justify-center">
