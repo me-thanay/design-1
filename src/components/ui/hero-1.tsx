@@ -200,6 +200,31 @@ export function HeroLanding(props: HeroLandingProps) {
     setBgIndex(0);
     setBrokenSrcs(new Set());
     setLoadedSrcs(new Set());
+
+    if (bgSlides.length === 0) return;
+
+    let cancelled = false;
+
+    for (const slide of bgSlides) {
+      const img = new Image();
+      const onReady = () => {
+        if (!cancelled) markSlideLoaded(slide.src);
+      };
+      const onFail = () => {
+        if (!cancelled) markSlideBroken(slide.src);
+      };
+      img.addEventListener("load", onReady);
+      img.addEventListener("error", onFail);
+      img.src = slide.src;
+      if (img.complete) {
+        if (img.naturalWidth > 0) onReady();
+        else onFail();
+      }
+    }
+
+    return () => {
+      cancelled = true;
+    };
   }, [slidesKey]);
 
   useEffect(() => {
@@ -447,75 +472,50 @@ export function HeroLanding(props: HeroLandingProps) {
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#E7DFD6]"
         >
-          {bgFit === "contain" && (
-            <>
-              {validBgSlides.map((s, index) => {
-                const isActive = index === activeSlideIndex;
-                const isLoaded = loadedSrcs.has(s.src);
-                return (
-                  // eslint-disable-next-line @next/next/no-img-element -- backdrop layer only
-                  <img
-                    key={`backdrop-${s.src}-${index}`}
-                    src={s.src}
-                    alt=""
-                    decoding="async"
-                    fetchPriority="low"
-                    className={[
-                      "absolute inset-0 h-full w-full object-cover",
-                      "scale-[1.06] blur-2xl opacity-70",
-                      "transition-opacity motion-reduce:transition-none",
-                      isActive && isLoaded ? "opacity-70" : "opacity-0",
-                    ].join(" ")}
-                    style={{
-                      objectFit: "cover",
-                      objectPosition: isMobile ? s.posMobile : s.posDesktop,
-                      transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
-                      filter: "saturate(1.05) contrast(1.05)",
-                    }}
-                    onLoad={() => markSlideLoaded(s.src)}
-                    onError={() => markSlideBroken(s.src)}
-                  />
-                );
-              })}
-              <div className="absolute inset-0 bg-black/10" />
-            </>
-          )}
           {validBgSlides.map((s, index) => {
             const isActive = index === activeSlideIndex;
             const isLoaded = loadedSrcs.has(s.src);
+            const pos = isMobile ? s.posMobile : s.posDesktop;
+            const bgSize = bgFit === "contain" ? "contain" : "cover";
+            const visible = isActive && isLoaded;
+
             return (
-              // eslint-disable-next-line @next/next/no-img-element -- full-bleed hero carousel; LCP handled by first slide
-              <img
-                key={`${s.src}-${index}`}
-                ref={(node) => {
-                  if (node?.complete && node.naturalWidth > 0) markSlideLoaded(s.src);
-                }}
-                src={s.src}
-                alt=""
-                decoding={index === 0 ? "sync" : "async"}
-                fetchPriority={index === 0 ? "high" : "low"}
-                className={[
-                  "absolute inset-0 h-full w-full",
-                  bgFit === "contain" ? "object-contain" : "object-cover",
-                  "origin-center motion-reduce:origin-center",
-                  "transition-opacity motion-reduce:transition-none",
-                  isActive && isLoaded ? "opacity-100" : "opacity-0",
-                ].join(" ")}
-                style={{
-                  objectFit: bgFit,
-                  objectPosition: isMobile ? s.posMobile : s.posDesktop,
-                  transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
-                  animation:
-                    isActive && isLoaded && !reduceMotionFramer && bgFit === "cover"
-                      ? "kenburns-slow 10s linear both"
-                      : undefined,
-                  filter: "saturate(1.08) contrast(1.08)",
-                }}
-                onLoad={() => markSlideLoaded(s.src)}
-                onError={() => markSlideBroken(s.src)}
-              />
+              <div key={`${s.src}-${index}`} className="absolute inset-0">
+                {bgFit === "contain" && isLoaded ? (
+                  <div
+                    className={[
+                      "absolute inset-0 bg-center bg-no-repeat blur-2xl",
+                      "transition-opacity motion-reduce:transition-none",
+                      visible ? "opacity-60" : "opacity-0",
+                    ].join(" ")}
+                    style={{
+                      backgroundImage: `url("${s.src}")`,
+                      backgroundSize: "cover",
+                      backgroundPosition: pos,
+                      transform: "scale(1.06)",
+                      filter: "saturate(1.05) contrast(1.05)",
+                      transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
+                    }}
+                  />
+                ) : null}
+                <div
+                  className={[
+                    "absolute inset-0 bg-center bg-no-repeat",
+                    "transition-opacity motion-reduce:transition-none",
+                    visible ? "opacity-100" : "opacity-0",
+                  ].join(" ")}
+                  style={{
+                    backgroundImage: isLoaded ? `url("${s.src}")` : undefined,
+                    backgroundSize: bgSize,
+                    backgroundPosition: pos,
+                    transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
+                    filter: "saturate(1.08) contrast(1.08)",
+                  }}
+                />
+              </div>
             );
           })}
+          {bgFit === "contain" ? <div className="absolute inset-0 bg-black/10" /> : null}
           {/* keep background clean; only a subtle bottom fade for text */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" />
         </div>

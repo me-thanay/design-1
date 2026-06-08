@@ -382,18 +382,26 @@ export default async function CategoryPage({
             return fromCfg ? fromCfg : "50% 12%";
           });
 
+  const categoryHeroTheme = buildHeroThemeProps({
+    title: cfg.title,
+    description: cfg.subtitle,
+    callToActions: [
+      { text: "SHOP NOW", href: "#best-sellers", variant: "primary" },
+      { text: "Explore styles", href: "#shop-by-type", variant: "secondary" },
+    ],
+  });
+  const {
+    backgroundImages: _themeBackgroundImages,
+    backgroundImagePositions: _themeBackgroundPositions,
+    backgroundImagePositionsMobile: _themeBackgroundPositionsMobile,
+    ...categoryHeroBase
+  } = categoryHeroTheme;
+
   return (
     <main className="surface-texture">
       <HeroLanding
         key={category}
-        {...buildHeroThemeProps({
-          title: cfg.title,
-          description: cfg.subtitle,
-          callToActions: [
-            { text: "SHOP NOW", href: "#best-sellers", variant: "primary" },
-            { text: "Explore styles", href: "#shop-by-type", variant: "secondary" },
-          ],
-        })}
+        {...categoryHeroBase}
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
         backgroundImagePositionsMobile={heroMobilePositions}
