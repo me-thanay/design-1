@@ -1,7 +1,6 @@
 import { notFound } from "next/navigation";
 import { ProductsGrid } from "@/components/products/products-grid";
 import { HeroLanding } from "@/components/ui/hero-1";
-import { CategoryPageHeroShell } from "@/components/categories/category-page-hero-shell";
 import { CategorySidebar } from "@/components/categories/category-sidebar";
 import { CategorySubcategoryProductSections } from "@/components/categories/category-subcategory-shops";
 import { CategoryBestSellerTestimonials } from "@/components/categories/category-best-seller-testimonials";
@@ -359,51 +358,49 @@ export default async function CategoryPage({
         })
       : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
-  const categoryHeroTheme = buildHeroThemeProps({
-    title: cfg.title,
-    description: cfg.subtitle,
-    callToActions: [
-      { text: "SHOP NOW", href: "#best-sellers", variant: "primary" },
-      { text: "Explore styles", href: "#shop-by-type", variant: "secondary" },
-    ],
-  });
-  const {
-    backgroundImages: _themeBackgroundImages,
-    backgroundImagePositions: _themeBackgroundPositions,
-    backgroundImagePositionsMobile: _themeBackgroundPositionsMobile,
-    ...categoryHeroBase
-  } = categoryHeroTheme;
-
-  const heroMinHeightClassName =
+  const heroMobilePositions =
     category === "kurtis"
-      ? "min-h-[82svh] sm:min-h-[56svh]"
-      : category === "coord_sets"
-        ? "min-h-[72svh] sm:min-h-[58svh]"
-        : "min-h-[56svh] sm:min-h-[52svh]";
-  const heroImage = heroImages[0] ?? "";
-  const heroPosition = heroPositions[0] ?? "50% 20%";
-  const heroFit = category === "coord_sets" ? ("contain" as const) : ("cover" as const);
+      ? heroImages.map((src) => {
+          // These kurtis images are portrait and easy to crop wrong on phones.
+          // Keep face + outfit visible without cutting the head.
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "46% 14%";
+          if (src.includes("pexels-dhanno-28949643")) return "64% 18%";
+          if (src.includes("pexels-dhanno-28949655")) return "36% 16%";
+          return "50% 16%";
+        })
+      : category === "gowns"
+        ? heroImages.map((src) => {
+            // Gown heroes are easy to crop wrong on phones (faces + hem).
+            // Tune per-image focal points to keep face and silhouette visible.
+            if (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")) return "46% 16%";
+            if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
+            return "50% 16%";
+          })
+        : heroImages.map((src, index) => {
+            const fromCfg = cfg.heroImagePositions?.[index];
+            // Most category hero images are portrait; bias a bit upward on mobile.
+            return fromCfg ? fromCfg : "50% 12%";
+          });
 
   return (
     <main className="surface-texture">
-      <CategoryPageHeroShell
-        imageSrc={heroImage}
-        imagePosition={heroPosition}
-        imageFit={heroFit}
-        minHeightClassName={heroMinHeightClassName}
-      >
-        <HeroLanding
-          key={category}
-          {...categoryHeroBase}
-          showBackground={false}
-          assumeImageBackground={Boolean(heroImage)}
-          backgroundImages={[]}
-          backgroundImagePositions={[]}
-          backgroundImagePositionsMobile={[]}
-          navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-          minHeightClassName="min-h-[inherit]"
-        />
-      </CategoryPageHeroShell>
+      <HeroLanding
+        {...buildHeroThemeProps({
+          title: cfg.title,
+          description: cfg.subtitle,
+          callToActions: [
+            { text: "SHOP NOW", href: "#best-sellers", variant: "primary" },
+            { text: "Explore styles", href: "#shop-by-type", variant: "secondary" },
+          ],
+        })}
+        backgroundImages={heroImages}
+        backgroundImagePositions={heroPositions}
+        backgroundImagePositionsMobile={heroMobilePositions}
+        navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
+        backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
+        backgroundImageFitMobile={category === "coord_sets" ? "contain" : undefined}
+        minHeightClassName="min-h-[100svh]"
+      />
 
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:py-12">
         <div className="grid gap-5 lg:gap-6 lg:grid-cols-[320px_1fr]">
