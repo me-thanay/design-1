@@ -253,10 +253,9 @@ export function ImageGallery({
                         src={activeSrc}
                         alt={it.title}
                         className={[
-                          "absolute inset-0 h-full w-full sm:object-center",
-                          it.imageFit === "contain"
-                            ? "object-contain object-center"
-                            : "object-cover transition-transform duration-700 ease-out group-hover:scale-[1.075]",
+                          "absolute inset-0 h-full w-full transition-transform duration-700 ease-out group-hover:scale-[1.075]",
+                          it.imageFit === "contain" ? "object-contain" : "object-cover",
+                          "sm:object-center",
                         ].join(" ")}
                         style={{ objectPosition: it.imagePosition ?? "50% 18%" }}
                         loading="lazy"

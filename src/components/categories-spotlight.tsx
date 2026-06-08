@@ -79,7 +79,7 @@ export default function CategoriesSpotlight({
           className={cn(
             "h-[360px] w-full sm:h-[420px] lg:h-[520px]",
             slide.imageFit === "contain"
-              ? "object-contain object-center bg-neutral-100"
+              ? "object-contain bg-neutral-100"
               : "object-cover",
           )}
           loading="lazy"

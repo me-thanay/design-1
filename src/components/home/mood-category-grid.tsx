@@ -50,7 +50,7 @@ export function MoodCategoryGrid({ items }: { items: MoodCategoryItem[] }) {
               className={[
                 "w-full transition-transform duration-500 group-hover:scale-105",
                 c.imageFit === "contain"
-                  ? "h-36 object-contain object-center bg-neutral-50 sm:h-40 lg:h-44"
+                  ? "h-36 object-contain bg-neutral-50 sm:h-40 lg:h-36"
                   : "h-28 object-cover sm:h-32 lg:h-28",
               ].join(" ")}
               loading="lazy"

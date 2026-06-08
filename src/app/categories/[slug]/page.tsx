@@ -34,8 +34,62 @@ function stockImagesUrl(file: (typeof STOCK_IMAGES_FILES)[number]) {
   return `/stock%20images/${encodeURIComponent(file)}`;
 }
 
-function heroPositionsForCount(count: number) {
-  return Array.from({ length: Math.max(1, count) }, () => "50% 50%");
+function heroImagesForCategory(category: ClothingCategory) {
+  const navName: Record<ClothingCategory, string> = {
+    sarees: "SAREE",
+    kurtis: "KURTIS",
+    blouses: "BLOUSES",
+    gowns: "GOWNS",
+    coord_sets: "COORD SET",
+  };
+
+  const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
+  const candidates = [
+    nav?.featuredImageSrc ?? null,
+    ...(nav?.items?.map((i) => i.imageSrc ?? null) ?? []),
+  ]
+    .map(encodePublicSrc)
+    .filter(Boolean) as string[];
+
+  // Add a few guaranteed-local images as extra options (avoid missing-file blanks).
+  const extras =
+    category === "kurtis"
+      ? ([
+          "/kurtis/WhatsApp Image 2026-04-22 at 10.40.13 PM.jpeg",
+          "/kurtis/pexels-dhanno-28949643.jpg",
+          "/kurtis/pexels-dhanno-28949655.jpg",
+        ].map(encodePublicSrc).filter(Boolean) as string[])
+      : category === "coord_sets"
+        ? (COORD_CATEGORY_MEDIA.hero.map(encodePublicSrc).filter(Boolean) as string[])
+        : [];
+
+  // Unique + stable order
+  const seen = new Set<string>();
+  const unique = [...candidates, ...extras].filter((s) => (seen.has(s) ? false : (seen.add(s), true)));
+
+  // Keep it tight so it feels curated.
+  return unique.slice(0, 6);
+}
+
+function heroPositionsFor(category: ClothingCategory, count: number, override?: string[]) {
+  const defaults: Record<ClothingCategory, string> = {
+    sarees: "50% 10%",
+    blouses: "50% 12%",
+    // New kurti set has heads a bit higher; keep faces visible under the title.
+    kurtis: "50% 18%",
+    // Gowns images often have faces lower; bias upward so the subject stays centered under the title.
+    gowns: "50% 22%",
+    coord_sets: "50% 20%",
+  };
+
+  const base =
+    override && override.length
+      ? override
+      : Array.from({ length: Math.max(1, count) }, () => defaults[category]);
+
+  if (base.length >= count) return base.slice(0, count);
+  const last = base[base.length - 1] ?? defaults[category];
+  return [...base, ...Array.from({ length: count - base.length }, () => last)];
 }
 
 const CATEGORY_CONFIG: Record<
@@ -275,43 +329,6 @@ const CATEGORY_CONFIG: Record<
   },
 };
 
-function heroImagesForCategory(category: ClothingCategory): string[] {
-  const navName: Record<ClothingCategory, string> = {
-    sarees: "SAREE",
-    kurtis: "KURTIS",
-    blouses: "BLOUSES",
-    gowns: "GOWNS",
-    coord_sets: "COORD SET",
-  };
-
-  const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
-  const cfg = CATEGORY_CONFIG[category];
-  const pools: Array<string | null | undefined> = [
-    nav?.featuredImageSrc,
-    ...(nav?.items?.map((i) => i.imageSrc) ?? []),
-    ...(cfg?.carousel.slides.map((slide) => slide.src) ?? []),
-  ];
-
-  if (category === "kurtis") {
-    pools.push(
-      "/kurtis/WhatsApp Image 2026-04-22 at 10.40.13 PM.jpeg",
-      "/kurtis/pexels-dhanno-28949643.jpg",
-      "/kurtis/pexels-dhanno-28949655.jpg",
-    );
-  }
-
-  if (category === "coord_sets") {
-    pools.push(...COORD_CATEGORY_MEDIA.hero);
-  }
-
-  const seen = new Set<string>();
-  return pools
-    .map(encodePublicSrc)
-    .filter((src): src is string => Boolean(src))
-    .filter((src) => (seen.has(src) ? false : (seen.add(src), true)))
-    .slice(0, 6);
-}
-
 export default async function CategoryPage({
   params,
   searchParams,
@@ -329,7 +346,41 @@ export default async function CategoryPage({
   const selectedColor = (sp.color ?? "").trim() || null;
   const selectedSize = category === "sarees" ? null : (sp.size ?? "").trim() || null;
   const heroImages = heroImagesForCategory(category);
-  const heroPositions = heroPositionsForCount(heroImages.length);
+  const heroPositions =
+    category === "kurtis"
+      ? heroImages.map((src) => {
+          // Mobile hero should look full-bleed (cover), so we tune focal points to keep
+          // face + outfit in frame without the "boxed" contain look.
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 30%";
+          if (src.includes("pexels-dhanno-28949643")) return "62% 22%";
+          if (src.includes("pexels-dhanno-28949655")) return "35% 18%";
+          return "50% 22%";
+        })
+      : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
+
+  const heroMobilePositions =
+    category === "kurtis"
+      ? heroImages.map((src) => {
+          // These kurtis images are portrait and easy to crop wrong on phones.
+          // Keep face + outfit visible without cutting the head.
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "46% 14%";
+          if (src.includes("pexels-dhanno-28949643")) return "64% 18%";
+          if (src.includes("pexels-dhanno-28949655")) return "36% 16%";
+          return "50% 16%";
+        })
+      : category === "gowns"
+        ? heroImages.map((src) => {
+            // Gown heroes are easy to crop wrong on phones (faces + hem).
+            // Tune per-image focal points to keep face and silhouette visible.
+            if (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")) return "46% 16%";
+            if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
+            return "50% 16%";
+          })
+        : heroImages.map((src, index) => {
+            const fromCfg = cfg.heroImagePositions?.[index];
+            // Most category hero images are portrait; bias a bit upward on mobile.
+            return fromCfg ? fromCfg : "50% 12%";
+          });
 
   return (
     <main className="surface-texture">
@@ -344,16 +395,16 @@ export default async function CategoryPage({
         })}
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
-        backgroundImagePositionsMobile={heroPositions}
+        backgroundImagePositionsMobile={heroMobilePositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-        backgroundImageFit="contain"
-        backgroundImageFitMobile="contain"
-        backgroundImageIntervalMs={4500}
-        backgroundImageFadeMs={900}
-        minHeightClassName={
-          category === "coord_sets"
-            ? "min-h-[72svh] sm:min-h-[70svh] lg:min-h-[85svh]"
-            : "min-h-[72svh] sm:min-h-[58svh]"
+        backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
+        backgroundImageFitMobile={category === "coord_sets" ? "contain" : undefined}
+        className={
+          category === "kurtis"
+            ? "min-h-[82svh] sm:min-h-[56svh]"
+            : category === "coord_sets"
+              ? "min-h-[72svh] sm:min-h-[58svh]"
+              : "min-h-[56svh] sm:min-h-[52svh]"
         }
       />
 
