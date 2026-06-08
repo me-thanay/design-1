@@ -35,6 +35,10 @@ interface HeroLandingProps {
   };
   navigation?: NavigationItem[];
   showHeader?: boolean;
+  /** When false, skip client-side carousel/background (use CategoryPageHeroShell instead). */
+  showBackground?: boolean;
+  /** Style headline/CTAs for image hero when showBackground is false. */
+  assumeImageBackground?: boolean;
   loginText?: string;
   loginHref?: string;
   title: string;
@@ -109,6 +113,8 @@ export function HeroLanding(props: HeroLandingProps) {
     logo,
     navigation,
     showHeader,
+    showBackground = true,
+    assumeImageBackground = false,
     loginText,
     loginHref,
     title,
@@ -394,8 +400,10 @@ export function HeroLanding(props: HeroLandingProps) {
     };
   }, [openDesktopDropdown]);
 
-  const hasImageBackground = validBgSlides.length > 0;
-  const heroImageVisible = hasImageBackground && activeSlideReady;
+  const hasImageBackground = assumeImageBackground
+    ? true
+    : showBackground !== false && validBgSlides.length > 0;
+  const heroImageVisible = assumeImageBackground || (hasImageBackground && activeSlideReady);
   const navTextClass = hasImageBackground
     ? "text-zinc-700 hover:text-zinc-900 transition-colors"
     : "text-foreground hover:text-muted-foreground transition-colors";
@@ -467,7 +475,7 @@ export function HeroLanding(props: HeroLandingProps) {
       ref={heroRootRef}
       className={`${minHeightClassName ?? "min-h-[100svh]"} w-full overflow-hidden relative isolate ${className || ""}`}
     >
-      {validBgSlides.length > 0 && (
+      {showBackground !== false && validBgSlides.length > 0 && (
         <div
           aria-hidden="true"
           className="pointer-events-none absolute inset-0 z-0 overflow-hidden bg-[#E7DFD6]"
