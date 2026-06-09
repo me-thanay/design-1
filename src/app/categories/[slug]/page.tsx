@@ -373,6 +373,8 @@ export default async function CategoryPage({
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
         backgroundImagePositionsMobile={heroMobilePositions}
+        backgroundImageScales={kurtisGownFocals?.desktopScales}
+        backgroundImageScalesMobile={kurtisGownFocals?.mobileScales}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
         backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
         backgroundImageFitMobile={category === "coord_sets" ? "contain" : undefined}
