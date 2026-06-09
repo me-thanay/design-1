@@ -9,6 +9,7 @@ import { CATEGORY_HERO_VIDEO_SRC } from "@/lib/category-hero-video";
 import type { ClothingCategory } from "@/lib/products";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
 import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
+import { categoryHeroObjectPositions } from "@/lib/category-kurtis-gowns-hero";
 import { PRIMARY_NAV } from "@/lib/navigation";
 import { publicAssetUrl } from "@/lib/utils";
 
@@ -346,33 +347,17 @@ export default async function CategoryPage({
   const selectedSize = category === "sarees" ? null : (sp.size ?? "").trim() || null;
   const heroImages = heroImagesForCategory(category);
   const heroPositions =
-    category === "kurtis"
-      ? heroImages.map((src) => {
-          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 20%";
-          if (src.includes("pexels-dhanno-28949643")) return "60% 20%";
-          if (src.includes("pexels-dhanno-28949655")) return "35% 18%";
-          return "50% 22%";
-        })
+    category === "kurtis" || category === "gowns"
+      ? categoryHeroObjectPositions(category, heroImages, "desktop")
       : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
   const heroMobilePositions =
-    category === "kurtis"
-      ? heroImages.map((src) => {
-          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "48% 12%";
-          if (src.includes("pexels-dhanno-28949643")) return "66% 16%";
-          if (src.includes("pexels-dhanno-28949655")) return "34% 14%";
-          return "50% 16%";
-        })
-      : category === "gowns"
-        ? heroImages.map((src) => {
-            if (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")) return "46% 16%";
-            if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
-            return "50% 16%";
-          })
-        : heroImages.map((src, index) => {
-            const fromCfg = cfg.heroImagePositions?.[index];
-            return fromCfg ? fromCfg : "50% 12%";
-          });
+    category === "kurtis" || category === "gowns"
+      ? categoryHeroObjectPositions(category, heroImages, "mobile")
+      : heroImages.map((src, index) => {
+          const fromCfg = cfg.heroImagePositions?.[index];
+          return fromCfg ? fromCfg : "50% 12%";
+        });
 
   return (
     <main className="surface-texture">
