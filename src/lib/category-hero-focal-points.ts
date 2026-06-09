@@ -12,16 +12,16 @@ function includesAny(src: string, needles: string[]) {
 
 const KURTIS_HERO_RULES: FocalRule[] = [
   {
-    // Portrait party kurti — face upper-center, full sharara visible.
+    // Portrait party kurti — head was cropping off; bias upward.
     test: (src) => includesAny(src, ["whatsapp image 2026-04-22 at 10.40.13", "10.40.13%20pm"]),
-    desktop: "50% 26%",
-    mobile: "48% 16%",
+    desktop: "50% 11%",
+    mobile: "48% 9%",
   },
   {
-    // Landscape — model on the right, pink floral kurti.
+    // Landscape — model on the right; shift crop left so text clears the subject.
     test: (src) => src.includes("pexels-dhanno-28949643"),
-    desktop: "74% 26%",
-    mobile: "70% 20%",
+    desktop: "38% 22%",
+    mobile: "42% 18%",
   },
   {
     // Landscape — model on the left, cream printed kurti.
