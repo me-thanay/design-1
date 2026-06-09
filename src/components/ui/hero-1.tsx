@@ -69,9 +69,6 @@ interface HeroLandingProps {
    * `backgroundImagePositions` and then a slightly-lower default to show more outfit.
    */
   backgroundImagePositionsMobile?: string[];
-  /** Per-slide zoom for `object-cover` (helps landscape photos on wide heroes). */
-  backgroundImageScales?: number[];
-  backgroundImageScalesMobile?: number[];
   backgroundImageIntervalMs?: number;
   backgroundImageFadeMs?: number;
   /** Override default min-height (default: `min-h-[100svh]`). */
@@ -125,8 +122,6 @@ export function HeroLanding(props: HeroLandingProps) {
     backgroundImageFitMobile,
     backgroundImagePositions,
     backgroundImagePositionsMobile,
-    backgroundImageScales,
-    backgroundImageScalesMobile,
     backgroundImageIntervalMs,
     backgroundImageFadeMs,
     minHeightClassName,
@@ -166,16 +161,8 @@ export function HeroLanding(props: HeroLandingProps) {
         posDesktop: backgroundImagePositions?.[index] ?? "center top",
         // Mobile default: slightly lower framing so outfit isn't cropped too aggressively.
         posMobile: backgroundImagePositionsMobile?.[index] ?? backgroundImagePositions?.[index] ?? "50% 22%",
-        scaleDesktop: backgroundImageScales?.[index] ?? 1,
-        scaleMobile: backgroundImageScalesMobile?.[index] ?? backgroundImageScales?.[index] ?? 1,
       })),
-    [
-      normalizedBackgroundImages,
-      backgroundImagePositions,
-      backgroundImagePositionsMobile,
-      backgroundImageScales,
-      backgroundImageScalesMobile,
-    ],
+    [normalizedBackgroundImages, backgroundImagePositions, backgroundImagePositionsMobile],
   );
 
   const [validBgSlides, setValidBgSlides] = useState(bgSlides);
@@ -476,39 +463,34 @@ export function HeroLanding(props: HeroLandingProps) {
               <div className="absolute inset-0 bg-black/10" />
             </>
           )}
-          {validBgSlides.map((s, index) => {
-            const isActive = index === (bgIndex % validBgSlides.length);
-            const slideScale = isMobile ? s.scaleMobile : s.scaleDesktop;
-            const useCustomScale = slideScale > 1.001;
-            const activeScale = useCustomScale ? slideScale : isActive ? 1.02 : 1.01;
-            return (
-              // eslint-disable-next-line @next/next/no-img-element -- full-bleed hero carousel; LCP handled by first slide
-              <img
-                key={`${s.src}-${index}`}
-                src={s.src}
-                alt=""
-                decoding={index === 0 ? "sync" : "async"}
-                fetchPriority={index === 0 ? "high" : "low"}
-                className={[
-                  "absolute inset-0 h-full w-full will-change-transform will-change-opacity",
-                  bgFit === "contain" ? "object-contain" : "object-cover",
-                  useCustomScale ? "origin-center motion-reduce:origin-center" : "origin-top motion-reduce:origin-center",
-                  "transition-[opacity,transform] motion-reduce:transition-none",
-                  isActive ? "opacity-100 motion-reduce:scale-100" : "opacity-0 motion-reduce:scale-100",
-                ].join(" ")}
-                style={{
-                  objectPosition: isMobile ? s.posMobile : s.posDesktop,
-                  transform: isActive ? `scale(${activeScale})` : `scale(${useCustomScale ? slideScale * 0.99 : 1.01})`,
-                  transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
-                  animation:
-                    isActive && !useCustomScale && !reduceMotionFramer
-                      ? "kenburns-slow 10s linear both"
-                      : undefined,
-                  filter: "saturate(1.08) contrast(1.08)",
-                }}
-              />
-            );
-          })}
+          {validBgSlides.map((s, index) => (
+            // eslint-disable-next-line @next/next/no-img-element -- full-bleed hero carousel; LCP handled by first slide
+            <img
+              key={`${s.src}-${index}`}
+              src={s.src}
+              alt=""
+              decoding={index === 0 ? "sync" : "async"}
+              fetchPriority={index === 0 ? "high" : "low"}
+              className={[
+                "absolute inset-0 h-full w-full will-change-transform will-change-opacity",
+                bgFit === "contain" ? "object-contain" : "object-cover",
+                "origin-top motion-reduce:origin-center",
+                "transition-[opacity,transform] motion-reduce:transition-none",
+                index === (bgIndex % validBgSlides.length)
+                  ? "opacity-100 scale-[1.02] motion-reduce:scale-100"
+                  : "opacity-0 scale-[1.01] motion-reduce:scale-100",
+              ].join(" ")}
+              style={{
+                objectPosition: isMobile ? s.posMobile : s.posDesktop,
+                transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
+                animation:
+                  index === (bgIndex % validBgSlides.length) && !reduceMotionFramer
+                    ? "kenburns-slow 10s linear both"
+                    : undefined,
+                filter: "saturate(1.08) contrast(1.08)",
+              }}
+            />
+          ))}
           {/* keep background clean; only a subtle bottom fade for text */}
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/35" />
         </div>

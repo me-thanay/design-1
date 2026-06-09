@@ -9,7 +9,6 @@ import { CATEGORY_HERO_VIDEO_SRC } from "@/lib/category-hero-video";
 import type { ClothingCategory } from "@/lib/products";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
 import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
-import { heroFocalListsForCategory } from "@/lib/category-hero-focal-points";
 import { PRIMARY_NAV } from "@/lib/navigation";
 import { publicAssetUrl } from "@/lib/utils";
 
@@ -209,6 +208,7 @@ const CATEGORY_CONFIG: Record<
   kurtis: {
     title: "Kurtis",
     subtitle: "Work-ready, festive, and easy everyday styles.",
+    heroImagePositions: ["50% 18%", "50% 28%", "50% 22%", "50% 78%", "50% 18%", "50% 22%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Kurti",
@@ -250,6 +250,7 @@ const CATEGORY_CONFIG: Record<
   gowns: {
     title: "Gowns",
     subtitle: "Party glam and casual comfort — in one edit.",
+    heroImagePositions: ["50% 22%", "50% 22%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Gown",
@@ -344,20 +345,34 @@ export default async function CategoryPage({
   const selectedColor = (sp.color ?? "").trim() || null;
   const selectedSize = category === "sarees" ? null : (sp.size ?? "").trim() || null;
   const heroImages = heroImagesForCategory(category);
-  const kurtisGownFocals =
-    category === "kurtis" || category === "gowns"
-      ? heroFocalListsForCategory(category, heroImages)
-      : null;
-  const heroPositions = kurtisGownFocals
-    ? kurtisGownFocals.desktop
-    : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
+  const heroPositions =
+    category === "kurtis"
+      ? heroImages.map((src) => {
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 20%";
+          if (src.includes("pexels-dhanno-28949643")) return "60% 20%";
+          if (src.includes("pexels-dhanno-28949655")) return "35% 18%";
+          return "50% 22%";
+        })
+      : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
-  const heroMobilePositions = kurtisGownFocals
-    ? kurtisGownFocals.mobile
-    : heroImages.map((src, index) => {
-        const fromCfg = cfg.heroImagePositions?.[index];
-        return fromCfg ? fromCfg : "50% 12%";
-      });
+  const heroMobilePositions =
+    category === "kurtis"
+      ? heroImages.map((src) => {
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "48% 12%";
+          if (src.includes("pexels-dhanno-28949643")) return "66% 16%";
+          if (src.includes("pexels-dhanno-28949655")) return "34% 14%";
+          return "50% 16%";
+        })
+      : category === "gowns"
+        ? heroImages.map((src) => {
+            if (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")) return "46% 16%";
+            if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
+            return "50% 16%";
+          })
+        : heroImages.map((src, index) => {
+            const fromCfg = cfg.heroImagePositions?.[index];
+            return fromCfg ? fromCfg : "50% 12%";
+          });
 
   return (
     <main className="surface-texture">
@@ -373,8 +388,6 @@ export default async function CategoryPage({
         backgroundImages={heroImages}
         backgroundImagePositions={heroPositions}
         backgroundImagePositionsMobile={heroMobilePositions}
-        backgroundImageScales={kurtisGownFocals?.desktopScales}
-        backgroundImageScalesMobile={kurtisGownFocals?.mobileScales}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
         backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
         backgroundImageFitMobile={category === "coord_sets" ? "contain" : undefined}

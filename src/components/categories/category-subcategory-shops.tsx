@@ -5,7 +5,6 @@ import { ProductsGrid } from "@/components/products/products-grid";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { FeaturedSpotlight, type FeaturedSpotlightProps } from "@/components/ui/feature-spotlight";
 import { CLOTHING_SUBCATEGORIES, type ClothingCategory } from "@/lib/products";
-import { heroFocalForCategory } from "@/lib/category-hero-focal-points";
 import { PRIMARY_NAV } from "@/lib/navigation";
 import { cn, publicAssetUrl } from "@/lib/utils";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
@@ -38,8 +37,10 @@ function subcategoryHeroImage(category: ClothingCategory, sub: string) {
 }
 
 function subcategoryHeroPosition(category: ClothingCategory, src: string) {
-  if (category === "kurtis" || category === "gowns") {
-    return heroFocalForCategory(category, src, "desktop");
+  if (category === "gowns") {
+    if (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")) return "46% 16%";
+    if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
+    return "50% 16%";
   }
   if (category === "sarees") {
     // Saree subcategory banners vary a lot (landscape + portrait).
