@@ -10,6 +10,7 @@ import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import type { ClothingCategory, Product } from "@/lib/products";
 import { normalizeProductRow } from "@/lib/products";
 import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
+import { heroFocalForCategory } from "@/lib/category-hero-focal-points";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
 
@@ -65,11 +66,10 @@ function formatInr(amount: number) {
 }
 
 function imagePositionFor(category: ClothingCategory | undefined, src: string) {
-  if (category !== "gowns") return undefined;
-  const s = src ?? "";
-  if (s.includes("PARTY%20WEAR%20GOWN") || s.includes("PARTY WEAR GOWN")) return "46% 16%";
-  if (s.includes("CASUAL%20WEAR%20GOWN") || s.includes("CASUAL WEAR GOWN")) return "55% 16%";
-  return "50% 16%";
+  if (category === "kurtis" || category === "gowns") {
+    return heroFocalForCategory(category, src ?? "", "mobile");
+  }
+  return undefined;
 }
 
 function imageFitFor(category: ClothingCategory | undefined) {

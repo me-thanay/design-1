@@ -6,6 +6,7 @@ import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import type { ClothingCategory, Product } from "@/lib/products";
 import { normalizeProductRow } from "@/lib/products";
 import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
+import { heroFocalForCategory } from "@/lib/category-hero-focal-points";
 import { publicAssetUrl } from "@/lib/utils";
 import { ProductDetailsDialog } from "@/components/products/product-details-dialog";
 
@@ -44,12 +45,8 @@ function productToGalleryItem(p: Product, category: ClothingCategory, rank: numb
   const img = p.image || fallbackImageFor(category);
   const src = normalizeSrc(img);
   const imagePosition =
-    category === "gowns"
-      ? (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")
-          ? "46% 16%"
-          : src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")
-            ? "55% 16%"
-            : "50% 16%")
+    category === "kurtis" || category === "gowns"
+      ? heroFocalForCategory(category, src, "mobile")
       : undefined;
   const imageFit: "cover" | "contain" =
     category === "sarees" ? "cover" : "contain";

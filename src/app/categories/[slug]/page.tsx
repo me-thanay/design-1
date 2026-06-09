@@ -9,6 +9,7 @@ import { CATEGORY_HERO_VIDEO_SRC } from "@/lib/category-hero-video";
 import type { ClothingCategory } from "@/lib/products";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
 import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
+import { heroFocalListsForCategory } from "@/lib/category-hero-focal-points";
 import { PRIMARY_NAV } from "@/lib/navigation";
 import { publicAssetUrl } from "@/lib/utils";
 
@@ -208,8 +209,6 @@ const CATEGORY_CONFIG: Record<
   kurtis: {
     title: "Kurtis",
     subtitle: "Work-ready, festive, and easy everyday styles.",
-    // Focus lower for the full-length shot so feet don't get cropped in the hero.
-    heroImagePositions: ["50% 18%", "50% 28%", "50% 22%", "50% 78%", "50% 18%", "50% 22%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Kurti",
@@ -251,7 +250,6 @@ const CATEGORY_CONFIG: Record<
   gowns: {
     title: "Gowns",
     subtitle: "Party glam and casual comfort — in one edit.",
-    heroImagePositions: ["50% 22%", "50% 22%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Gown",
@@ -346,41 +344,20 @@ export default async function CategoryPage({
   const selectedColor = (sp.color ?? "").trim() || null;
   const selectedSize = category === "sarees" ? null : (sp.size ?? "").trim() || null;
   const heroImages = heroImagesForCategory(category);
-  const heroPositions =
-    category === "kurtis"
-      ? heroImages.map((src) => {
-          // Mobile hero should look full-bleed (cover), so we tune focal points to keep
-          // face + outfit in frame without the "boxed" contain look.
-          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 30%";
-          if (src.includes("pexels-dhanno-28949643")) return "62% 22%";
-          if (src.includes("pexels-dhanno-28949655")) return "35% 18%";
-          return "50% 22%";
-        })
-      : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
+  const kurtisGownFocals =
+    category === "kurtis" || category === "gowns"
+      ? heroFocalListsForCategory(category, heroImages)
+      : null;
+  const heroPositions = kurtisGownFocals
+    ? kurtisGownFocals.desktop
+    : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
-  const heroMobilePositions =
-    category === "kurtis"
-      ? heroImages.map((src) => {
-          // These kurtis images are portrait and easy to crop wrong on phones.
-          // Keep face + outfit visible without cutting the head.
-          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "46% 14%";
-          if (src.includes("pexels-dhanno-28949643")) return "64% 18%";
-          if (src.includes("pexels-dhanno-28949655")) return "36% 16%";
-          return "50% 16%";
-        })
-      : category === "gowns"
-        ? heroImages.map((src) => {
-            // Gown heroes are easy to crop wrong on phones (faces + hem).
-            // Tune per-image focal points to keep face and silhouette visible.
-            if (src.includes("PARTY%20WEAR%20GOWN") || src.includes("PARTY WEAR GOWN")) return "46% 16%";
-            if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
-            return "50% 16%";
-          })
-        : heroImages.map((src, index) => {
-            const fromCfg = cfg.heroImagePositions?.[index];
-            // Most category hero images are portrait; bias a bit upward on mobile.
-            return fromCfg ? fromCfg : "50% 12%";
-          });
+  const heroMobilePositions = kurtisGownFocals
+    ? kurtisGownFocals.mobile
+    : heroImages.map((src, index) => {
+        const fromCfg = cfg.heroImagePositions?.[index];
+        return fromCfg ? fromCfg : "50% 12%";
+      });
 
   return (
     <main className="surface-texture">
