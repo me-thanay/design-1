@@ -79,7 +79,7 @@ function heroPositionsFor(category: ClothingCategory, count: number, override?: 
     kurtis: "50% 18%",
     // Gowns images often have faces lower; bias upward so the subject stays centered under the title.
     gowns: "50% 22%",
-    coord_sets: "center top",
+    coord_sets: "50% 8%",
   };
 
   const base =
@@ -298,7 +298,7 @@ const CATEGORY_CONFIG: Record<
   coord_sets: {
     title: "Coord Set",
     subtitle: "Matching tops and bottoms — polished looks with zero effort.",
-    heroImagePositions: ["center top", "center top", "center top"],
+    heroImagePositions: ["58% 10%", "50% 6%", "56% 11%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Coord",
@@ -357,7 +357,13 @@ export default async function CategoryPage({
           return "50% 22%";
         })
       : category === "coord_sets"
-        ? heroImages.map(() => "center top")
+        ? heroImages.map((src) => {
+            // Full-length coord shots — anchor on face height, not the image edge.
+            if (src.includes("2.39.35%20PM%20(2)") || src.includes("(2).jpeg")) return "58% 10%";
+            if (src.includes("2.39.35%20PM%20(1)") || src.includes("(1).jpeg")) return "56% 11%";
+            if (src.includes("2.39.35%20PM")) return "50% 6%";
+            return "54% 9%";
+          })
         : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
   const heroMobilePositions =
@@ -379,7 +385,13 @@ export default async function CategoryPage({
             return "50% 16%";
           })
         : category === "coord_sets"
-          ? heroImages.map(() => "center top")
+          ? heroImages.map((src) => {
+              // Keep full face visible on portrait viewports.
+              if (src.includes("2.39.35%20PM%20(2)") || src.includes("(2).jpeg")) return "56% 6%";
+              if (src.includes("2.39.35%20PM%20(1)") || src.includes("(1).jpeg")) return "54% 8%";
+              if (src.includes("2.39.35%20PM")) return "50% 4%";
+              return "52% 6%";
+            })
           : heroImages.map((src, index) => {
             const fromCfg = cfg.heroImagePositions?.[index];
             // Most category hero images are portrait; bias a bit upward on mobile.
@@ -401,9 +413,6 @@ export default async function CategoryPage({
         backgroundImagePositions={heroPositions}
         backgroundImagePositionsMobile={heroMobilePositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-        backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
-        backgroundImageFitMobile={category === "coord_sets" ? "cover" : undefined}
-        backgroundImageKenBurns={category === "coord_sets" ? false : undefined}
         minHeightClassName="min-h-[100svh]"
       />
 

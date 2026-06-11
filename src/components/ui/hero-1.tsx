@@ -71,8 +71,6 @@ interface HeroLandingProps {
   backgroundImagePositionsMobile?: string[];
   backgroundImageIntervalMs?: number;
   backgroundImageFadeMs?: number;
-  /** Slow zoom on the active slide (off for categories with landscape full-body shots). */
-  backgroundImageKenBurns?: boolean;
   /** Override default min-height (default: `min-h-[100svh]`). */
   minHeightClassName?: string;
   className?: string;
@@ -99,7 +97,6 @@ const defaultProps: Partial<HeroLandingProps> = {
   },
   backgroundImageIntervalMs: 4000,
   backgroundImageFadeMs: 900,
-  backgroundImageKenBurns: true,
   backgroundImageFit: "cover",
   callToActions: [
     { text: "Get started", href: "#", variant: "primary" },
@@ -127,7 +124,6 @@ export function HeroLanding(props: HeroLandingProps) {
     backgroundImagePositionsMobile,
     backgroundImageIntervalMs,
     backgroundImageFadeMs,
-    backgroundImageKenBurns,
     minHeightClassName,
     className,
   } = { ...defaultProps, ...props };
@@ -490,8 +486,7 @@ export function HeroLanding(props: HeroLandingProps) {
                 animation:
                   index === (bgIndex % validBgSlides.length) &&
                   !reduceMotionFramer &&
-                  bgFit !== "contain" &&
-                  backgroundImageKenBurns !== false
+                  bgFit !== "contain"
                     ? "kenburns-slow 12s ease-out both"
                     : undefined,
                 filter: "saturate(1.08) contrast(1.08)",
