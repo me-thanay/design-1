@@ -4,13 +4,15 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Gentle zoom so faces + outfits stay in frame (was 1.03→1.1, too tight on portrait heroes). */
+/* Gentle zoom anchored at top so faces stay in frame on landscape heroes. */
 @keyframes kenburns-slow {
   0% {
-    transform: scale(1.01);
+    transform: scale(1);
+    transform-origin: top center;
   }
   100% {
-    transform: scale(1.04);
+    transform: scale(1.02);
+    transform-origin: top center;
   }
 }
 

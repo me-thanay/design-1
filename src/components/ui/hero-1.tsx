@@ -477,22 +477,17 @@ export function HeroLanding(props: HeroLandingProps) {
                 bgFit === "contain" ? "object-contain" : "object-cover",
                 "origin-top motion-reduce:origin-center",
                 "transition-[opacity,transform] motion-reduce:transition-none",
-                index === (bgIndex % validBgSlides.length)
-                  ? bgFit === "contain"
-                    ? "opacity-100"
-                    : "opacity-100 scale-[1.02] motion-reduce:scale-100"
-                  : bgFit === "contain"
-                    ? "opacity-0"
-                    : "opacity-0 scale-[1.01] motion-reduce:scale-100",
+                index === (bgIndex % validBgSlides.length) ? "opacity-100" : "opacity-0",
               ].join(" ")}
               style={{
                 objectPosition: isMobile ? s.posMobile : s.posDesktop,
                 transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
+                transformOrigin: bgFit === "contain" ? "center center" : "top center",
                 animation:
                   index === (bgIndex % validBgSlides.length) &&
                   !reduceMotionFramer &&
                   bgFit !== "contain"
-                    ? "kenburns-slow 10s linear both"
+                    ? "kenburns-slow 12s ease-out both"
                     : undefined,
                 filter: "saturate(1.08) contrast(1.08)",
               }}

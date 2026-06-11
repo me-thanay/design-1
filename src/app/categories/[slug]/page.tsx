@@ -298,7 +298,7 @@ const CATEGORY_CONFIG: Record<
   coord_sets: {
     title: "Coord Set",
     subtitle: "Matching tops and bottoms — polished looks with zero effort.",
-    heroImagePositions: ["55% 6%", "50% 3%", "58% 10%"],
+    heroImagePositions: ["58% 10%", "50% 6%", "56% 11%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Coord",
@@ -358,11 +358,11 @@ export default async function CategoryPage({
         })
       : category === "coord_sets"
         ? heroImages.map((src) => {
-            // Full-length coord shots — keep faces in frame under the hero title.
-            if (src.includes("2.39.35%20PM%20(2)") || src.includes("(2).jpeg")) return "55% 6%";
-            if (src.includes("2.39.35%20PM%20(1)") || src.includes("(1).jpeg")) return "58% 10%";
-            if (src.includes("2.39.35%20PM")) return "50% 3%";
-            return "52% 8%";
+            // Full-length coord shots — anchor on face height, not the image edge.
+            if (src.includes("2.39.35%20PM%20(2)") || src.includes("(2).jpeg")) return "58% 10%";
+            if (src.includes("2.39.35%20PM%20(1)") || src.includes("(1).jpeg")) return "56% 11%";
+            if (src.includes("2.39.35%20PM")) return "50% 6%";
+            return "54% 9%";
           })
         : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
@@ -386,11 +386,11 @@ export default async function CategoryPage({
           })
         : category === "coord_sets"
           ? heroImages.map((src) => {
-              // Portrait phones crop landscape coord heroes aggressively — bias to the top.
-              if (src.includes("2.39.35%20PM%20(2)") || src.includes("(2).jpeg")) return "54% 2%";
-              if (src.includes("2.39.35%20PM%20(1)") || src.includes("(1).jpeg")) return "56% 4%";
-              if (src.includes("2.39.35%20PM")) return "50% 0%";
-              return "52% 3%";
+              // Keep full face visible on portrait viewports.
+              if (src.includes("2.39.35%20PM%20(2)") || src.includes("(2).jpeg")) return "56% 6%";
+              if (src.includes("2.39.35%20PM%20(1)") || src.includes("(1).jpeg")) return "54% 8%";
+              if (src.includes("2.39.35%20PM")) return "50% 4%";
+              return "52% 6%";
             })
           : heroImages.map((src, index) => {
             const fromCfg = cfg.heroImagePositions?.[index];
