@@ -79,7 +79,7 @@ function heroPositionsFor(category: ClothingCategory, count: number, override?: 
     kurtis: "50% 18%",
     // Gowns images often have faces lower; bias upward so the subject stays centered under the title.
     gowns: "50% 22%",
-    coord_sets: "50% 20%",
+    coord_sets: "50% 8%",
   };
 
   const base =
@@ -298,7 +298,7 @@ const CATEGORY_CONFIG: Record<
   coord_sets: {
     title: "Coord Set",
     subtitle: "Matching tops and bottoms — polished looks with zero effort.",
-    heroImagePositions: ["50% 35%", "50% 30%", "50% 30%"],
+    heroImagePositions: ["55% 6%", "50% 3%", "58% 10%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Coord",
@@ -356,7 +356,15 @@ export default async function CategoryPage({
           if (src.includes("pexels-dhanno-28949655")) return "35% 18%";
           return "50% 22%";
         })
-      : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
+      : category === "coord_sets"
+        ? heroImages.map((src) => {
+            // Full-length coord shots — keep faces in frame under the hero title.
+            if (src.includes("2.39.35%20PM%20(2)") || src.includes("(2).jpeg")) return "55% 6%";
+            if (src.includes("2.39.35%20PM%20(1)") || src.includes("(1).jpeg")) return "58% 10%";
+            if (src.includes("2.39.35%20PM")) return "50% 3%";
+            return "52% 8%";
+          })
+        : heroPositionsFor(category, heroImages.length, cfg.heroImagePositions);
 
   const heroMobilePositions =
     category === "kurtis"
@@ -376,7 +384,15 @@ export default async function CategoryPage({
             if (src.includes("CASUAL%20WEAR%20GOWN") || src.includes("CASUAL WEAR GOWN")) return "55% 16%";
             return "50% 16%";
           })
-        : heroImages.map((src, index) => {
+        : category === "coord_sets"
+          ? heroImages.map((src) => {
+              // Portrait phones crop landscape coord heroes aggressively — bias to the top.
+              if (src.includes("2.39.35%20PM%20(2)") || src.includes("(2).jpeg")) return "54% 2%";
+              if (src.includes("2.39.35%20PM%20(1)") || src.includes("(1).jpeg")) return "56% 4%";
+              if (src.includes("2.39.35%20PM")) return "50% 0%";
+              return "52% 3%";
+            })
+          : heroImages.map((src, index) => {
             const fromCfg = cfg.heroImagePositions?.[index];
             // Most category hero images are portrait; bias a bit upward on mobile.
             return fromCfg ? fromCfg : "50% 12%";
