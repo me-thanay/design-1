@@ -1,5 +1,3 @@
-import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
-
 export type NavItem = {
   name: string;
   href: string;
@@ -49,15 +47,6 @@ export const PRIMARY_NAV: NavItem[] = [
     items: [
       { name: "Casual wear", href: "/categories/gowns?q=casual", imageSrc: "/catogary-slider/gown/CASUAL WEAR GOWN.jpeg" },
       { name: "Party wear", href: "/categories/gowns?q=party", imageSrc: "/catogary-slider/gown/PARTY WEAR GOWN.jpeg" },
-    ],
-  },
-  {
-    name: "COORD SET",
-    href: "/categories/coord_sets",
-    featuredImageSrc: COORD_CATEGORY_MEDIA.featured,
-    items: [
-      { name: "Casual wear", href: "/categories/coord_sets?q=casual", imageSrc: COORD_CATEGORY_MEDIA.casual },
-      { name: "Party wear", href: "/categories/coord_sets?q=party", imageSrc: COORD_CATEGORY_MEDIA.party },
     ],
   },
   { name: "Shop", href: "/#shop" },

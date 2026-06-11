@@ -6,7 +6,7 @@ import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { FeaturedSpotlight, type FeaturedSpotlightProps } from "@/components/ui/feature-spotlight";
 import { CLOTHING_SUBCATEGORIES, type ClothingCategory } from "@/lib/products";
 import { PRIMARY_NAV } from "@/lib/navigation";
-import { cn, publicAssetUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 import { ProgressiveBlur } from "@/components/ui/progressive-blur";
 import { motion } from "motion/react";
 
@@ -19,7 +19,10 @@ function titleCaseLine(s: string) {
 }
 
 function normalizeSrc(src?: string) {
-  return publicAssetUrl(src ?? null) || null;
+  if (!src) return null;
+  if (/^https?:\/\//i.test(src)) return src;
+  if (!src.startsWith("/")) return src;
+  return encodeURI(src);
 }
 
 function subcategoryHeroImage(category: ClothingCategory, sub: string) {
@@ -28,7 +31,6 @@ function subcategoryHeroImage(category: ClothingCategory, sub: string) {
     kurtis: "KURTIS",
     blouses: "BLOUSES",
     gowns: "GOWNS",
-    coord_sets: "COORD SET",
   };
 
   const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
@@ -179,12 +181,7 @@ export function CategorySubcategoryProductSections({
         >
           <div className="overflow-hidden rounded-3xl border border-black/10 bg-white/70 shadow-sm">
             <motion.div
-              className={cn(
-                "group relative isolate overflow-hidden",
-                category === "coord_sets"
-                  ? "min-h-[280px] bg-neutral-100 sm:min-h-[340px]"
-                  : "min-h-[220px] sm:min-h-[260px]",
-              )}
+              className="group relative isolate overflow-hidden min-h-[220px] sm:min-h-[260px]"
               whileHover={{ y: -2 }}
               whileTap={{ scale: 0.99 }}
               transition={{ duration: 0.18, ease: "easeOut" }}
@@ -209,30 +206,14 @@ export function CategorySubcategoryProductSections({
                   <img
                     src={img}
                     alt=""
-                    className={cn(
-                      "absolute inset-0 -z-10 h-full w-full transition-transform duration-700 ease-out motion-reduce:transition-none group-hover:scale-[1.04]",
-                      category === "coord_sets"
-                        ? "object-contain object-center bg-neutral-100"
-                        : "object-cover",
-                    )}
-                    style={
-                      category === "coord_sets"
-                        ? undefined
-                        : { objectPosition: subcategoryHeroPosition(category, img) }
-                    }
+                    className="absolute inset-0 -z-10 h-full w-full object-cover transition-transform duration-700 ease-out motion-reduce:transition-none group-hover:scale-[1.04]"
+                    style={{ objectPosition: subcategoryHeroPosition(category, img) }}
                     loading="lazy"
                     decoding="async"
                   />
                 );
               })()}
-              <div
-                className={cn(
-                  "absolute inset-0 -z-10",
-                  category === "coord_sets"
-                    ? "bg-gradient-to-r from-black/45 via-black/20 to-transparent"
-                    : "bg-gradient-to-r from-black/70 via-black/35 to-black/0",
-                )}
-              />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-r from-black/70 via-black/35 to-black/0" />
               <div
                 aria-hidden="true"
                 className="absolute inset-0 -z-10"

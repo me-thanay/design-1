@@ -5,8 +5,6 @@ import ImageGallery from "@/components/ui/image-gallery";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import type { ClothingCategory, Product } from "@/lib/products";
 import { normalizeProductRow } from "@/lib/products";
-import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
-import { publicAssetUrl } from "@/lib/utils";
 import { ProductDetailsDialog } from "@/components/products/product-details-dialog";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
@@ -19,8 +17,6 @@ function fallbackImageFor(category: ClothingCategory) {
       return "/stock_images/COTTON%20KURTI.jpeg";
     case "gowns":
       return "/stock_images/PARTY%20WEAR%20GOWN.jpeg";
-    case "coord_sets":
-      return COORD_CATEGORY_MEDIA.featured;
     case "sarees":
     default:
       return "/stock_images/banarasi%20silk.jpeg";
@@ -37,7 +33,7 @@ function normalizeSrc(src: string) {
   if (!src) return src;
   if (/^https?:\/\//i.test(src)) return src;
   if (!src.startsWith("/")) return src;
-  return publicAssetUrl(src);
+  return encodeURI(src);
 }
 
 function productToGalleryItem(p: Product, category: ClothingCategory, rank: number) {

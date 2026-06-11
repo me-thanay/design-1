@@ -108,7 +108,7 @@ export function HomeTestimonialsMarquee() {
             What our customers say
           </h2>
           <p className="mt-4 max-w-md text-sm leading-relaxed text-neutral-600 sm:text-base">
-            Real feedback on sarees, blouses, kurtis, gowns, and coord sets—fabric, fit, and how it feels to wear
+            Real feedback on sarees, blouses, kurtis, and gowns—fabric, fit, and how it feels to wear
             Sawbhagya every day and on special occasions.
           </p>
         </motion.div>

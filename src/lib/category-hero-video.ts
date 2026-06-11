@@ -9,5 +9,4 @@ export const CATEGORY_HERO_VIDEO_SRC: Record<ClothingCategory, string> = {
   blouses: "/catogarywise_video/blouse.mp4",
   kurtis: "/catogarywise_video/kurtis.mp4",
   gowns: "/catogarywise_video/gown.mp4",
-  coord_sets: "/catogarywise_video/kurtis.mp4",
 };

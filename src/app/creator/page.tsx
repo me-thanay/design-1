@@ -72,18 +72,17 @@ function inferCategoryFromText(text: string | null | undefined) {
   if (t.includes("kurti")) return "kurtis";
   if (t.includes("blouse")) return "blouses";
   if (t.includes("gown")) return "gowns";
-  if (t.includes("coord")) return "coord_sets";
   return "sarees";
 }
 
 function decodeCategory(description: string | null | undefined) {
   if (!description) return "sarees";
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns|coord_sets)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) return withMeta[1].toLowerCase() as ClothingCategory;
   const match = description.match(
-    /^__category__:(sarees|kurtis|blouses|gowns|coord_sets)__/i,
+    /^__category__:(sarees|kurtis|blouses|gowns)__/i,
   );
   if (!match) return inferCategoryFromText(description);
   return match[1].toLowerCase() as ClothingCategory;
@@ -109,7 +108,7 @@ function decodeSubcategory(
 ) {
   if (!description) return SUBCATEGORIES[category][0];
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns|coord_sets)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta) return normalizeSubcategory(category, withMeta[2]);
 
@@ -121,7 +120,7 @@ function decodeSubcategory(
 function decodeRating(description: string | null | undefined) {
   if (!description) return 4;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns|coord_sets)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta?.[3]) return normalizeRating(withMeta[3]);
   return 4;
@@ -136,7 +135,7 @@ function normalizeDiscountPercent(value?: number | string | null) {
 function decodeDiscountPercent(description: string | null | undefined) {
   if (!description) return 0;
   const withMeta = description.match(
-    /^__meta__:(sarees|kurtis|blouses|gowns|coord_sets)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
+    /^__meta__:(sarees|kurtis|blouses|gowns)\|([^|_]+)(?:\|([0-9.]+))?(?:\|([0-9.]+))?__([\s\S]*)$/i,
   );
   if (withMeta?.[4]) return normalizeDiscountPercent(withMeta[4]);
   return 0;

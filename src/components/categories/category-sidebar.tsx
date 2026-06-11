@@ -7,7 +7,7 @@ import { PRIMARY_NAV } from "@/lib/navigation";
 import { subAnchorId } from "@/components/categories/category-subcategory-shops";
 import { useSearchParams } from "next/navigation";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
-import { cn, publicAssetUrl } from "@/lib/utils";
+import { cn } from "@/lib/utils";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
 
@@ -191,7 +191,6 @@ function SidebarInner({
     kurtis: "KURTIS",
     blouses: "BLOUSES",
     gowns: "GOWNS",
-    coord_sets: "COORD SET",
   };
   const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
   const subCards = (subs ?? []).map((s) => {
@@ -318,21 +317,13 @@ function SidebarInner({
               onClick={onNavigate}
               className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
             >
-              <span
-                className={cn(
-                  "relative shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1 ring-black/5",
-                  category === "coord_sets" ? "h-14 w-24" : "h-14 w-20",
-                )}
-              >
+              <span className="relative h-14 w-20 shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1 ring-black/5">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 {s.imageSrc ? (
                   <img
-                    src={publicAssetUrl(s.imageSrc)}
+                    src={encodeURI(s.imageSrc)}
                     alt=""
-                    className={cn(
-                      "h-full w-full",
-                      category === "coord_sets" ? "object-contain object-center" : "object-cover",
-                    )}
+                    className="h-full w-full object-cover"
                     loading="lazy"
                     decoding="async"
                   />

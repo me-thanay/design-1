@@ -8,12 +8,13 @@ import type { CategoryCarouselSlide } from "@/components/categories/category-med
 import { CATEGORY_HERO_VIDEO_SRC } from "@/lib/category-hero-video";
 import type { ClothingCategory } from "@/lib/products";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
-import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
 import { PRIMARY_NAV } from "@/lib/navigation";
-import { publicAssetUrl } from "@/lib/utils";
 
 function encodePublicSrc(src?: string | null) {
-  return publicAssetUrl(src) || null;
+  if (!src) return null;
+  if (/^https?:\/\//i.test(src)) return src;
+  if (!src.startsWith("/")) return src;
+  return encodeURI(src);
 }
 
 const STOCK_IMAGES_DIR_WITH_SPACE = "/stock images" as const;
@@ -40,7 +41,6 @@ function heroImagesForCategory(category: ClothingCategory) {
     kurtis: "KURTIS",
     blouses: "BLOUSES",
     gowns: "GOWNS",
-    coord_sets: "COORD SET",
   };
 
   const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
@@ -59,9 +59,7 @@ function heroImagesForCategory(category: ClothingCategory) {
           "/kurtis/pexels-dhanno-28949643.jpg",
           "/kurtis/pexels-dhanno-28949655.jpg",
         ].map(encodePublicSrc).filter(Boolean) as string[])
-      : category === "coord_sets"
-        ? (COORD_CATEGORY_MEDIA.hero.map(encodePublicSrc).filter(Boolean) as string[])
-        : [];
+      : [];
 
   // Unique + stable order
   const seen = new Set<string>();
@@ -79,7 +77,6 @@ function heroPositionsFor(category: ClothingCategory, count: number, override?: 
     kurtis: "50% 18%",
     // Gowns images often have faces lower; bias upward so the subject stays centered under the title.
     gowns: "50% 22%",
-    coord_sets: "50% 20%",
   };
 
   const base =
@@ -295,38 +292,6 @@ const CATEGORY_CONFIG: Record<
       ],
     },
   },
-  coord_sets: {
-    title: "Coord Set",
-    subtitle: "Matching tops and bottoms — polished looks with zero effort.",
-    heroImagePositions: ["50% 50%", "50% 50%", "50% 50%"],
-    spotlight: {
-      label: "Featured",
-      titleLine1: "Coord",
-      titleLine2: "Set",
-      description:
-        "Effortless matching sets for work, brunch, and evenings — comfortable fabrics with a put-together finish.",
-      ctaText: "Shop",
-      mediaType: "image",
-      mediaSrc: COORD_CATEGORY_MEDIA.featured,
-      mediaAlt: "Featured coord set look",
-      indexLabel: "05",
-    },
-    carousel: {
-      eyebrow: "Shop by type",
-      slides: [
-        {
-          src: COORD_CATEGORY_MEDIA.casual,
-          alt: "Relaxed coord set for easy weekends",
-          title: "Casual wear",
-        },
-        {
-          src: COORD_CATEGORY_MEDIA.party,
-          alt: "Festive coord set with elevated detail",
-          title: "Party wear",
-        },
-      ],
-    },
-  },
 };
 
 export default async function CategoryPage({
@@ -397,9 +362,8 @@ export default async function CategoryPage({
         backgroundImagePositions={heroPositions}
         backgroundImagePositionsMobile={heroMobilePositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-        backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
-        backgroundImageFitMobile={category === "coord_sets" ? "contain" : undefined}
-        minHeightClassName="min-h-[100svh]"
+        backgroundImageFit="cover"
+        className={category === "kurtis" ? "min-h-[82svh] sm:min-h-[56svh]" : "min-h-[56svh] sm:min-h-[52svh]"}
       />
 
       <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:py-12">

@@ -202,12 +202,7 @@ export function FloatingHeader() {
                             <img
                               src={src}
                               alt=""
-                              className={[
-                                "h-40 w-full rounded-xl",
-                                item.href.includes("/coord_sets")
-                                  ? "object-contain bg-neutral-100"
-                                  : "object-cover",
-                              ].join(" ")}
+                              className="h-40 w-full rounded-xl object-cover"
                               style={{ filter: "saturate(1.05) contrast(1.05)" }}
                             />
                           );
