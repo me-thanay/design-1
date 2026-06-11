@@ -43,6 +43,18 @@ function heroImagesForCategory(category: ClothingCategory) {
     coord_sets: "COORD SET",
   };
 
+  // Kurtis heroes use landscape shots first — portrait full-body photos crop badly on wide viewports.
+  if (category === "kurtis") {
+    const landscape = [
+      "/kurtis/pexels-dhanno-28949655.jpg",
+      "/kurtis/pexels-dhanno-28949643.jpg",
+    ]
+      .map(encodePublicSrc)
+      .filter(Boolean) as string[];
+    const portrait = encodePublicSrc("/kurtis/WhatsApp Image 2026-04-22 at 10.40.13 PM.jpeg");
+    return portrait ? [...landscape, portrait] : landscape;
+  }
+
   const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
   const candidates = [
     nav?.featuredImageSrc ?? null,
@@ -53,13 +65,7 @@ function heroImagesForCategory(category: ClothingCategory) {
 
   // Add a few guaranteed-local images as extra options (avoid missing-file blanks).
   const extras =
-    category === "kurtis"
-      ? ([
-          "/kurtis/WhatsApp Image 2026-04-22 at 10.40.13 PM.jpeg",
-          "/kurtis/pexels-dhanno-28949643.jpg",
-          "/kurtis/pexels-dhanno-28949655.jpg",
-        ].map(encodePublicSrc).filter(Boolean) as string[])
-      : category === "coord_sets"
+    category === "coord_sets"
         ? (COORD_CATEGORY_MEDIA.hero.map(encodePublicSrc).filter(Boolean) as string[])
         : [];
 
@@ -208,8 +214,7 @@ const CATEGORY_CONFIG: Record<
   kurtis: {
     title: "Kurtis",
     subtitle: "Work-ready, festive, and easy everyday styles.",
-    // Focus lower for the full-length shot so feet don't get cropped in the hero.
-    heroImagePositions: ["50% 18%", "50% 28%", "50% 22%", "50% 78%", "50% 18%", "50% 22%"],
+    heroImagePositions: ["38% 16%", "68% 18%", "50% 10%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Kurti",
@@ -349,12 +354,11 @@ export default async function CategoryPage({
   const heroPositions =
     category === "kurtis"
       ? heroImages.map((src) => {
-          // Mobile hero should look full-bleed (cover), so we tune focal points to keep
-          // face + outfit in frame without the "boxed" contain look.
-          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 30%";
-          if (src.includes("pexels-dhanno-28949643")) return "62% 22%";
-          if (src.includes("pexels-dhanno-28949655")) return "35% 18%";
-          return "50% 22%";
+          // Landscape shots: bias toward the model; portrait: anchor near the top for the face.
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 10%";
+          if (src.includes("pexels-dhanno-28949643")) return "68% 18%";
+          if (src.includes("pexels-dhanno-28949655")) return "38% 16%";
+          return "center top";
         })
       : category === "coord_sets"
         ? heroImages.map((src) => {
@@ -369,12 +373,10 @@ export default async function CategoryPage({
   const heroMobilePositions =
     category === "kurtis"
       ? heroImages.map((src) => {
-          // These kurtis images are portrait and easy to crop wrong on phones.
-          // Keep face + outfit visible without cutting the head.
-          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "46% 14%";
-          if (src.includes("pexels-dhanno-28949643")) return "64% 18%";
-          if (src.includes("pexels-dhanno-28949655")) return "36% 16%";
-          return "50% 16%";
+          if (src.includes("WhatsApp%20Image%202026-04-22%20at%2010.40.13%20PM")) return "50% 8%";
+          if (src.includes("pexels-dhanno-28949643")) return "70% 14%";
+          if (src.includes("pexels-dhanno-28949655")) return "36% 12%";
+          return "center top";
         })
       : category === "gowns"
         ? heroImages.map((src) => {
@@ -413,6 +415,7 @@ export default async function CategoryPage({
         backgroundImagePositions={heroPositions}
         backgroundImagePositionsMobile={heroMobilePositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
+        backgroundImageKenBurns={category === "kurtis" || category === "coord_sets" ? false : undefined}
         minHeightClassName="min-h-[100svh]"
       />
 
