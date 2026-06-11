@@ -8,6 +8,7 @@ export type MoodCategoryItem = {
   sub: string;
   href: string;
   img: string;
+  imageFit?: "cover" | "contain";
 };
 
 export function MoodCategoryGrid({ items }: { items: MoodCategoryItem[] }) {
@@ -15,7 +16,7 @@ export function MoodCategoryGrid({ items }: { items: MoodCategoryItem[] }) {
 
   return (
     <motion.div
-      className="grid grid-cols-2 gap-4 md:grid-cols-4"
+      className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5"
       initial={reduceMotion ? false : { opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: false, margin: "-48px", amount: 0.12 }}
@@ -41,12 +42,17 @@ export function MoodCategoryGrid({ items }: { items: MoodCategoryItem[] }) {
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
           className="group overflow-hidden rounded-2xl border border-black/10 bg-white/50 shadow-sm ring-1 ring-black/[0.03] transition-shadow duration-300 hover:bg-white hover:shadow-lg hover:ring-black/15"
         >
-          <div className="relative">
+          <div className="relative bg-neutral-50">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={c.img}
               alt=""
-              className="h-28 w-full object-cover transition-transform duration-500 group-hover:scale-105 sm:h-32 lg:h-28"
+              className={[
+                "w-full transition-transform duration-500 group-hover:scale-105",
+                c.imageFit === "contain"
+                  ? "h-36 object-contain bg-neutral-50 sm:h-40 lg:h-36"
+                  : "h-28 object-cover sm:h-32 lg:h-28",
+              ].join(" ")}
               loading="lazy"
               decoding="async"
             />

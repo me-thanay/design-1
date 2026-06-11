@@ -9,6 +9,7 @@ import { HeroLanding } from "@/components/ui/hero-1";
 import { CheckCircle2 } from "lucide-react";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { normalizeProductRow, type Product } from "@/lib/products";
+import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
 import { BestSellersMotionSlider } from "@/components/home/best-sellers-motion-slider";
 
 const LOCAL_CLOTHES_KEY = "freelance-1.local.clothes.v1";
@@ -64,6 +65,8 @@ function fallbackImageForProduct(p: Product) {
       return "/stock_images/COTTON%20KURTI.jpeg";
     case "gowns":
       return "/stock_images/PARTY%20WEAR%20GOWN.jpeg";
+    case "coord_sets":
+      return COORD_CATEGORY_MEDIA.featured;
     case "sarees":
     default:
       return "/stock_images/banarasi%20silk.jpeg";

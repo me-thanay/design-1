@@ -7,12 +7,15 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+import { COORD_CATEGORY_MEDIA } from "@/lib/coord-category-media";
+
 type CategorySlide = {
-  slug: "sarees" | "blouses" | "kurtis" | "gowns";
+  slug: "sarees" | "blouses" | "kurtis" | "gowns" | "coord_sets";
   eyebrow: string;
   title: string;
   subtitle: string;
   imageSrc: string;
+  imageFit?: "cover" | "contain";
 };
 
 const SLIDES: CategorySlide[] = [
@@ -44,6 +47,14 @@ const SLIDES: CategorySlide[] = [
     subtitle: "Party · casual · flowy silhouettes",
     imageSrc: "/stock_images/PARTY%20WEAR%20GOWN.jpeg",
   },
+  {
+    slug: "coord_sets",
+    eyebrow: "Categories",
+    title: "Coord set edit",
+    subtitle: "Casual · party wear",
+    imageSrc: COORD_CATEGORY_MEDIA.featured,
+    imageFit: "contain" as const,
+  },
 ];
 
 export default function CategoriesSpotlight({
@@ -65,7 +76,12 @@ export default function CategoriesSpotlight({
         <img
           src={slide.imageSrc}
           alt=""
-          className="h-[360px] w-full object-cover sm:h-[420px] lg:h-[520px]"
+          className={cn(
+            "h-[360px] w-full sm:h-[420px] lg:h-[520px]",
+            slide.imageFit === "contain"
+              ? "object-contain bg-neutral-100"
+              : "object-cover",
+          )}
           loading="lazy"
           decoding="async"
         />
