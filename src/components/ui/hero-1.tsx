@@ -439,6 +439,7 @@ export function HeroLanding(props: HeroLandingProps) {
         <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
           {bgFit === "contain" && (
             <>
+              <div className="absolute inset-0 bg-neutral-950" />
               {validBgSlides.map((s, index) => (
                 // eslint-disable-next-line @next/next/no-img-element -- backdrop layer only
                 <img
@@ -448,15 +449,15 @@ export function HeroLanding(props: HeroLandingProps) {
                   decoding="async"
                   fetchPriority="low"
                   className={[
-                    "absolute inset-0 h-full w-full object-cover",
-                    "scale-[1.06] blur-2xl opacity-70",
+                    "absolute inset-0 h-full w-full origin-center object-contain",
+                    "scale-[1.14] blur-3xl opacity-75",
                     "transition-opacity motion-reduce:transition-none",
-                    index === (bgIndex % validBgSlides.length) ? "opacity-70" : "opacity-0",
+                    index === (bgIndex % validBgSlides.length) ? "opacity-75" : "opacity-0",
                   ].join(" ")}
                   style={{
                     objectPosition: isMobile ? s.posMobile : s.posDesktop,
                     transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
-                    filter: "saturate(1.05) contrast(1.05)",
+                    filter: "saturate(1.08) contrast(1.05)",
                   }}
                 />
               ))}
@@ -477,14 +478,20 @@ export function HeroLanding(props: HeroLandingProps) {
                 "origin-top motion-reduce:origin-center",
                 "transition-[opacity,transform] motion-reduce:transition-none",
                 index === (bgIndex % validBgSlides.length)
-                  ? "opacity-100 scale-[1.02] motion-reduce:scale-100"
-                  : "opacity-0 scale-[1.01] motion-reduce:scale-100",
+                  ? bgFit === "contain"
+                    ? "opacity-100"
+                    : "opacity-100 scale-[1.02] motion-reduce:scale-100"
+                  : bgFit === "contain"
+                    ? "opacity-0"
+                    : "opacity-0 scale-[1.01] motion-reduce:scale-100",
               ].join(" ")}
               style={{
                 objectPosition: isMobile ? s.posMobile : s.posDesktop,
                 transitionDuration: `${Math.max(0, backgroundImageFadeMs ?? 900)}ms`,
                 animation:
-                  index === (bgIndex % validBgSlides.length) && !reduceMotionFramer
+                  index === (bgIndex % validBgSlides.length) &&
+                  !reduceMotionFramer &&
+                  bgFit !== "contain"
                     ? "kenburns-slow 10s linear both"
                     : undefined,
                 filter: "saturate(1.08) contrast(1.08)",

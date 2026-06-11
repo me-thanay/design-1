@@ -298,7 +298,7 @@ const CATEGORY_CONFIG: Record<
   coord_sets: {
     title: "Coord Set",
     subtitle: "Matching tops and bottoms — polished looks with zero effort.",
-    heroImagePositions: ["50% 50%", "50% 50%", "50% 50%"],
+    heroImagePositions: ["50% 35%", "50% 30%", "50% 30%"],
     spotlight: {
       label: "Featured",
       titleLine1: "Coord",
@@ -397,8 +397,6 @@ export default async function CategoryPage({
         backgroundImagePositions={heroPositions}
         backgroundImagePositionsMobile={heroMobilePositions}
         navigation={[{ name: "Home", href: "/" }, ...PRIMARY_NAV]}
-        backgroundImageFit={category === "coord_sets" ? "contain" : "cover"}
-        backgroundImageFitMobile={category === "coord_sets" ? "contain" : undefined}
         minHeightClassName="min-h-[100svh]"
       />
 
