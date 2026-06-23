@@ -313,26 +313,28 @@ export function HeroLanding(props: HeroLandingProps) {
     }
 
     if (prefersReducedMotion) {
-      setTypedTitle(title);
+      setTypedTitle(Array.isArray(title) ? title[0] : title);
       setTitleTypingDone(true);
       return;
     }
 
     setTitleTypingDone(false);
 
-    if (!title.length) {
+    const resolvedTitle = Array.isArray(title) ? title.join(" ") : title;
+
+    if (!resolvedTitle.length) {
       setTypedTitle("");
       setTitleTypingDone(true);
       return;
     }
 
-    setTypedTitle(title.slice(0, 1));
+    setTypedTitle(resolvedTitle.slice(0, 1));
     let i = 1;
     const msPerChar = 38;
     const id = window.setInterval(() => {
       i += 1;
-      setTypedTitle(title.slice(0, i));
-      if (i >= title.length) {
+      setTypedTitle(resolvedTitle.slice(0, i));
+      if (i >= resolvedTitle.length) {
         window.clearInterval(id);
         setTitleTypingDone(true);
       }
