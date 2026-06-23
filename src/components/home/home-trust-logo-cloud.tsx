@@ -78,7 +78,7 @@ export function HomeTrustLogoCloud() {
           <span className="text-neutral-900">Worn by customers who care how it feels.</span>
         </h2>
 
-        <p className="mx-auto mt-3 max-w-lg text-center font-serif text-sm leading-relaxed text-neutral-600 sm:text-base">
+        <p className="mx-auto mt-3 max-w-lg text-center text-sm leading-relaxed text-neutral-600 sm:text-base">
           From Banarasi zari to breathable linen—every piece is photographed honestly and finished for real
           wardrobes, weddings, and work weeks.
         </p>

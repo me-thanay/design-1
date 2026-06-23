@@ -25,7 +25,12 @@ import { SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 import { buildHeroThemeProps } from "@/lib/hero-theme";
 
 const heroProps: HeroLandingProps = buildHeroThemeProps({
-  title: "Daily essentials. Work-ready styles. Occasion-perfect looks.",
+  title: [
+    "Daily essentials.",
+    "Work-ready styles.",
+    "Occasion-perfect looks."
+  ],
+  titleSize: "medium",
   description:
     "Handcrafted blouses, sarees, and combos — premium fabrics, timeless silhouettes, made for every moment.",
   announcementBanner: {
@@ -249,49 +254,6 @@ export default async function Home({ searchParams }: HomeProps) {
           </ScrollRevealGroup>
         </div>
       </section>
-
-      <Footer
-        logo={
-          <img src={SITE_LOGO_SRC} alt={SITE_LOGO_ALT} className="h-9 w-9 rounded-sm object-contain" />
-        }
-        brandName="Sawbhagya"
-        contact={{
-          phone: "8978237992",
-          email: "info@sawbhagya.com",
-          address:
-            "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
-          mapsHref: "https://maps.app.goo.gl/VP6MioWj7HuQsL839?g_st=iw",
-          whatsappHref:
-            "https://wa.me/918978237992?text=" +
-            encodeURIComponent("Hi Sawbhagya, I want to know more about your products."),
-        }}
-        socialLinks={[
-          { icon: <MessageCircle className="h-5 w-5" />, href: "https://wa.me/918978237992", label: "WhatsApp" },
-          { icon: <Mail className="h-5 w-5" />, href: "mailto:info@sawbhagya.com", label: "Email" },
-          { icon: <Phone className="h-5 w-5" />, href: "tel:+918978237992", label: "Phone" },
-          {
-            icon: <MapPin className="h-5 w-5" />,
-            href: "https://maps.app.goo.gl/VP6MioWj7HuQsL839?g_st=iw",
-            label: "Location",
-          },
-        ]}
-        mainLinks={[
-          { href: "#best-seller", label: "Best sellers" },
-          { href: "/#shop", label: "Shop" },
-          { href: "/cart", label: "Cart" },
-          { href: "#categories", label: "Categories" },
-          { href: "/creator", label: "Admin" },
-        ]}
-        legalLinks={[
-          { href: "/shipping-returns", label: "Shipping & returns" },
-          { href: "#", label: "Privacy" },
-          { href: "/terms", label: "Terms" },
-        ]}
-        copyright={{
-          text: `© ${new Date().getFullYear()} Sawbhagya`,
-          license: "All rights reserved",
-        }}
-      />
     </main>
   );
 }

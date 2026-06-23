@@ -143,7 +143,7 @@ export function FeaturedSpotlight({
         {/* Minimal CTA - responsive spacing */}
         <div className="mt-6 flex items-center gap-4 md:mt-8 lg:mt-10">
           <div
-            className="flex h-10 w-10 items-center justify-center rounded-full border transition-all duration-500 md:h-11 md:w-11 lg:h-12 lg:w-12"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border transition-all duration-500 md:h-11 md:w-11 lg:h-12 lg:w-12"
             style={{
               borderColor: isHovered
                 ? "hsl(var(--foreground))"

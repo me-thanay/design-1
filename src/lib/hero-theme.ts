@@ -3,21 +3,13 @@ import { SITE_BRAND_NAME, SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 import { PRIMARY_NAV } from "@/lib/navigation";
 
 export const HERO_THEME_BACKGROUND_IMAGES = [
-  // Curated local set (no spaces → reliable on Vercel/Linux).
-  "/stock_images/showcase-1.jpeg",
-  "/stock_images/showcase-2.jpeg",
-  "/stock_images/showcase-3.jpeg",
-  "/stock_images/showcase-4.jpeg",
-  "/stock_images/showcase-5.jpeg",
-  "/stock_images/showcase-6.jpeg",
-  "/stock_images/showcase-7.jpeg",
+  "/HOME/1.png",
+  "/HOME/2.png",
+  "/HOME/3.png",
+  "/HOME/4.png",
 ];
 
 export const HERO_THEME_IMAGE_POSITIONS = [
-  // Bias upward so faces/subjects stay in frame behind the headline.
-  "50% 18%",
-  "50% 18%",
-  "50% 18%",
   "50% 18%",
   "50% 18%",
   "50% 18%",
@@ -25,14 +17,10 @@ export const HERO_THEME_IMAGE_POSITIONS = [
 ];
 
 export const HERO_THEME_IMAGE_POSITIONS_MOBILE = [
-  // These images are right-weighted; on mobile cover we keep faces/outfits in frame.
-  "72% 22%",
-  "72% 22%",
-  "68% 24%",
-  "66% 24%",
-  "66% 24%",
-  "64% 18%",
-  "70% 22%",
+  "50% 22%",
+  "50% 22%",
+  "50% 22%",
+  "50% 22%",
 ];
 
 export function buildHeroThemeProps(

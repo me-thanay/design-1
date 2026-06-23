@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ShoppingBag, ShoppingCart } from "lucide-react";
+import { Search, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
@@ -121,7 +121,7 @@ export function FloatingHeader() {
           </motion.button>
         </div>
 
-        <div className="min-w-0 flex shrink-0 items-center justify-center gap-2 sm:gap-3 lg:mr-6 lg:justify-start">
+        <div className="min-w-0 flex lg:flex-1 shrink-0 items-center justify-center gap-2 sm:gap-3 lg:justify-start">
           <Link
             href="/"
             className="shrink-0 rounded-md outline-none focus-visible:ring-2 focus-visible:ring-black/20"
@@ -156,13 +156,13 @@ export function FloatingHeader() {
                     ▾
                   </span>
                 </a>
-                <div className="absolute left-0 top-full z-50 pt-2">
+                <div className={`absolute left-0 top-full z-50 pt-2 ${openDesktopDropdown === item.name ? "" : "pointer-events-none"}`}>
                   <div
                     className={[
                       "w-[34rem] overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-xl",
                       openDesktopDropdown === item.name
-                        ? "pointer-events-auto opacity-100 translate-y-0"
-                        : "pointer-events-none opacity-0 translate-y-1",
+                        ? "opacity-100 translate-y-0"
+                        : "opacity-0 translate-y-1",
                       "transition duration-150",
                     ].join(" ")}
                     role="menu"
@@ -238,27 +238,8 @@ export function FloatingHeader() {
             ),
           )}
         </div>
-        <form
-          onSubmit={submitSearch}
-          className="mx-3 hidden flex-1 items-center gap-2 lg:flex"
-        >
-          <input
-            type="text"
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            placeholder="Search sarees by name or keyword..."
-            className="w-full rounded-full border border-zinc-200 bg-white px-4 py-1.5 text-xs text-zinc-700 outline-none ring-0 placeholder:text-zinc-400 focus:border-zinc-400"
-          />
-          <motion.button
-            type="submit"
-            className="rounded-full border border-zinc-300 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-zinc-800 hover:bg-zinc-100 lg:text-sm"
-            whileHover={reduceMotion ? undefined : { scale: 1.04 }}
-            whileTap={reduceMotion ? undefined : { scale: 0.97 }}
-          >
-            Search
-          </motion.button>
-        </form>
-        <div className="flex items-center justify-end gap-1.5 sm:gap-2">
+        <div className="flex lg:flex-1 items-center justify-end gap-1.5 sm:gap-2 lg:gap-4">
+          <NavSearchBar navIconClassName={navIconClassName} />
           <motion.a
             href={isLoggedIn ? "/cart" : "/sign-in"}
             className="relative inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-bold uppercase tracking-[0.12em] text-zinc-800 hover:text-zinc-900 sm:px-3 lg:text-sm"
@@ -393,3 +374,70 @@ export function FloatingHeader() {
   );
 }
 
+
+/** ──────────────────────────────────────────────────────────────────────────
+ * NavSearchBar
+ * Collapsed: a single Search icon balanced with Bag/Cart icons.
+ * Expanded: minimal input with a 1px bottom border — no background fill.
+ * ─────────────────────────────────────────────────────────────────────────── */
+function NavSearchBar({ navIconClassName }: { navIconClassName: string }) {
+  const [open, setOpen] = React.useState(false);
+  const inputRef = React.useRef<HTMLInputElement>(null);
+
+  React.useEffect(() => {
+    if (open) {
+      const t = setTimeout(() => inputRef.current?.focus(), 60);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
+
+  React.useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  return (
+    <div className="hidden lg:flex items-center">
+      <div className="relative flex items-center justify-end">
+        <form
+          action="/"
+          method="get"
+          className={[
+            "flex items-center overflow-hidden transition-all duration-300 ease-out mr-1",
+            open ? "w-60 opacity-100" : "w-0 opacity-0 pointer-events-none",
+          ].join(" ")}
+          onSubmit={() => setOpen(false)}
+        >
+          <div className="flex w-full items-center gap-1.5 border-b border-zinc-400 pb-0.5">
+            <input
+              ref={inputRef}
+              type="search"
+              name="q"
+              placeholder="Search sarees, blouses…"
+              autoComplete="off"
+              className="min-w-0 flex-1 bg-transparent text-xs text-zinc-800 outline-none placeholder:font-light placeholder:text-zinc-400 lg:text-sm"
+              style={{ fontFamily: "var(--font-sans), system-ui, sans-serif" }}
+            />
+          </div>
+        </form>
+
+        <button
+          type="button"
+          aria-label={open ? "Close search" : "Open search"}
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center justify-center text-zinc-800 transition-colors hover:text-zinc-900"
+        >
+          {open ? (
+            <X className={navIconClassName} strokeWidth={2.5} aria-hidden="true" />
+          ) : (
+            <Search className={navIconClassName} strokeWidth={2.5} aria-hidden="true" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}

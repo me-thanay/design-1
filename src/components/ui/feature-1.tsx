@@ -112,7 +112,7 @@ export function Feature1({
                   initial="hidden"
                   whileInView="visible"
                   viewport={{ once: true, margin: "-8% 0px", amount: 0.2 }}
-                  className="text-pretty font-serif text-sm leading-relaxed text-neutral-600 sm:text-base"
+                  className="text-pretty text-sm leading-relaxed text-neutral-600 sm:text-base"
                 >
                   {p}
                 </motion.p>

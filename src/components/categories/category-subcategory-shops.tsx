@@ -71,7 +71,7 @@ export function CategorySubcategoryPills({
       <Link
         href="?"
         className={cn(
-          "font-serif rounded-full border px-3.5 py-1.5 text-xs font-medium shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm",
+          "rounded-full border px-3.5 py-1.5 text-xs font-medium shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm",
           !selectedSubcategory
             ? "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
             : "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50",
@@ -85,7 +85,7 @@ export function CategorySubcategoryPills({
           key={sub}
           href={`?sub=${encodeURIComponent(sub)}`}
           className={cn(
-            "font-serif rounded-full border px-3.5 py-1.5 text-xs font-medium shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm",
+            "rounded-full border px-3.5 py-1.5 text-xs font-medium shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm",
             selectedSubcategory?.toLowerCase() === sub.toLowerCase()
               ? "border-neutral-900 bg-neutral-900 text-white hover:bg-neutral-800"
               : "border-neutral-300 bg-white text-neutral-900 hover:bg-neutral-50",
@@ -132,13 +132,13 @@ export function CategorySubcategoryIntro({
     <div className={className}>
       <ScrollReveal variant="fade-up" y={18} duration={0.55}>
         <div className="max-w-2xl">
-          <p className="font-serif text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500">
+          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-neutral-500">
             Shop by type
           </p>
           <h2 className="font-serif mt-3 text-2xl font-semibold tracking-tight text-neutral-900 sm:text-3xl">
             Subcategories from Creator
           </h2>
-          <p className="font-serif mt-3 text-sm leading-relaxed text-neutral-600 sm:text-base">
+          <p className="mt-3 text-sm leading-relaxed text-neutral-600 sm:text-base">
             Same fabric and style tags you set in the admin — each section shows in-stock items for{" "}
             {categoryTitle}.
           </p>

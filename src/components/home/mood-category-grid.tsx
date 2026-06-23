@@ -43,20 +43,14 @@ export function MoodCategoryGrid({ items }: { items: MoodCategoryItem[] }) {
           className="group overflow-hidden rounded-2xl border border-black/10 bg-white/50 shadow-sm ring-1 ring-black/[0.03] transition-shadow duration-300 hover:bg-white hover:shadow-lg hover:ring-black/15"
         >
           <div className="relative bg-neutral-50">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={c.img}
               alt=""
-              className={[
-                "w-full transition-transform duration-500 group-hover:scale-105",
-                c.imageFit === "contain"
-                  ? "h-36 object-contain bg-neutral-50 sm:h-40 lg:h-36"
-                  : "h-28 object-cover sm:h-32 lg:h-28",
-              ].join(" ")}
+              className="h-48 w-full object-cover object-top sm:h-56 lg:h-52 transition-transform duration-500 group-hover:scale-105"
               loading="lazy"
               decoding="async"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent opacity-70 transition-opacity duration-300 group-hover:opacity-85" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-95" />
             <div className="absolute bottom-0 left-0 right-0 p-4">
               <div className="flex items-end justify-between gap-3">
                 <div>

@@ -153,7 +153,7 @@ export default function BestSellerSlider({
                       i === safeIndex ? "bg-black/5 ring-1 ring-black/10" : "hover:bg-black/5",
                     ].join(" ")}
                   >
-                    <div className="relative h-12 w-12 overflow-hidden rounded-xl bg-neutral-200 ring-1 ring-black/10">
+                    <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-neutral-200 ring-1 ring-black/10">
                       <img
                         src={item.url}
                         alt=""

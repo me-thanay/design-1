@@ -98,7 +98,7 @@ export function BestSellersMotionSlider({
 
                   <div className="space-y-2 p-4">
                     <div className="min-w-0">
-                      <p className="truncate font-serif text-base font-bold text-neutral-900">
+                      <p className="truncate text-base font-bold text-neutral-900">
                         {it.product.name}
                       </p>
                       <div className="mt-1 flex items-center justify-between gap-2">

@@ -25,7 +25,7 @@ function FeatureCard({
       transition={{ duration: 0.25, ease: EASE }}
     >
       <div className="flex items-start gap-3">
-        <div className="grid h-11 w-11 place-items-center rounded-2xl bg-neutral-900 text-white shadow-sm ring-1 ring-black/10">
+        <div className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-neutral-900 text-white shadow-sm ring-1 ring-black/10">
           {icon}
         </div>
         <div className="min-w-0">

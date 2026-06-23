@@ -44,15 +44,49 @@ function heroImagesForCategory(category: ClothingCategory) {
   };
 
   // Kurtis heroes use landscape shots first — portrait full-body photos crop badly on wide viewports.
+  if (category === "sarees") {
+    return [
+      "/IMAGES/Saree/1.png",
+      "/IMAGES/Saree/2.png",
+      "/IMAGES/Saree/3.png",
+      "/IMAGES/Saree/4.png"
+    ].map(encodePublicSrc).filter(Boolean) as string[];
+  }
+
   if (category === "kurtis") {
-    const landscape = [
-      "/kurtis/pexels-dhanno-28949655.jpg",
-      "/kurtis/pexels-dhanno-28949643.jpg",
-    ]
-      .map(encodePublicSrc)
-      .filter(Boolean) as string[];
-    const portrait = encodePublicSrc("/kurtis/WhatsApp Image 2026-04-22 at 10.40.13 PM.jpeg");
-    return portrait ? [...landscape, portrait] : landscape;
+    return [
+      "/IMAGES/Kurthi/1.png",
+      "/IMAGES/Kurthi/2.png",
+      "/IMAGES/Kurthi/3.png",
+      "/IMAGES/Kurthi/4.png"
+    ].map(encodePublicSrc).filter(Boolean) as string[];
+  }
+
+  if (category === "blouses") {
+    return [
+      "/IMAGES/Blouse/1.png",
+      "/IMAGES/Blouse/2.png",
+      "/IMAGES/Blouse/3.png",
+      "/IMAGES/Blouse/4.png"
+    ].map(encodePublicSrc).filter(Boolean) as string[];
+  }
+
+  if (category === "gowns") {
+    return [
+      "/IMAGES/Gown/1.png",
+      "/IMAGES/Gown/2.png",
+      "/IMAGES/Gown/3.png",
+      "/IMAGES/Gown/4.png"
+    ].map(encodePublicSrc).filter(Boolean) as string[];
+  }
+
+  if (category === "coord_sets") {
+    return [
+      "/IMAGES/CoordSet/1.png",
+      "/IMAGES/CoordSet/2.png",
+      "/IMAGES/CoordSet/3.png",
+      "/IMAGES/CoordSet/4.png"
+    ].map(encodePublicSrc).filter(Boolean) as string[];
   }
 
   const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);

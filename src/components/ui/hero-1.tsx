@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "framer-motion";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Menu, ShoppingBag, ShoppingCart, X } from "lucide-react";
+import { Menu, Search, ShoppingBag, ShoppingCart, X } from "lucide-react";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { SITE_BRAND_NAME, SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
@@ -37,7 +37,7 @@ interface HeroLandingProps {
   showHeader?: boolean;
   loginText?: string;
   loginHref?: string;
-  title: string;
+  title: string | string[];
   description: string;
   announcementBanner?: AnnouncementBanner;
   callToActions?: CallToAction[];
@@ -400,7 +400,7 @@ export function HeroLanding(props: HeroLandingProps) {
           key={`${cta.text}-${index}`}
           href={cta.href}
           className={[
-            "inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold sm:w-auto sm:py-2.5 sm:text-sm",
+            "inline-flex w-full items-center justify-center rounded-full px-7 py-3 font-sans-explicit text-xs font-bold uppercase tracking-[0.14em] sm:w-auto sm:py-2.5",
             "shadow-sm transition-colors",
             hasImageBackground
               ? "bg-white text-black hover:bg-white/90"
@@ -421,14 +421,14 @@ export function HeroLanding(props: HeroLandingProps) {
           key={`${cta.text}-${index}`}
           href={cta.href}
           className={[
-            "inline-flex w-full items-center justify-center rounded-full px-5 py-3 text-sm font-semibold sm:w-auto sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm/6",
+            "inline-flex w-full items-center justify-center rounded-full px-5 py-3 font-sans-explicit text-sm font-medium sm:w-auto sm:bg-transparent sm:px-0 sm:py-0 sm:text-sm/6",
             hasImageBackground ? "bg-white/10 ring-1 ring-white/20 backdrop-blur sm:ring-0" : "bg-black/5 ring-1 ring-black/10 sm:ring-0",
-            hasImageBackground ? "text-white/90 hover:text-white" : "text-foreground hover:text-muted-foreground",
+            hasImageBackground ? "text-white/85 hover:text-white" : "text-foreground hover:text-muted-foreground",
           ].join(" ")}
           whileHover={motionOff ? undefined : { x: 4 }}
           whileTap={motionOff ? undefined : { scale: 0.98 }}
         >
-          {cta.text} <span aria-hidden="true">→</span>
+          {cta.text} <span aria-hidden="true" className="ml-1">→</span>
         </motion.a>
       );
     }
@@ -600,13 +600,13 @@ export function HeroLanding(props: HeroLandingProps) {
                           ▾
                         </span>
                       </a>
-                      <div className="absolute left-0 top-full z-50 pt-2">
+                      <div className={`absolute left-0 top-full z-50 pt-2 ${openDesktopDropdown === item.name ? "" : "pointer-events-none"}`}>
                         <div
                           className={[
                             "pointer-events-auto w-[34rem] overflow-hidden rounded-2xl border shadow-xl",
                             openDesktopDropdown === item.name
                               ? "opacity-100 translate-y-0"
-                              : "pointer-events-none opacity-0 translate-y-1",
+                              : "opacity-0 translate-y-1",
                             "transition duration-150",
                             hasImageBackground
                               ? "border-white/15 bg-black/70 backdrop-blur"
@@ -686,40 +686,9 @@ export function HeroLanding(props: HeroLandingProps) {
                 )}
               </div>
             )}
-            <div className="hidden min-w-0 lg:flex lg:flex-1 lg:justify-center lg:px-2">
-              <form
-                action="/"
-                method="get"
-                className={[
-                  "flex w-full max-w-xs items-center gap-2 rounded-full border px-2.5 py-1 backdrop-blur lg:max-w-md xl:max-w-lg",
-                  hasImageBackground
-                    ? "border-white/20 bg-black/25"
-                    : "border-black/10 bg-white/70",
-                ].join(" ")}
-              >
-                <span
-                  className={[
-                    "shrink-0 text-[11px] font-bold uppercase tracking-[0.12em] lg:text-xs",
-                    hasImageBackground ? "text-white/85" : "text-neutral-600",
-                  ].join(" ")}
-                >
-                  Search
-                </span>
-                <input
-                  type="search"
-                  name="q"
-                  placeholder="products…"
-                  className={[
-                    "min-w-0 flex-1 bg-transparent text-[11px] outline-none lg:text-sm",
-                    hasImageBackground
-                      ? "text-white placeholder:text-white/55"
-                      : "text-neutral-900 placeholder:text-neutral-500",
-                  ].join(" ")}
-                />
-              </form>
-            </div>
-            {(navigation?.some(isShopItem) || navigation?.some(isCartItem) || (loginText && loginHref)) ? (
-              <div className="hidden lg:flex lg:flex-1 lg:justify-end">
+            <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:gap-4 xl:gap-6">
+              <HeroSearchBar hasImageBackground={hasImageBackground} reduceMotion={Boolean(reduceMotionFramer)} />
+              {(navigation?.some(isShopItem) || navigation?.some(isCartItem) || (loginText && loginHref)) ? (
                 <div className="flex items-center gap-3">
                   {navigation?.find(isShopItem) ? (
                     <motion.a
@@ -778,64 +747,62 @@ export function HeroLanding(props: HeroLandingProps) {
                     </a>
                   ) : null}
                 </div>
-              </div>
-            ) : null}
+              ) : null}
+            </div>
           </nav>
           <Dialog open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             {mobileMenuOpen ? (
-              <DialogContent className="fixed inset-y-0 right-0 z-50 h-full w-full max-w-none translate-x-0 translate-y-0 overflow-y-auto rounded-none border-0 bg-card px-4 py-4 data-[state=open]:slide-in-from-right sm:left-auto sm:top-0 sm:max-w-sm sm:rounded-none sm:border-l sm:border-border sm:px-6 sm:py-6 sm:ring-1 sm:ring-border lg:hidden [&>button]:hidden">
+              <DialogContent className="fixed inset-y-0 left-0 z-50 h-full w-full max-w-none translate-x-0 translate-y-0 overflow-y-auto rounded-none border-0 bg-white px-6 py-6 data-[state=open]:slide-in-from-left sm:right-auto sm:top-0 sm:max-w-sm sm:rounded-none sm:border-r sm:border-black/10 lg:hidden [&>button]:hidden">
                 <DialogTitle className="sr-only">Menu</DialogTitle>
                 <div className="flex items-center justify-between">
                   <a href="/" className="-m-1.5 p-1.5">
                     <span className="sr-only">{logo?.companyName}</span>
-                    <img alt={logo?.alt} src={logo?.src} className="h-24 w-auto sm:h-20 md:h-24" />
+                    <img alt={logo?.alt} src={logo?.src} className="h-10 w-auto" />
                   </a>
                   <button
                     type="button"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="-m-2.5 rounded-md p-2.5 text-muted-foreground hover:text-foreground transition-colors"
+                    className="-m-2.5 rounded-md p-2.5 text-neutral-500 hover:text-neutral-900 transition-colors"
                   >
                     <span className="sr-only">Close menu</span>
                     <X aria-hidden="true" className="size-6" />
                   </button>
                 </div>
-                <div className="mt-2 flow-root">
-                  <div className="-my-6 divide-y divide-border">
+                <div className="mt-8 flow-root">
+                  <div className="-my-6 divide-y divide-black/10">
                     <div className="py-6">
                       <form
                         action="/"
                         method="get"
-                        className="flex items-center gap-2 rounded-full border border-black/10 bg-white/70 px-3 py-2"
+                        className="flex items-center gap-3 rounded-full border border-black/10 bg-neutral-50/50 px-4 py-2.5"
                       >
-                        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-neutral-600">
-                          Search
-                        </span>
+                        <Search className="h-4 w-4 text-neutral-400 shrink-0" />
                         <input
                           type="search"
                           name="q"
-                          placeholder="products…"
+                          placeholder="Search products…"
                           className="min-w-0 flex-1 bg-transparent text-sm text-neutral-900 placeholder:text-neutral-500 outline-none"
                         />
                       </form>
                     </div>
                     {navigation && navigation.length > 0 && (
-                      <div className="space-y-2 py-6">
+                      <div className="space-y-1 py-6">
                         {navigation.map((item) =>
                           item.items && item.items.length > 0 ? (
-                            <div key={item.name} className="-mx-3">
+                            <div key={item.name} className="space-y-2 pb-4 pt-2">
                               <a
                                 href={item.href}
-                                className="block rounded-lg px-3 py-2 text-base/7 font-semibold text-card-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                                className="block text-xs font-bold uppercase tracking-wider text-neutral-900"
                                 onClick={() => setMobileMenuOpen(false)}
                               >
                                 {item.name}
                               </a>
-                              <div className="ml-3 space-y-1 border-l border-border pl-3">
+                              <div className="ml-2 flex flex-col gap-3 border-l-2 border-neutral-100 pl-4 pt-2">
                                 {item.items.map((sub) => (
                                   <a
                                     key={`${item.name}-${sub.name}`}
                                     href={sub.href}
-                                    className="block rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                                    className="block text-sm font-medium text-neutral-600 transition-colors hover:text-neutral-900"
                                     onClick={() => setMobileMenuOpen(false)}
                                   >
                                     {sub.name}
@@ -847,19 +814,19 @@ export function HeroLanding(props: HeroLandingProps) {
                             <a
                               key={item.name}
                               href={item.href}
-                              className="-mx-3 flex items-center gap-3 rounded-lg px-3 py-2 text-base/7 font-semibold text-card-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                              className="-mx-3 flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-bold uppercase tracking-wider text-neutral-900 hover:bg-neutral-50 transition-colors"
                               aria-label={item.name}
                               onClick={() => setMobileMenuOpen(false)}
                             >
                               {isShopItem(item) ? (
                                 <>
-                                  <ShoppingBag className="h-5 w-5" aria-hidden="true" />
-                                  <span className="sr-only">Shop</span>
+                                  <ShoppingBag className="h-5 w-5 text-neutral-500" aria-hidden="true" />
+                                  <span>Shop</span>
                                 </>
                               ) : isCartItem(item) ? (
                                 <>
-                                  <ShoppingCart className="h-5 w-5" aria-hidden="true" />
-                                  <span className="sr-only">Cart</span>
+                                  <ShoppingCart className="h-5 w-5 text-neutral-500" aria-hidden="true" />
+                                  <span>Cart</span>
                                 </>
                               ) : (
                                 item.name
@@ -873,27 +840,22 @@ export function HeroLanding(props: HeroLandingProps) {
                       <div className="py-6">
                         <a
                           href={authHref}
-                          className="-mx-3 block rounded-lg px-3 py-2.5 text-base/7 font-semibold text-card-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
+                          className="flex w-full items-center justify-center rounded-full bg-neutral-900 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-neutral-800"
                         >
                           {authReady && authEmail ? (
                             <span className="flex items-center gap-3">
-                              <span className="relative grid h-10 w-10 place-items-center overflow-hidden rounded-full bg-black/5 ring-1 ring-black/10">
+                              <span className="relative grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-full bg-white/20">
                                 {/* eslint-disable-next-line @next/next/no-img-element */}
                                 {authAvatarUrl ? (
                                   <img src={authAvatarUrl} alt="" className="h-full w-full object-cover" />
                                 ) : (
-                                  <span className="text-sm font-bold text-neutral-700">
+                                  <span className="text-[10px] font-bold text-white">
                                     {(authEmail?.[0] ?? "U").toUpperCase()}
                                   </span>
                                 )}
                               </span>
-                              <span className="min-w-0">
-                                <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-neutral-500">
-                                  Account
-                                </span>
-                                <span className="block truncate text-sm font-semibold text-neutral-900">
-                                  {authEmail}
-                                </span>
+                              <span className="truncate">
+                                {authEmail}
                               </span>
                             </span>
                           ) : (
@@ -913,21 +875,27 @@ export function HeroLanding(props: HeroLandingProps) {
       <div className="relative z-10 px-6 pt-4 overflow-hidden min-h-screen flex flex-col justify-center">
         <div className="mx-auto w-full max-w-6xl pt-24 sm:pt-32">
           {announcementBanner && (
-            <div className="hidden sm:mb-6 sm:flex sm:justify-center">
+            <div className="hidden sm:mb-8 sm:flex sm:justify-center sm:items-center">
               <div
                 className={[
-                  "relative rounded-full px-3 py-1.5 text-xs sm:text-sm/6",
-                  "ring-1",
+                  "relative inline-flex items-center justify-center rounded-full px-4 py-2 text-xs sm:text-sm/6",
+                  "font-sans-explicit",
                   hasImageBackground
-                    ? "text-white/85 ring-white/20 bg-black/25 hover:bg-black/30"
-                    : "text-muted-foreground ring-border bg-background/60 hover:bg-background/80",
+                    ? "text-white/90 bg-black/30 backdrop-blur-md hover:bg-black/40"
+                    : "text-muted-foreground bg-background/60 hover:bg-background/80",
+                  hasImageBackground
+                    ? "border border-white/30"
+                    : "border border-black/15",
                   "transition-colors",
                 ].join(" ")}
               >
                 {announcementBanner.text}{" "}
                 <a
                   href={announcementBanner.linkHref}
-                  className={hasImageBackground ? "font-semibold text-white hover:text-white/90" : "font-semibold text-primary hover:text-primary/80"}
+                  className={[
+                    "ml-1 font-semibold tracking-[0.03em]",
+                    hasImageBackground ? "text-white hover:text-white/90" : "text-primary hover:text-primary/80",
+                  ].join(" ")}
                 >
                   <span aria-hidden="true" className="absolute inset-0" />
                   {announcementBanner.linkText}{" "}
@@ -944,31 +912,33 @@ export function HeroLanding(props: HeroLandingProps) {
                 className="pointer-events-none absolute inset-x-0 top-0 -z-10 mx-auto h-[520px] max-w-5xl rounded-[2rem] sm:h-[560px] [background:radial-gradient(60%_60%_at_50%_35%,rgba(0,0,0,0.35)_0%,rgba(0,0,0,0.20)_35%,rgba(0,0,0,0.10)_60%,rgba(0,0,0,0.0)_100%)]"
               />
             )}
-            <h1
+            <motion.h1
               className={[
                 getTitleSizeClasses(),
-                "font-bold tracking-[-0.02em] text-balance",
+                "hero-heading font-bold",
                 hasImageBackground ? "drop-shadow-[0_10px_32px_rgba(0,0,0,0.35)]" : "",
                 titleTextClass,
               ].join(" ")}
-              aria-label={title}
+              aria-label={Array.isArray(title) ? title.join(" ") : title}
+              initial={prefersReducedMotion ? { opacity: 1 } : { opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+              animate={prefersReducedMotion ? { opacity: 1 } : { opacity: 1, scale: 1, filter: "blur(0px)" }}
+              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
             >
-              {typedTitle === null ? title : typedTitle}
-              {!titleTypingDone && !prefersReducedMotion && typedTitle !== null ? (
-                <span
-                  className={[
-                    "ml-0.5 inline-block w-[2px] animate-pulse align-baseline sm:w-[3px]",
-                    hasImageBackground ? "bg-white/90" : "bg-foreground/80",
-                  ].join(" ")}
-                  style={{ height: "0.85em" }}
-                  aria-hidden
-                />
-              ) : null}
-            </h1>
+              {Array.isArray(title) ? (
+                title.map((line, i) => (
+                  <span key={i} className="block">
+                    {line}
+                  </span>
+                ))
+              ) : (
+                title
+              )}
+            </motion.h1>
             <p
               className={[
-                "mt-5 sm:mt-7 mx-auto max-w-2xl",
-                "text-base sm:text-lg font-semibold text-pretty sm:text-xl/8 lg:text-2xl/9 xl:text-2xl/9",
+                "mt-5 sm:mt-7 mx-auto max-w-2xl font-sans-explicit",
+                "text-base sm:text-lg font-medium text-pretty sm:text-lg/8 lg:text-xl/9 xl:text-2xl/9",
+                "tracking-[0.01em]",
                 hasImageBackground ? "drop-shadow-[0_8px_22px_rgba(0,0,0,0.35)]" : "",
                 descTextClass,
               ].join(" ")}
@@ -977,7 +947,7 @@ export function HeroLanding(props: HeroLandingProps) {
             </p>
 
             {callToActions && callToActions.length > 0 && (
-              <div className="mt-8 sm:mt-10 flex w-full flex-col items-stretch justify-center gap-3 sm:w-auto sm:flex-row sm:items-center sm:gap-x-6 sm:gap-y-4">
+              <div className="mt-8 sm:mt-10 flex w-full flex-col items-center justify-center gap-4 sm:w-auto sm:flex-row sm:items-center sm:gap-x-8">
                 {callToActions.map((cta, index) => renderCallToAction(cta, index))}
               </div>
             )}
@@ -989,3 +959,80 @@ export function HeroLanding(props: HeroLandingProps) {
 }
 
 export type { HeroLandingProps, NavigationItem, AnnouncementBanner, CallToAction };
+
+/** ───────────────────────────────────────────────────────────────────────────
+ * HeroSearchBar
+ * Collapsed = single Search icon; click expands a minimal bottom-border input.
+ * Icon is identical in size to ShoppingBag / ShoppingCart for visual balance.
+ * ──────────────────────────────────────────────────────────────────────────── */
+function HeroSearchBar({
+  hasImageBackground,
+  reduceMotion,
+}: {
+  hasImageBackground: boolean;
+  reduceMotion: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (open) {
+      const t = setTimeout(() => inputRef.current?.focus(), 80);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  const iconClass = "h-[18px] w-[18px] sm:h-5 sm:w-5 lg:h-[22px] lg:w-[22px]";
+
+  return (
+    <div className="hidden lg:flex lg:items-center">
+      <div className="relative flex items-center justify-end">
+        <form
+          action="/"
+          method="get"
+          className={[
+            "flex items-center overflow-hidden transition-all duration-300 ease-out",
+            open ? "w-64 opacity-100" : "w-0 opacity-0 pointer-events-none",
+            "mr-1",
+          ].join(" ")}
+          onSubmit={() => setOpen(false)}
+        >
+          <div
+            className="flex w-full items-center gap-2 border-b border-zinc-400 pb-0.5"
+          >
+            <input
+              ref={inputRef}
+              type="search"
+              name="q"
+              placeholder="Search sarees, blouses…"
+              autoComplete="off"
+              className="min-w-0 flex-1 bg-transparent text-xs text-zinc-800 outline-none lg:text-sm font-sans-explicit placeholder:font-light placeholder:text-zinc-400"
+            />
+          </div>
+        </form>
+
+        <button
+          type="button"
+          aria-label={open ? "Close search" : "Open search"}
+          onClick={() => setOpen((v) => !v)}
+          className="inline-flex items-center justify-center transition-colors text-zinc-800 hover:text-zinc-900"
+        >
+          {open ? (
+            <X className={iconClass} strokeWidth={2.5} aria-hidden="true" />
+          ) : (
+            <Search className={iconClass} strokeWidth={2.5} aria-hidden="true" />
+          )}
+        </button>
+      </div>
+    </div>
+  );
+}
