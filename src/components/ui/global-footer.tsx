@@ -27,9 +27,9 @@ export function GlobalFooter() {
     <Footer
       contactInfo={{
         title: "CONTACT INFORMATION",
-        address: "Sales Office : 33/34, Ground Floor, Avadh Textile Market, Ring Road, Surat - 395010.",
-        email: "blouseline7773@gmail.com",
-        phone: "+91 8511307407",
+        address: "Sri Sai Anjaneya Residency- 1st Floor , Sri Sai Balaji Enclave Main Road, Mallampet, Hyderabad, Telangana 500090",
+        email: "info@sawbhagya.com",
+        phone: "+91 8978237992",
       }}
       columns={[
         {
