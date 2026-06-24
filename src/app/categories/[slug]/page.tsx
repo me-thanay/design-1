@@ -46,28 +46,28 @@ function heroImagesForCategory(category: ClothingCategory) {
   // Kurtis heroes use landscape shots first — portrait full-body photos crop badly on wide viewports.
   if (category === "sarees") {
     return [
-      "/IMAGES/Saree/1.png",
-      "/IMAGES/Saree/2.png",
-      "/IMAGES/Saree/3.png",
-      "/IMAGES/Saree/4.png"
+      "/IMAGES/Saree/1-clean.png",
+      "/IMAGES/Saree/2-clean.png",
+      "/IMAGES/Saree/3-clean.png",
+      "/IMAGES/Saree/4-clean.png"
     ].map(encodePublicSrc).filter(Boolean) as string[];
   }
 
   if (category === "kurtis") {
     return [
-      "/IMAGES/Kurthi/1.png",
-      "/IMAGES/Kurthi/2.png",
-      "/IMAGES/Kurthi/3.png",
-      "/IMAGES/Kurthi/4.png"
+      "/IMAGES/Kurthi/1-clean.png",
+      "/IMAGES/Kurthi/2-clean.png",
+      "/IMAGES/Kurthi/3-clean.png",
+      "/IMAGES/Kurthi/4-clean.png"
     ].map(encodePublicSrc).filter(Boolean) as string[];
   }
 
   if (category === "blouses") {
     return [
-      "/IMAGES/Blouse/1.png",
-      "/IMAGES/Blouse/2.png",
-      "/IMAGES/Blouse/3.png",
-      "/IMAGES/Blouse/4.png"
+      "/IMAGES/Blouse/1-clean.png",
+      "/IMAGES/Blouse/2-clean.png",
+      "/IMAGES/Blouse/3-clean.png",
+      "/IMAGES/Blouse/4-clean.png"
     ].map(encodePublicSrc).filter(Boolean) as string[];
   }
 

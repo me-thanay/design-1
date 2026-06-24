@@ -62,7 +62,7 @@ export function Feature1({
   return (
     <section
       id={id}
-      className={cn("surface-texture scroll-mt-24 border-y border-black/5 py-16 sm:py-20 lg:py-24", className)}
+      className={cn("surface-texture scroll-mt-8 border-y border-black/5 py-16 sm:py-20 lg:py-24", className)}
       aria-labelledby={`${id}-heading`}
     >
       <div className="container mx-auto max-w-6xl px-4">

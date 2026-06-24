@@ -100,7 +100,7 @@ export function FloatingHeader() {
   return (
     <header className="w-full">
       <motion.nav
-        className="w-full grid min-h-0 grid-cols-[40px_1fr_40px] items-center gap-2 overflow-visible bg-white/95 backdrop-blur px-2 py-1 text-xs font-medium text-zinc-900 shadow-sm border-b border-zinc-200 sm:px-4 sm:py-1.5 lg:flex lg:justify-between lg:gap-6 lg:px-8 lg:text-sm"
+        className="mx-auto mt-2 grid max-w-6xl grid-cols-[40px_1fr_40px] items-center gap-2 overflow-visible rounded-full bg-white px-2 py-1 text-xs font-medium text-zinc-900 shadow-sm ring-1 ring-zinc-200 md:px-3 md:py-1.5 lg:flex lg:justify-between lg:gap-4 lg:text-sm"
         initial={reduceMotion ? false : { opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}

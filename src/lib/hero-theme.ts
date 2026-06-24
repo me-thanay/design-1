@@ -3,10 +3,10 @@ import { SITE_BRAND_NAME, SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 import { PRIMARY_NAV } from "@/lib/navigation";
 
 export const HERO_THEME_BACKGROUND_IMAGES = [
-  "/HOME/1.png",
-  "/HOME/2.png",
-  "/HOME/3.png",
-  "/HOME/4.png",
+  "/HOME/1-clean.png",
+  "/HOME/2-clean.png",
+  "/HOME/3-clean.png",
+  "/HOME/4-clean.png",
 ];
 
 export const HERO_THEME_IMAGE_POSITIONS = [

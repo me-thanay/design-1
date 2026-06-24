@@ -37,13 +37,12 @@ export function GlobalFooter() {
           links: [
             { label: "About Us", href: "/#about" },
             { label: "Contact Us", href: "/contact" },
-            { label: "Blog", href: "/blog" },
           ],
         },
         {
           title: "POLICY",
           links: [
-            { label: "Privacy Policy", href: "#" },
+            { label: "Privacy Policy", href: "/privacy" },
             { label: "Shipping & Delivery", href: "/shipping-returns" },
             { label: "Return Policy", href: "/shipping-returns" },
             { label: "Terms & Conditions", href: "/terms" },

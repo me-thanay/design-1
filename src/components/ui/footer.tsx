@@ -53,7 +53,7 @@ export function Footer({
                 </p>
                 <p>
                   <span>Contact No : </span>
-                  <a href={`tel:${contactInfo.phone.replace(/[^0-9+]/g, '')}`} className="transition-colors hover:text-neutral-900 hover:underline underline-offset-4">
+                  <a href={`https://wa.me/${contactInfo.phone.replace(/[^0-9]/g, '')}`} target="_blank" rel="noopener noreferrer" className="transition-colors hover:text-neutral-900 hover:underline underline-offset-4">
                     {contactInfo.phone}
                   </a>
                 </p>

@@ -374,8 +374,8 @@ export function HeroLanding(props: HeroLandingProps) {
     ? "text-zinc-700 hover:text-zinc-900 transition-colors"
     : "text-foreground hover:text-muted-foreground transition-colors";
   const iconTextClass = hasImageBackground
-    ? "text-zinc-700 hover:text-zinc-900 transition-colors"
-    : "text-muted-foreground hover:text-foreground transition-colors";
+    ? "inline-flex items-center justify-center text-zinc-700 hover:text-zinc-900 transition-colors"
+    : "inline-flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors";
   const navIconClassName = "h-[18px] w-[18px] sm:h-5 sm:w-5 lg:h-[22px] lg:w-[22px]";
   const isShopItem = (item: NavigationItem) => item.name.toLowerCase() === "shop";
   const isCartItem = (item: NavigationItem) => item.name.toLowerCase() === "cart";
@@ -605,7 +605,7 @@ export function HeroLanding(props: HeroLandingProps) {
                       <div className={`absolute left-0 top-full z-50 pt-2 ${openDesktopDropdown === item.name ? "" : "pointer-events-none"}`}>
                         <div
                           className={[
-                            "pointer-events-auto w-[34rem] overflow-hidden rounded-2xl border shadow-xl",
+                            "w-[34rem] overflow-hidden rounded-2xl border shadow-xl",
                             openDesktopDropdown === item.name
                               ? "opacity-100 translate-y-0"
                               : "opacity-0 translate-y-1",
@@ -691,7 +691,7 @@ export function HeroLanding(props: HeroLandingProps) {
             <div className="hidden lg:flex lg:flex-1 lg:items-center lg:justify-end lg:gap-4 xl:gap-6">
               <HeroSearchBar hasImageBackground={hasImageBackground} reduceMotion={Boolean(reduceMotionFramer)} />
               {(navigation?.some(isShopItem) || navigation?.some(isCartItem) || (loginText && loginHref)) ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-4 xl:gap-6">
                   {navigation?.find(isShopItem) ? (
                     <motion.a
                       href={navigation.find(isShopItem)!.href}
@@ -720,7 +720,7 @@ export function HeroLanding(props: HeroLandingProps) {
                     <a
                       href={authHref}
                       className={[
-                        "inline-flex items-center gap-2 transition-colors",
+                        "inline-flex items-center gap-2 transition-colors whitespace-nowrap",
                         authReady && authEmail ? "rounded-full bg-white/70 px-2 py-1.5 ring-1 ring-black/10 hover:bg-white" : "",
                         `text-[11px] font-bold tracking-[0.12em] uppercase lg:text-xs xl:text-sm ${navTextClass}`,
                       ].join(" ")}
