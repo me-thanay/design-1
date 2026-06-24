@@ -122,16 +122,16 @@ export function HomeTestimonialsMarquee() {
               "linear-gradient(to bottom, transparent, black 12%, black 88%, transparent)",
           }}
         >
-          <TestimonialsColumn testimonials={firstColumn} duration={18} />
+          <TestimonialsColumn testimonials={firstColumn} duration={50} />
           <TestimonialsColumn
             testimonials={secondColumn}
             className="hidden md:block"
-            duration={22}
+            duration={60}
           />
           <TestimonialsColumn
             testimonials={thirdColumn}
             className="hidden lg:block"
-            duration={20}
+            duration={55}
           />
         </div>
       </div>

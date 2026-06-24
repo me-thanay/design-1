@@ -25,7 +25,7 @@ function formatINR(amount: number) {
 
 export function BestSellersMotionSlider({
   items,
-  durationSeconds = 22,
+  durationSeconds = 60,
   className,
 }: {
   items: BestSellersMotionItem[];

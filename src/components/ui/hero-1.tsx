@@ -390,7 +390,7 @@ export function HeroLanding(props: HeroLandingProps) {
         return "text-2xl sm:text-4xl md:text-6xl lg:text-7xl";
       case "large":
       default:
-        return "text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl";
+        return "text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl";
     }
   };
 
@@ -877,7 +877,7 @@ export function HeroLanding(props: HeroLandingProps) {
       <div className="relative z-10 px-6 pt-4 overflow-hidden min-h-screen flex flex-col justify-center">
         <div className="mx-auto w-full max-w-6xl pt-24 sm:pt-32">
           {announcementBanner && (
-            <div className="hidden sm:mb-8 sm:flex sm:justify-center sm:items-center">
+            <div className="mb-6 flex justify-center items-center sm:mb-8">
               <div
                 className={[
                   "relative inline-flex items-center justify-center rounded-full px-4 py-2 text-xs sm:text-sm/6",
