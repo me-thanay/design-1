@@ -1,16 +1,17 @@
-const COORD_CATEGORY_DIR = "/coor_catogary";
+const COORD_CATEGORY_DIR = "/IMAGES/CoordSet";
 
 const COORD_IMAGE_FILES = {
-  casual: "WhatsApp Image 2026-06-05 at 2.39.35 PM.jpeg",
-  party: "WhatsApp Image 2026-06-05 at 2.39.35 PM (1).jpeg",
-  featured: "WhatsApp Image 2026-06-05 at 2.39.35 PM (2).jpeg",
+  casual: "1.png",
+  party: "2.png",
+  featured: "3.jpeg",
+  extra: "4.png",
 } as const;
 
 export function coordCategoryImage(file: string) {
   return `${COORD_CATEGORY_DIR}/${encodeURIComponent(file)}`;
 }
 
-/** Curated coord-set imagery from `public/coor_catogary/`. */
+/** Curated coord-set imagery from `public/IMAGES/CoordSet/`. */
 export const COORD_CATEGORY_MEDIA = {
   casual: coordCategoryImage(COORD_IMAGE_FILES.casual),
   party: coordCategoryImage(COORD_IMAGE_FILES.party),
@@ -19,5 +20,6 @@ export const COORD_CATEGORY_MEDIA = {
     coordCategoryImage(COORD_IMAGE_FILES.featured),
     coordCategoryImage(COORD_IMAGE_FILES.casual),
     coordCategoryImage(COORD_IMAGE_FILES.party),
+    coordCategoryImage(COORD_IMAGE_FILES.extra),
   ],
 } as const;

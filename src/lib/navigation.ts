@@ -54,10 +54,10 @@ export const PRIMARY_NAV: NavItem[] = [
   {
     name: "COORD SET",
     href: "/categories/coord_sets",
-    featuredImageSrc: COORD_CATEGORY_MEDIA.featured,
+    featuredImageSrc: "/IMAGES/CoordSet/1.png",
     items: [
-      { name: "Casual wear", href: "/categories/coord_sets?q=casual", imageSrc: COORD_CATEGORY_MEDIA.casual },
-      { name: "Party wear", href: "/categories/coord_sets?q=party", imageSrc: COORD_CATEGORY_MEDIA.party },
+      { name: "Casual wear", href: "/categories/coord_sets?q=casual", imageSrc: "/IMAGES/CoordSet/1.png" },
+      { name: "Party wear", href: "/categories/coord_sets?q=party", imageSrc: "/IMAGES/CoordSet/2.png" },
     ],
   },
   { name: "Shop", href: "/#shop" },

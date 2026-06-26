@@ -880,7 +880,7 @@ export function HeroLanding(props: HeroLandingProps) {
             <div className="mb-6 flex justify-center items-center sm:mb-8">
               <div
                 className={[
-                  "relative inline-flex items-center justify-center rounded-full px-4 py-2 text-xs sm:text-sm/6",
+                  "relative inline-block text-center rounded-2xl sm:rounded-full px-4 py-2 text-xs sm:text-sm/6",
                   "font-sans-explicit",
                   hasImageBackground
                     ? "text-white/90 bg-black/30 backdrop-blur-md hover:bg-black/40"

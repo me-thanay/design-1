@@ -61,11 +61,10 @@ export function Feature1({
 
   return (
     <section
-      id={id}
-      className={cn("surface-texture scroll-mt-8 border-y border-black/5 py-16 sm:py-20 lg:py-24", className)}
+      className={cn("surface-texture border-y border-black/5 py-16 sm:py-20 lg:py-24", className)}
       aria-labelledby={`${id}-heading`}
     >
-      <div className="container mx-auto max-w-6xl px-4">
+      <div id={id} className="container mx-auto max-w-6xl px-4">
         <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
           <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
             {eyebrow ? (

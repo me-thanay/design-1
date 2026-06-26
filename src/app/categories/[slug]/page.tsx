@@ -73,10 +73,10 @@ function heroImagesForCategory(category: ClothingCategory) {
 
   if (category === "gowns") {
     return [
-      "/IMAGES/Gown/1.png",
-      "/IMAGES/Gown/2.png",
-      "/IMAGES/Gown/3.png",
-      "/IMAGES/Gown/4.png"
+      "/IMAGES/Gown/1-clean.png",
+      "/IMAGES/Gown/2-clean.png",
+      "/IMAGES/Gown/3-clean.png",
+      "/IMAGES/Gown/4-clean.png"
     ].map(encodePublicSrc).filter(Boolean) as string[];
   }
 
@@ -84,7 +84,7 @@ function heroImagesForCategory(category: ClothingCategory) {
     return [
       "/IMAGES/CoordSet/1.png",
       "/IMAGES/CoordSet/2.png",
-      "/IMAGES/CoordSet/3.png",
+      "/IMAGES/CoordSet/3.jpeg",
       "/IMAGES/CoordSet/4.png"
     ].map(encodePublicSrc).filter(Boolean) as string[];
   }

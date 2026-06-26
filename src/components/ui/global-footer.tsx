@@ -46,7 +46,6 @@ export function GlobalFooter() {
             { label: "Shipping & Delivery", href: "/shipping-returns" },
             { label: "Return Policy", href: "/shipping-returns" },
             { label: "Terms & Conditions", href: "/terms" },
-            { label: "FAQ", href: "#" },
           ],
         },
         {
