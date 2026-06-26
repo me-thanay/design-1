@@ -209,9 +209,9 @@ export default async function Home({ searchParams }: HomeProps) {
         </div>
       </section>
 
-      <ScrollReveal y={36}>
+      {/* <ScrollReveal y={36}>
         <Slideshow className="surface-texture pb-16 pt-2" />
-      </ScrollReveal>
+      </ScrollReveal> */}
 
       <HomeTestimonialsMarquee />
 

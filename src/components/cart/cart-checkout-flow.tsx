@@ -518,7 +518,7 @@ export function CartCheckoutFlow() {
                     <Input
                       id="cart-phone"
                       type="tel"
-                      placeholder="+91 99164 77992"
+                      placeholder="+91 XXXXX XXXXX"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       className="rounded-xl"

@@ -40,7 +40,11 @@ export function MoodCategoryGrid({ items }: { items: MoodCategoryItem[] }) {
               : { y: -6, scale: 1.02, transition: { type: "spring", stiffness: 420, damping: 22 } }
           }
           whileTap={reduceMotion ? undefined : { scale: 0.98 }}
-          className="group overflow-hidden rounded-2xl border border-black/10 bg-white/50 shadow-sm ring-1 ring-black/[0.03] transition-shadow duration-300 hover:bg-white hover:shadow-lg hover:ring-black/15"
+          className={`group overflow-hidden rounded-2xl border border-black/10 bg-white/50 shadow-sm ring-1 ring-black/[0.03] transition-shadow duration-300 hover:bg-white hover:shadow-lg hover:ring-black/15 ${
+            i === 4
+              ? "col-span-2 mx-auto w-[calc(50%-0.5rem)] sm:col-span-1 sm:mx-0 sm:w-auto"
+              : ""
+          }`}
         >
           <div className="relative bg-neutral-50">
             <img
