@@ -66,10 +66,21 @@ export function CategorySubcategoryPills({
 }) {
   const subs = CLOTHING_SUBCATEGORIES[category];
 
+  const handlePillClick = () => {
+    setTimeout(() => {
+      const el = document.getElementById("best-sellers");
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 80);
+  };
+
   return (
     <nav aria-label="Jump to subcategory" className={cn("flex flex-wrap gap-2", className)}>
       <Link
         href="?"
+        scroll={false}
+        onClick={handlePillClick}
         className={cn(
           "rounded-full border px-3.5 py-1.5 text-xs font-medium shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm",
           !selectedSubcategory
@@ -84,6 +95,8 @@ export function CategorySubcategoryPills({
         <Link
           key={sub}
           href={`?sub=${encodeURIComponent(sub)}`}
+          scroll={false}
+          onClick={handlePillClick}
           className={cn(
             "rounded-full border px-3.5 py-1.5 text-xs font-medium shadow-[0_4px_14px_-6px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:shadow-md sm:px-4 sm:py-2 sm:text-sm",
             selectedSubcategory?.toLowerCase() === sub.toLowerCase()

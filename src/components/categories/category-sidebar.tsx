@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import * as React from "react";
+import { SlidersHorizontal, X } from "lucide-react";
 import { CLOTHING_SUBCATEGORIES, normalizeProductRow, type ClothingCategory, type Product } from "@/lib/products";
 import { PRIMARY_NAV } from "@/lib/navigation";
 import { subAnchorId } from "@/components/categories/category-subcategory-shops";
@@ -25,14 +26,14 @@ function uniqSorted(values: string[]) {
   return out.sort((a, b) => a.localeCompare(b));
 }
 
-function buildHref(basePath: string, params: Record<string, string | null | undefined>, hash?: string) {
+function buildHref(basePath: string, params: Record<string, string | null | undefined>) {
   const sp = new URLSearchParams();
   Object.entries(params).forEach(([k, v]) => {
     const val = (v ?? "").trim();
     if (val) sp.set(k, val);
   });
   const qs = sp.toString();
-  return `${basePath}${qs ? `?${qs}` : ""}${hash ? `#${hash}` : ""}`;
+  return `${basePath}${qs ? `?${qs}` : ""}`;
 }
 
 type CategorySidebarProps = {
@@ -42,6 +43,7 @@ type CategorySidebarProps = {
 
 export function CategorySidebar({ category, className }: CategorySidebarProps) {
   const [open, setOpen] = React.useState(false);
+  const modalContentRef = React.useRef<HTMLDivElement>(null);
   const subs = CLOTHING_SUBCATEGORIES[category] ?? [];
   const basePath = `/categories/${category}`;
   const searchParams = useSearchParams();
@@ -53,6 +55,12 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
     colors: [],
     sizes: [],
   });
+
+  React.useEffect(() => {
+    if (open && modalContentRef.current) {
+      modalContentRef.current.scrollTop = 0;
+    }
+  }, [open]);
 
   React.useEffect(() => {
     const load = async () => {
@@ -105,32 +113,42 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-left text-sm font-semibold text-neutral-900 shadow-sm"
+          className="flex items-center justify-between w-full rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-semibold text-neutral-900 shadow-sm hover:bg-neutral-50 transition active:scale-[0.99]"
         >
-          Filters & categories
+          <span className="flex items-center gap-2.5">
+            <SlidersHorizontal className="h-4 w-4 shrink-0 text-neutral-700" />
+            <span>Filters & categories</span>
+          </span>
+          <span className="text-xs font-medium text-neutral-500 bg-neutral-100 px-2 py-0.5 rounded-full">
+            Browse
+          </span>
         </button>
       </div>
 
       {open ? (
-        <div className="fixed inset-0 z-[60] lg:hidden">
+        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 lg:hidden animate-in fade-in duration-200">
           <button
             type="button"
-            aria-label="Close sidebar"
-            className="absolute inset-0 bg-black/40"
+            aria-label="Close modal"
+            className="absolute inset-0 cursor-default"
             onClick={() => setOpen(false)}
           />
-          <div className="absolute inset-y-0 left-0 w-[86vw] max-w-sm bg-white shadow-2xl">
-            <div className="flex items-center justify-between border-b border-black/10 px-4 py-4">
-              <div className="text-sm font-semibold text-neutral-900">Browse</div>
+          <div className="relative w-full sm:max-w-lg max-h-[85vh] sm:max-h-[80vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300 z-10">
+            <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4 shrink-0 bg-white">
+              <div className="flex items-center gap-2 text-base font-bold text-neutral-900">
+                <SlidersHorizontal className="h-4 w-4 text-neutral-700" />
+                <span>Filters & categories</span>
+              </div>
               <button
                 type="button"
                 onClick={() => setOpen(false)}
-                className="rounded-full border border-black/10 px-3 py-1.5 text-xs font-semibold text-neutral-800"
+                className="rounded-full bg-neutral-100 p-2 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-900 transition"
+                aria-label="Close"
               >
-                Close
+                <X className="h-4 w-4" />
               </button>
             </div>
-            <div className="h-full overflow-y-auto p-4">
+            <div ref={modalContentRef} className="flex-1 overflow-y-auto p-5 space-y-6">
               <SidebarInner
                 category={category}
                 subs={subs}
@@ -211,6 +229,16 @@ function SidebarInner({
     };
   });
 
+  const handleFilterClick = (targetId: string = "best-sellers") => {
+    if (onNavigate) onNavigate();
+    setTimeout(() => {
+      const el = document.getElementById(targetId);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 80);
+  };
+
   return (
     <div className="space-y-6">
       <div>
@@ -220,15 +248,17 @@ function SidebarInner({
         <div className="mt-3 grid gap-2">
           <Link
             href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize })}
-            onClick={onNavigate}
-            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+            scroll={false}
+            onClick={() => handleFilterClick("best-sellers")}
+            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition"
           >
             Best sellers
           </Link>
           <Link
             href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize })}
-            onClick={onNavigate}
-            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+            scroll={false}
+            onClick={() => handleFilterClick("all-products")}
+            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition"
           >
             All products
           </Link>
@@ -247,7 +277,8 @@ function SidebarInner({
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Link
                     href={buildHref(basePath, { sub: selectedSub, color: null, size: selectedSize })}
-                    onClick={onNavigate}
+                    scroll={false}
+                    onClick={() => handleFilterClick("best-sellers")}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                       !selectedColor ? "border-neutral-900 bg-neutral-900 text-white" : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
@@ -259,7 +290,8 @@ function SidebarInner({
                     <Link
                       key={c}
                       href={buildHref(basePath, { sub: selectedSub, color: c, size: selectedSize })}
-                      onClick={onNavigate}
+                      scroll={false}
+                      onClick={() => handleFilterClick("best-sellers")}
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                         selectedColor?.toLowerCase() === c.toLowerCase()
@@ -280,7 +312,8 @@ function SidebarInner({
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Link
                     href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: null })}
-                    onClick={onNavigate}
+                    scroll={false}
+                    onClick={() => handleFilterClick("best-sellers")}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                       !selectedSize ? "border-neutral-900 bg-neutral-900 text-white" : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
@@ -292,7 +325,8 @@ function SidebarInner({
                     <Link
                       key={s}
                       href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: s })}
-                      onClick={onNavigate}
+                      scroll={false}
+                      onClick={() => handleFilterClick("best-sellers")}
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                         selectedSize?.toLowerCase() === s.toLowerCase()
@@ -319,8 +353,9 @@ function SidebarInner({
             <Link
               key={s.name}
               href={s.href}
-              onClick={onNavigate}
-              className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
+              scroll={false}
+              onClick={() => handleFilterClick("best-sellers")}
+              className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition"
             >
               <span
                 className={cn(
@@ -355,4 +390,3 @@ function SidebarInner({
     </div>
   );
 }
-
