@@ -25,6 +25,16 @@
   }
 }
 
+@keyframes skeleton-shimmer {
+  0% { background-position: -600px 0; }
+  100% { background-position: 600px 0; }
+}
+
+@keyframes page-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -255,4 +265,33 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Skeleton shimmer for loading states */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 1200px 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Page transition: applied to the main content wrapper */
+.page-fade-in {
+  animation: page-fade-in 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Smooth momentum scrolling on iOS for all overflow containers */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Reduce layout jank on product cards */
+article {
+  contain: layout style;
+}
+
+/* GPU compositing hint for animated/hovered cards */
+.group:hover,
+[style*="opacity"],
+[style*="transform"] {
+  will-change: transform, opacity;
 }

@@ -119,10 +119,12 @@ export function ProductsGrid({
 }: ProductsGridProps) {
   const [items, setItems] = React.useState<Product[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [visible, setVisible] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
   const [activeProduct, setActiveProduct] = React.useState<Product | null>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
+  const fadeTimer = React.useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const scrollLeft = () => {
     if (scrollRef.current) {
@@ -210,15 +212,23 @@ export function ProductsGrid({
         }
 
         setItems(normalized);
+        // Slight defer so CSS transition has something to transition FROM
+        if (fadeTimer.current) clearTimeout(fadeTimer.current);
+        fadeTimer.current = setTimeout(() => setVisible(true), 30);
       } catch (e: any) {
         setError(e?.message ?? "Could not load products");
         setItems([]);
+        setVisible(true);
       } finally {
         setLoading(false);
       }
     };
 
+    setVisible(false);
     load();
+    return () => {
+      if (fadeTimer.current) clearTimeout(fadeTimer.current);
+    };
   }, [category, limit, filterQuery, subcategory, sortMode, color, size]);
 
   const openDetails = (p: Product) => {
@@ -242,12 +252,36 @@ export function ProductsGrid({
       )}
 
       {loading ? (
-        <div className="rounded-3xl border border-black/10 bg-white/60 p-6 text-sm text-neutral-600">
-          Loading products…
+        // Skeleton cards — same shape as real cards, shimmer animation
+        <div className={variant === "row" ? "flex gap-4 overflow-hidden px-4" : "grid gap-4 sm:grid-cols-2 lg:grid-cols-3"}>
+          {Array.from({ length: variant === "row" ? 4 : 6 }).map((_, i) => (
+            <div
+              key={i}
+              className={[
+                "overflow-hidden rounded-3xl border border-black/[0.06] bg-white/60",
+                variant === "row" ? "w-[260px] flex-shrink-0" : "",
+              ].join(" ")}
+            >
+              <div className="skeleton-shimmer h-56 w-full" />
+              <div className="space-y-2 p-4">
+                <div className="skeleton-shimmer h-4 w-2/3 rounded-full" />
+                <div className="skeleton-shimmer h-3 w-1/3 rounded-full mt-1" />
+                <div className="skeleton-shimmer h-9 w-full rounded-full mt-2" />
+              </div>
+            </div>
+          ))}
         </div>
-      ) : error ? (
+      ) : (
+        <div
+          style={{
+            opacity: visible ? 1 : 0,
+            transform: visible ? "translateY(0)" : "translateY(8px)",
+            transition: "opacity 0.3s ease, transform 0.3s ease",
+          }}
+        >
+        {error ? (
         <div className="rounded-3xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
-          <p className="font-semibold">Products couldn’t load.</p>
+          <p className="font-semibold">Products couldn't load.</p>
           <p className="mt-1">{error}</p>
           <p className="mt-3 text-xs text-red-700/80">
             If this happens only on production, your Supabase table may have RLS
@@ -483,6 +517,8 @@ export function ProductsGrid({
               </article>
             );
           })}
+        </div>
+      )}
         </div>
       )}
 

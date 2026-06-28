@@ -50,7 +50,9 @@ export default function RootLayout({
       className={`${playfair.variable} ${montserrat.variable} h-full antialiased`}
     >
       <body className="min-h-dvh surface-texture font-sans-explicit">
-        <CartProviderClient>{children}</CartProviderClient>
+        <CartProviderClient>
+          <div className="page-fade-in">{children}</div>
+        </CartProviderClient>
         <GlobalFooter />
         <Toaster richColors position="top-center" closeButton />
       </body>
