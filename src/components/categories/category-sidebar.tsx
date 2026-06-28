@@ -128,13 +128,15 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
 
       <AnimatePresence>
         {open && (
-          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 lg:hidden">
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 lg:hidden"
+          >
+            <div
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
               onClick={() => setOpen(false)}
             />
             <motion.div
@@ -172,7 +174,7 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
                 />
               </div>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
 
