@@ -3,6 +3,7 @@
 import Link from "next/link";
 import * as React from "react";
 import { SlidersHorizontal, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
 import { CLOTHING_SUBCATEGORIES, normalizeProductRow, type ClothingCategory, type Product } from "@/lib/products";
 import { PRIMARY_NAV } from "@/lib/navigation";
 import { subAnchorId } from "@/components/categories/category-subcategory-shops";
@@ -125,45 +126,55 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
         </button>
       </div>
 
-      {open ? (
-        <div className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4 lg:hidden animate-in fade-in duration-200">
-          <button
-            type="button"
-            aria-label="Close modal"
-            className="absolute inset-0 cursor-default"
-            onClick={() => setOpen(false)}
-          />
-          <div className="relative w-full sm:max-w-lg max-h-[85vh] sm:max-h-[80vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom duration-300 z-10">
-            <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4 shrink-0 bg-white">
-              <div className="flex items-center gap-2 text-base font-bold text-neutral-900">
-                <SlidersHorizontal className="h-4 w-4 text-neutral-700" />
-                <span>Filters & categories</span>
+      <AnimatePresence>
+        {open && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 lg:hidden">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: 40, scale: 0.96 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: 40, scale: 0.96 }}
+              transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
+              className="relative w-full sm:max-w-lg max-h-[85vh] sm:max-h-[80vh] bg-white rounded-t-3xl sm:rounded-3xl shadow-2xl flex flex-col overflow-hidden z-10"
+            >
+              <div className="flex items-center justify-between border-b border-neutral-100 px-5 py-4 shrink-0 bg-white">
+                <div className="flex items-center gap-2 text-base font-bold text-neutral-900">
+                  <SlidersHorizontal className="h-4 w-4 text-neutral-700" />
+                  <span>Filters & categories</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="rounded-full bg-neutral-100 p-2 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-900 transition"
+                  aria-label="Close"
+                >
+                  <X className="h-4 w-4" />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setOpen(false)}
-                className="rounded-full bg-neutral-100 p-2 text-neutral-600 hover:bg-neutral-200 hover:text-neutral-900 transition"
-                aria-label="Close"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            </div>
-            <div ref={modalContentRef} className="flex-1 overflow-y-auto p-5 space-y-6">
-              <SidebarInner
-                category={category}
-                subs={subs}
-                categoryLinks={categoryLinks}
-                basePath={basePath}
-                selectedSub={selectedSub}
-                selectedColor={selectedColor}
-                selectedSize={selectedSize}
-                variantFacets={variantFacets}
-                onNavigate={() => setOpen(false)}
-              />
-            </div>
+              <div ref={modalContentRef} className="flex-1 overflow-y-auto p-5 space-y-6">
+                <SidebarInner
+                  category={category}
+                  subs={subs}
+                  categoryLinks={categoryLinks}
+                  basePath={basePath}
+                  selectedSub={selectedSub}
+                  selectedColor={selectedColor}
+                  selectedSize={selectedSize}
+                  variantFacets={variantFacets}
+                  onNavigate={() => setOpen(false)}
+                />
+              </div>
+            </motion.div>
           </div>
-        </div>
-      ) : null}
+        )}
+      </AnimatePresence>
 
       <aside
         className={[
