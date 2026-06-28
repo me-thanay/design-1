@@ -160,11 +160,26 @@ export function HomeBestSellersSection() {
           rows = data as any[];
         }
 
-        const products = rows
+        const allNormalized = rows
           .map((r) => normalizeProductRow(r))
           .filter((p) => p.inStock && p.rating >= 3.5)
-          .sort(sortByRating)
-          .slice(0, 10);
+          .sort(sortByRating);
+
+        const categories: Array<"sarees" | "blouses" | "kurtis" | "gowns" | "coord_sets"> = [
+          "sarees",
+          "blouses",
+          "kurtis",
+          "gowns",
+          "coord_sets",
+        ];
+        const products: Product[] = [];
+        for (const cat of categories) {
+          const catItems = allNormalized.filter((p) => p.category === cat);
+          products.push(...catItems.slice(0, 2));
+        }
+        if (products.length === 0) {
+          products.push(...allNormalized.slice(0, 10));
+        }
 
         if (!products.length) {
           setSlides(FALLBACK_SLIDES);

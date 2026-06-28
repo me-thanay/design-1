@@ -4,7 +4,7 @@ import * as React from "react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ProductCartControl } from "@/components/cart/product-cart-control";
 import type { Product } from "@/lib/products";
-import { X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 type BestSellersMotionItem = {
   product: Product;
@@ -45,6 +45,19 @@ export function BestSellersMotionSlider({
   const [activeIdx, setActiveIdx] = React.useState<number | null>(null);
   const active = activeIdx == null ? null : base[activeIdx] ?? null;
   const [activeImageIdx, setActiveImageIdx] = React.useState(0);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -300, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 300, behavior: "smooth" });
+    }
+  };
 
   React.useEffect(() => {
     if (!open) return;
@@ -55,8 +68,24 @@ export function BestSellersMotionSlider({
 
   return (
     <div className={className}>
-      <div className="image-auto-slider__pause relative w-full overflow-hidden">
-        <div className="image-auto-slider__mask">
+      <div className="image-auto-slider__pause group/motion relative w-full overflow-hidden">
+        <button
+          type="button"
+          onClick={scrollLeft}
+          className="absolute left-2 top-1/2 z-20 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow-lg ring-1 ring-black/10 transition hover:bg-white hover:scale-110 active:scale-95"
+          aria-label="Scroll left"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <button
+          type="button"
+          onClick={scrollRight}
+          className="absolute right-2 top-1/2 z-20 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow-lg ring-1 ring-black/10 transition hover:bg-white hover:scale-110 active:scale-95"
+          aria-label="Scroll right"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </button>
+        <div ref={scrollRef} className="image-auto-slider__mask overflow-x-auto no-scrollbar scroll-smooth">
           <div
             className="image-auto-slider__track motion-reduce:animate-none flex w-max gap-3 sm:gap-6"
             style={

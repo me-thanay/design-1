@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ImageGallery } from "@/components/ui/image-gallery";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
 import { ProductCartControl } from "@/components/cart/product-cart-control";
@@ -73,8 +74,7 @@ function imagePositionFor(category: ClothingCategory | undefined, src: string) {
 }
 
 function imageFitFor(category: ClothingCategory | undefined) {
-  if (!category) return "cover" as const;
-  return category === "sarees" ? ("cover" as const) : ("contain" as const);
+  return "cover" as const;
 }
 
 function matchesFilter(p: Product, filterQuery: string) {
@@ -122,6 +122,19 @@ export function ProductsGrid({
   const [error, setError] = React.useState<string | null>(null);
   const [detailsOpen, setDetailsOpen] = React.useState(false);
   const [activeProduct, setActiveProduct] = React.useState<Product | null>(null);
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollLeft = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: -320, behavior: "smooth" });
+    }
+  };
+
+  const scrollRight = () => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({ left: 320, behavior: "smooth" });
+    }
+  };
 
   React.useEffect(() => {
     const load = async () => {
@@ -182,7 +195,19 @@ export function ProductsGrid({
           });
         }
 
-        normalized = normalized.slice(0, Math.max(0, limit));
+        if (!category) {
+          const categories: ClothingCategory[] = ["sarees", "blouses", "kurtis", "gowns", "coord_sets"];
+          const perCategory: Product[] = [];
+          for (const cat of categories) {
+            const catItems = normalized.filter((p) => p.category === cat);
+            perCategory.push(...catItems.slice(0, 2));
+          }
+          if (perCategory.length > 0) {
+            normalized = perCategory;
+          }
+        } else {
+          normalized = normalized.slice(0, Math.max(0, limit));
+        }
 
         setItems(normalized);
       } catch (e: any) {
@@ -274,33 +299,49 @@ export function ProductsGrid({
           })}
         />
       ) : variant === "row" ? (
-        <div className="no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-2">
-          {items.map((p) => {
-            const img = p.image || fallbackImageFor(p.category);
-            const rating = Number(p.rating || 4);
-            const pos = imagePositionFor(p.category, img);
-            const fit = imageFitFor(p.category);
-            return (
-              <article
-                key={p.id}
-                className="group w-[260px] flex-shrink-0 overflow-hidden rounded-3xl border border-black/10 bg-white/60 shadow-sm ring-1 ring-black/[0.03] transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:ring-black/10"
-                onClick={() => openDetails(p)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") openDetails(p);
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={img}
-                  alt={p.name}
-                  className={[
-                    "w-full transition-transform duration-500 group-hover:scale-[1.02]",
-                    fit === "contain" ? "h-52 object-contain bg-neutral-50" : "h-40 object-cover",
-                  ].join(" ")}
-                  style={pos ? { objectPosition: pos } : undefined}
-                />
+        <div className="group/slider relative">
+          <button
+            type="button"
+            onClick={scrollLeft}
+            className="absolute left-2 top-1/2 z-20 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow-lg ring-1 ring-black/10 transition hover:bg-white hover:scale-110 active:scale-95"
+            aria-label="Scroll left"
+          >
+            <ChevronLeft className="h-6 w-6" />
+          </button>
+          <button
+            type="button"
+            onClick={scrollRight}
+            className="absolute right-2 top-1/2 z-20 -translate-y-1/2 flex h-10 w-10 items-center justify-center rounded-full bg-white/90 text-neutral-800 shadow-lg ring-1 ring-black/10 transition hover:bg-white hover:scale-110 active:scale-95"
+            aria-label="Scroll right"
+          >
+            <ChevronRight className="h-6 w-6" />
+          </button>
+          <div
+            ref={scrollRef}
+            className="no-scrollbar -mx-4 flex gap-4 overflow-x-auto px-4 pb-2 scroll-smooth"
+          >
+            {items.map((p) => {
+              const img = p.image || fallbackImageFor(p.category);
+              const rating = Number(p.rating || 4);
+              const pos = imagePositionFor(p.category, img);
+              return (
+                <article
+                  key={p.id}
+                  className="group w-[260px] flex-shrink-0 overflow-hidden rounded-3xl border border-black/10 bg-white/60 shadow-sm ring-1 ring-black/[0.03] transition-all duration-300 hover:-translate-y-1 hover:bg-white hover:shadow-xl hover:ring-black/10"
+                  onClick={() => openDetails(p)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") openDetails(p);
+                  }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={img}
+                    alt={p.name}
+                    className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
+                    style={pos ? { objectPosition: pos } : undefined}
+                  />
                 <div className="space-y-2 p-4">
                   <div className="flex items-start justify-between gap-3">
                     <div>
@@ -379,10 +420,7 @@ export function ProductsGrid({
                 <img
                   src={img}
                   alt={p.name}
-                  className={[
-                    "w-full transition-transform duration-500 group-hover:scale-[1.02]",
-                    fit === "contain" ? "h-64 object-contain bg-neutral-50" : "h-48 object-cover",
-                  ].join(" ")}
+                  className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-[1.02]"
                   style={pos ? { objectPosition: pos } : undefined}
                 />
                 <div className="space-y-2 p-4">
