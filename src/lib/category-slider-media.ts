@@ -17,7 +17,7 @@ const CATEGORY_DISK_FOLDER: Record<ClothingCategory, string> = {
   blouses: "blouse",
   kurtis: "kurti",
   gowns: "gown",
-  coord_sets: "coor_catogary",
+  coord_sets: "coordset",
 };
 
 function diskFolder(category: ClothingCategory): string {

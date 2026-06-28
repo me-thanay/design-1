@@ -225,7 +225,12 @@ export function CartCheckoutFlow() {
 
       if (!supabaseEnabled) {
         const prevRaw = window.localStorage.getItem(LOCAL_ORDERS_KEY);
-        const prev = prevRaw ? (JSON.parse(prevRaw) as unknown[]) : [];
+        let prev: unknown[] = [];
+        try {
+          prev = prevRaw ? (JSON.parse(prevRaw) as unknown[]) : [];
+        } catch {
+          prev = [];
+        }
         const order = { id: Date.now(), created_at: new Date().toISOString(), ...payload };
         window.localStorage.setItem(
           LOCAL_ORDERS_KEY,

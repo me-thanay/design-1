@@ -60,7 +60,12 @@ export function CategorySidebar({ category, className }: CategorySidebarProps) {
         let rows: any[] = [];
         if (!supabaseEnabled) {
           const raw = window.localStorage.getItem(LOCAL_CLOTHES_KEY);
-          const parsed = raw ? (JSON.parse(raw) as any[]) : [];
+          let parsed: any[] = [];
+          try {
+            parsed = raw ? (JSON.parse(raw) as any[]) : [];
+          } catch {
+            parsed = [];
+          }
           rows = Array.isArray(parsed) ? parsed : [];
         } else {
           const base = supabase.from("clothes").select("*").eq("in_stock", true);
