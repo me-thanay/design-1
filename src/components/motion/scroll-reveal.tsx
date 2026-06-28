@@ -9,8 +9,8 @@ export const SCROLL_REVEAL_EASE = [0.22, 1, 0.36, 1] as const;
 
 /** Default how early sections start animating (tuned for sticky header + comfortable reads) */
 export const defaultRevealViewport = {
-  margin: "-14% 0px -10% 0px" as const,
-  amount: 0.11 as const,
+  margin: "0px 0px -8% 0px" as const,
+  amount: 0.08 as const,
 };
 
 export type ScrollRevealVariant =
