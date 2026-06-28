@@ -206,7 +206,6 @@ function SidebarInner({
       href: buildHref(
         basePath,
         { sub: s, color: selectedColor, size: selectedSize },
-        "all-products",
       ),
       imageSrc: hit?.imageSrc ?? nav?.featuredImageSrc ?? null,
     };
@@ -220,14 +219,14 @@ function SidebarInner({
         </p>
         <div className="mt-3 grid gap-2">
           <Link
-            href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize }, "best-sellers")}
+            href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize })}
             onClick={onNavigate}
             className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
           >
             Best sellers
           </Link>
           <Link
-            href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize }, "all-products")}
+            href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize })}
             onClick={onNavigate}
             className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50"
           >
@@ -247,7 +246,7 @@ function SidebarInner({
                 <div className="text-xs font-semibold text-neutral-700">Color</div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Link
-                    href={buildHref(basePath, { sub: selectedSub, color: null, size: selectedSize }, "all-products")}
+                    href={buildHref(basePath, { sub: selectedSub, color: null, size: selectedSize })}
                     onClick={onNavigate}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
@@ -259,7 +258,7 @@ function SidebarInner({
                   {variantFacets.colors.map((c) => (
                     <Link
                       key={c}
-                      href={buildHref(basePath, { sub: selectedSub, color: c, size: selectedSize }, "all-products")}
+                      href={buildHref(basePath, { sub: selectedSub, color: c, size: selectedSize })}
                       onClick={onNavigate}
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
@@ -280,7 +279,7 @@ function SidebarInner({
                 <div className="text-xs font-semibold text-neutral-700">Size</div>
                 <div className="mt-2 flex flex-wrap gap-2">
                   <Link
-                    href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: null }, "all-products")}
+                    href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: null })}
                     onClick={onNavigate}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
@@ -292,7 +291,7 @@ function SidebarInner({
                   {variantFacets.sizes.map((s) => (
                     <Link
                       key={s}
-                      href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: s }, "all-products")}
+                      href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: s })}
                       onClick={onNavigate}
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
