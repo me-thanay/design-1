@@ -10,7 +10,7 @@ export const CLOTHING_CATEGORIES: ClothingCategory[] = [
 
 /** Subcategory options — keep in sync with Creator dashboard selects and category page sections. */
 export const CLOTHING_SUBCATEGORIES: Record<ClothingCategory, string[]> = {
-  sarees: ["banarasi silk", "georgette", "organza", "modal silk", "linen"],
+  sarees: ["silk", "georgette", "organza", "linen"],
   kurtis: ["cotton", "rayon", "georgette", "party wear"],
   blouses: ["party wear", "cotton", "silk", "ajrakh"],
   gowns: ["party wear", "casual wear"],

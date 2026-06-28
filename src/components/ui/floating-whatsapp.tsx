@@ -22,28 +22,98 @@ export function FloatingWhatsApp({
   phoneE164 = "918978237992",
   defaultMessage = "Hi Sawbhagya, I want to know more about your products.",
 }: FloatingWhatsAppProps) {
+  const [hovered, setHovered] = React.useState(false);
+
   const href = React.useMemo(() => {
     const msg = encodeURIComponent(defaultMessage);
     return `https://wa.me/${phoneE164}?text=${msg}`;
   }, [defaultMessage, phoneE164]);
 
   return (
-    <a
-      href={href}
-      target="_blank"
-      rel="noreferrer"
-      aria-label="Chat on WhatsApp"
-      title="Chat on WhatsApp"
-      className={[
-        "fixed bottom-5 right-5 z-[60] inline-flex items-center justify-center",
-        "h-14 w-14 rounded-full",
-        "bg-[#25D366] text-white shadow-lg ring-1 ring-black/10",
-        "transition-transform hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0",
-        "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#25D366]/35",
-      ].join(" ")}
-    >
-      <WhatsAppMark className="h-7 w-7" />
-    </a>
+    <>
+      <style>{`
+        @keyframes wa-float {
+          0%   { transform: translateY(0px); }
+          50%  { transform: translateY(-8px); }
+          100% { transform: translateY(0px); }
+        }
+        .wa-float-btn {
+          animation: wa-float 3s ease-in-out infinite;
+        }
+        .wa-float-btn:hover {
+          animation-play-state: paused;
+        }
+        .wa-tooltip {
+          opacity: 0;
+          transform: translateX(8px) scale(0.95);
+          pointer-events: none;
+          transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .wa-wrapper:hover .wa-tooltip {
+          opacity: 1;
+          transform: translateX(0) scale(1);
+          pointer-events: auto;
+        }
+      `}</style>
+
+      <div
+        className="wa-wrapper fixed bottom-6 right-5 z-[9000] flex items-center gap-3"
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Tooltip — appears to the LEFT of the button */}
+        <div
+          className="wa-tooltip"
+          role="tooltip"
+        >
+          <a
+            href={href}
+            target="_blank"
+            rel="noreferrer"
+            className="flex items-center gap-2.5 rounded-2xl bg-white px-4 py-3 shadow-xl ring-1 ring-black/8 hover:bg-neutral-50 transition-colors"
+          >
+            {/* green dot */}
+            <span className="relative flex h-2.5 w-2.5 shrink-0">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#25D366] opacity-60" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-[#25D366]" />
+            </span>
+            <div>
+              <p className="text-[13px] font-semibold leading-tight text-neutral-900">Contact us</p>
+              <p className="text-[11px] text-neutral-500 leading-tight mt-0.5">Chat on WhatsApp</p>
+            </div>
+            {/* small arrow pointing right */}
+            <svg
+              className="ml-1 h-3 w-3 text-neutral-300"
+              viewBox="0 0 6 10"
+              fill="none"
+            >
+              <path d="M1 1l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </a>
+          {/* caret on the right edge of tooltip */}
+          <div className="absolute right-[-6px] top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-b-[6px] border-l-[6px] border-t-transparent border-b-transparent border-l-white" />
+        </div>
+
+        {/* WhatsApp button */}
+        <a
+          href={href}
+          target="_blank"
+          rel="noreferrer"
+          aria-label="Chat on WhatsApp"
+          title="Chat on WhatsApp"
+          className={[
+            "wa-float-btn",
+            "flex h-14 w-14 items-center justify-center rounded-full shrink-0",
+            "bg-[#25D366] text-white",
+            "shadow-[0_4px_24px_rgba(37,211,102,0.45)]",
+            "ring-1 ring-black/10",
+            "transition-shadow hover:shadow-[0_6px_32px_rgba(37,211,102,0.6)]",
+            "focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#25D366]/40",
+          ].join(" ")}
+        >
+          <WhatsAppMark className="h-7 w-7" />
+        </a>
+      </div>
+    </>
   );
 }
-

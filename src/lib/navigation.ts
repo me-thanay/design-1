@@ -13,10 +13,9 @@ export const PRIMARY_NAV: NavItem[] = [
     href: "/categories/sarees",
     featuredImageSrc: "/catogary-slider/saree/Banasari silk.jpeg",
     items: [
-      { name: "Banasari silk", href: "/categories/sarees?q=banarasi%20silk", imageSrc: "/catogary-slider/saree/Banasari silk.jpeg" },
+      { name: "Silk", href: "/categories/sarees?q=silk", imageSrc: "/catogary-slider/saree/Banasari silk.jpeg" },
       { name: "Georgette", href: "/categories/sarees?q=georgette", imageSrc: "/catogary-slider/saree/georgette.jpeg" },
       { name: "Organza", href: "/categories/sarees?q=organza", imageSrc: "/catogary-slider/saree/organza.jpeg" },
-      { name: "Modal silk", href: "/categories/sarees?q=modal%20silk", imageSrc: "/catogary-slider/saree/modal silk.jpeg" },
       { name: "Linen", href: "/categories/sarees?q=linen", imageSrc: "/catogary-slider/saree/linen.jpeg" },
     ],
   },

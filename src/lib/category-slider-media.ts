@@ -55,16 +55,14 @@ function matchScore(stem: string, sub: string): number {
 function synonymBoost(stem: string, sub: string): number {
   const st = normKey(stem);
   const syn: Record<string, string[]> = {
-    "banarasi silk": ["banaras", "banarasi", "katan"],
+    silk: ["silk", "pure", "banarasi", "banaras", "katan", "modal", "modalsilk"],
     georgette: ["chiffon"],
     organza: ["organza", "sheer", "net"],
-    "modal silk": ["modal", "modalsilk"],
     linen: ["linen", "khadi"],
     "party wear": ["party", "partywear", "evening"],
     "casual wear": ["casual", "day"],
     cotton: ["cotton"],
     rayon: ["rayon"],
-    silk: ["silk", "pure"],
     ajrakh: ["ajrakh", "block", "print"],
   };
   const keys = syn[sub.toLowerCase()];
