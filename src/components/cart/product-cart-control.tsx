@@ -191,15 +191,23 @@ export function ProductCartControl({
   return (
     <div
       className={cn(
-        "flex w-full flex-col gap-2 rounded-2xl border border-emerald-200/90 bg-gradient-to-b from-emerald-50/95 via-white to-white p-2.5 shadow-md ring-1 ring-emerald-900/[0.07]",
+        "flex w-full items-center justify-between gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 shadow-sm ring-1 ring-emerald-900/[0.06]",
         className,
       )}
     >
-      <div className="flex items-center justify-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.18em] text-emerald-800">
+      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-700 whitespace-nowrap">
         <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden />
-        In your cart
+        In cart
       </div>
-      <StepperRow qty={qty} onMinus={onMinus} onPlus={onPlus} variant="card" compact={compact} />
+      <div className="flex items-center gap-1">
+        <button type="button" aria-label="Decrease quantity" onClick={onMinus} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-900 transition hover:bg-neutral-200">
+          <Minus className="h-3.5 w-3.5" strokeWidth={2.5} />
+        </button>
+        <span className="min-w-[1.5rem] text-center text-sm font-bold tabular-nums text-neutral-900">{qty}</span>
+        <button type="button" aria-label="Increase quantity" onClick={onPlus} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-900 transition hover:bg-neutral-200">
+          <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+        </button>
+      </div>
     </div>
   );
 }
