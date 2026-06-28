@@ -191,23 +191,20 @@ export function ProductCartControl({
   return (
     <div
       className={cn(
-        "flex w-full items-center justify-between gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 shadow-sm ring-1 ring-emerald-900/[0.06]",
+        "flex w-full items-center justify-center gap-3 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-2 shadow-sm ring-1 ring-emerald-900/[0.06]",
         className,
       )}
     >
-      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-emerald-700 whitespace-nowrap">
+      <button type="button" aria-label="Decrease quantity" onClick={onMinus} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-black/10 transition hover:bg-neutral-100">
+        <Minus className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
+      <div className="flex items-center gap-1.5">
         <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-emerald-600" aria-hidden />
-        In cart
+        <span className="text-[11px] font-bold uppercase tracking-[0.12em] text-emerald-700">{qty} in cart</span>
       </div>
-      <div className="flex items-center gap-1">
-        <button type="button" aria-label="Decrease quantity" onClick={onMinus} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-900 transition hover:bg-neutral-200">
-          <Minus className="h-3.5 w-3.5" strokeWidth={2.5} />
-        </button>
-        <span className="min-w-[1.5rem] text-center text-sm font-bold tabular-nums text-neutral-900">{qty}</span>
-        <button type="button" aria-label="Increase quantity" onClick={onPlus} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-neutral-100 text-neutral-900 transition hover:bg-neutral-200">
-          <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
-        </button>
-      </div>
+      <button type="button" aria-label="Increase quantity" onClick={onPlus} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-neutral-700 shadow-sm ring-1 ring-black/10 transition hover:bg-neutral-100">
+        <Plus className="h-3.5 w-3.5" strokeWidth={2.5} />
+      </button>
     </div>
   );
 }

@@ -100,7 +100,7 @@ export function FloatingHeader() {
   return (
     <header className="w-full">
       <motion.nav
-        className="w-full grid min-h-0 grid-cols-[40px_1fr_40px] items-center gap-2 overflow-visible bg-white/95 backdrop-blur px-2 py-1 text-xs font-medium text-zinc-900 shadow-sm border-b border-zinc-200 sm:px-4 sm:py-1.5 lg:flex lg:justify-between lg:gap-6 lg:px-8 lg:text-sm"
+        className="w-full grid min-h-0 grid-cols-[40px_1fr_40px] items-center gap-2 bg-white/95 backdrop-blur px-2 py-1 text-xs font-medium text-zinc-900 shadow-sm border-b border-zinc-200 sm:px-4 sm:py-1.5 lg:flex lg:justify-between lg:gap-6 lg:px-8 lg:text-sm"
         initial={reduceMotion ? false : { opacity: 0, y: -12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
@@ -132,7 +132,7 @@ export function FloatingHeader() {
             <img
               src={SITE_LOGO_SRC}
               alt={SITE_LOGO_ALT}
-              className="h-24 w-auto -my-1 shrink-0 object-contain sm:h-16 sm:-my-1.5 md:h-[4rem] md:-my-2 lg:h-20 lg:-my-2.5"
+              className="h-10 w-auto shrink-0 object-contain sm:h-14 sm:-my-1 md:h-[3.5rem] md:-my-2 lg:h-20 lg:-my-2.5"
             />
           </Link>
         </div>
@@ -238,11 +238,11 @@ export function FloatingHeader() {
             ),
           )}
         </div>
-        <div className="flex lg:flex-1 items-center justify-end gap-1.5 sm:gap-2 lg:gap-4">
+        <div className="flex items-center justify-end lg:flex-1 lg:gap-4">
           <NavSearchBar navIconClassName={navIconClassName} />
           <motion.a
             href={isLoggedIn ? "/cart" : "/sign-in"}
-            className="relative inline-flex items-center gap-2 rounded-full px-2 py-1 text-xs font-bold uppercase tracking-[0.12em] text-zinc-800 hover:text-zinc-900 sm:px-3 lg:text-sm"
+            className="relative inline-flex items-center gap-2 rounded-full px-1.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-zinc-800 hover:text-zinc-900 sm:px-2 lg:px-3 lg:text-sm"
             whileHover={reduceMotion ? undefined : { y: -1 }}
             aria-label="Cart"
           >
