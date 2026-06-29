@@ -38,6 +38,7 @@ export const metadata: Metadata = {
 };
 
 import { GlobalFooter } from "@/components/ui/global-footer";
+import { FloatingWhatsApp } from "@/components/ui/floating-whatsapp";
 
 export default function RootLayout({
   children,
@@ -54,6 +55,7 @@ export default function RootLayout({
           <div className="page-fade-in">{children}</div>
         </CartProviderClient>
         <GlobalFooter />
+        <FloatingWhatsApp />
         <Toaster richColors position="top-center" closeButton />
       </body>
     </html>
