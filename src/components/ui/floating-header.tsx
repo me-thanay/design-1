@@ -23,6 +23,18 @@ export function FloatingHeader() {
   const [accountDropdownOpen, setAccountDropdownOpen] = React.useState(false);
   const accountDropdownRef = React.useRef<HTMLDivElement>(null);
 
+  const allowedAdmins = React.useMemo(() => {
+    const raw = process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "";
+    return raw
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean);
+  }, []);
+
+  const isAdmin = React.useMemo(() => {
+    return !!userEmail && allowedAdmins.includes(userEmail.toLowerCase());
+  }, [userEmail, allowedAdmins]);
+
   React.useEffect(() => {
     if (!accountDropdownOpen) return;
     const onClickOutside = (e: MouseEvent) => {
@@ -314,6 +326,16 @@ export function FloatingHeader() {
                     <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 mb-1 truncate">
                       {userEmail}
                     </div>
+                    {isAdmin && (
+                      <Link
+                        href="/creator"
+                        className="block rounded-lg px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors w-full text-left"
+                        onClick={() => setAccountDropdownOpen(false)}
+                        role="menuitem"
+                      >
+                        Admin Dashboard
+                      </Link>
+                    )}
                     <Link
                       href="/orders"
                       className="block rounded-lg px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors w-full text-left"
@@ -369,24 +391,35 @@ export function FloatingHeader() {
                     <p className="truncate text-[10.5px] text-zinc-500">{userEmail}</p>
                   </div>
                 </div>
-                <div className="flex gap-2.5 mt-1">
-                  <Link
-                    href="/orders"
-                    className="flex-1 text-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
-                    onClick={() => setMenuOpen(false)}
-                  >
-                    Your Orders
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      handleSignOut();
-                      setMenuOpen(false);
-                    }}
-                    className="flex-1 text-center rounded-lg border border-red-200 bg-red-50/20 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50/55 transition-colors"
-                  >
-                    Sign out
-                  </button>
+                <div className="flex flex-col gap-2 mt-1">
+                  {isAdmin && (
+                    <Link
+                      href="/creator"
+                      className="text-center rounded-lg bg-zinc-950 px-3 py-2.5 text-xs font-bold text-white hover:bg-zinc-850 transition-colors w-full"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Admin Dashboard
+                    </Link>
+                  )}
+                  <div className="flex gap-2.5">
+                    <Link
+                      href="/orders"
+                      className="flex-1 text-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      Your Orders
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleSignOut();
+                        setMenuOpen(false);
+                      }}
+                      className="flex-1 text-center rounded-lg border border-red-200 bg-red-50/20 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50/55 transition-colors"
+                    >
+                      Sign out
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

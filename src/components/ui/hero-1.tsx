@@ -782,6 +782,16 @@ export function HeroLanding(props: HeroLandingProps) {
                               <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 mb-1 truncate">
                                 {authEmail}
                               </div>
+                              {isAdmin && (
+                                <a
+                                  href="/creator"
+                                  className="block rounded-lg px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors w-full text-left"
+                                  onClick={() => setAccountDropdownOpen(false)}
+                                  role="menuitem"
+                                >
+                                  Admin Dashboard
+                                </a>
+                              )}
                               <a
                                 href="/orders"
                                 className="block rounded-lg px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors w-full text-left"
@@ -861,24 +871,35 @@ export function HeroLanding(props: HeroLandingProps) {
                               <p className="truncate text-[10.5px] text-zinc-500">{authEmail}</p>
                             </div>
                           </div>
-                          <div className="flex gap-2.5 mt-1">
-                            <a
-                              href="/orders"
-                              className="flex-1 text-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
-                              onClick={() => setMobileMenuOpen(false)}
-                            >
-                              Your Orders
-                            </a>
-                            <button
-                              type="button"
-                              onClick={() => {
-                                handleSignOut();
-                                setMobileMenuOpen(false);
-                              }}
-                              className="flex-1 text-center rounded-lg border border-red-200 bg-red-50/20 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50/55 transition-colors"
-                            >
-                              Sign out
-                            </button>
+                          <div className="flex flex-col gap-2 mt-1">
+                            {isAdmin && (
+                              <a
+                                href="/creator"
+                                className="text-center rounded-lg bg-zinc-950 px-3 py-2.5 text-xs font-bold text-white hover:bg-zinc-850 transition-colors w-full"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
+                                Admin Dashboard
+                              </a>
+                            )}
+                            <div className="flex gap-2.5">
+                              <a
+                                href="/orders"
+                                className="flex-1 text-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+                                onClick={() => setMobileMenuOpen(false)}
+                              >
+                                Your Orders
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  handleSignOut();
+                                  setMobileMenuOpen(false);
+                                }}
+                                className="flex-1 text-center rounded-lg border border-red-200 bg-red-50/20 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50/55 transition-colors"
+                              >
+                                Sign out
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
