@@ -451,6 +451,24 @@ export default function OrdersPage() {
                                     <span>Subtotal</span>
                                     <span>{formatINR(order.subtotal ?? (order.total ?? 0) - (order.shipping ?? 0))}</span>
                                   </div>
+                                  {(() => {
+                                    let parsedItems = order.items;
+                                    if (typeof parsedItems === "string") {
+                                      try {
+                                        parsedItems = JSON.parse(parsedItems);
+                                      } catch {
+                                        parsedItems = null;
+                                      }
+                                    }
+                                    const coupon = parsedItems?.coupon || null;
+                                    if (!coupon) return null;
+                                    return (
+                                      <div className="flex justify-between text-emerald-600 font-semibold font-sans">
+                                        <span>Discount ({coupon.code})</span>
+                                        <span>− {formatINR(coupon.discount)}</span>
+                                      </div>
+                                    );
+                                  })()}
                                   <div className="flex justify-between">
                                     <span>Shipping</span>
                                     <span>{order.shipping === 0 ? "FREE" : formatINR(order.shipping ?? 0)}</span>

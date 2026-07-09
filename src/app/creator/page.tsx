@@ -2500,6 +2500,24 @@ export default function CreatorPage() {
                                     <span>Subtotal</span>
                                     <span>₹{Math.round(o.subtotal ?? (o.total ?? 0) - (o.shipping ?? 0)).toLocaleString("en-IN")}</span>
                                   </div>
+                                  {(() => {
+                                    let parsedItems = o.items;
+                                    if (typeof parsedItems === "string") {
+                                      try {
+                                        parsedItems = JSON.parse(parsedItems);
+                                      } catch {
+                                        parsedItems = null;
+                                      }
+                                    }
+                                    const coupon = parsedItems?.coupon || null;
+                                    if (!coupon) return null;
+                                    return (
+                                      <div className="flex justify-between text-emerald-600 font-semibold font-sans">
+                                        <span>Discount ({coupon.code})</span>
+                                        <span>− ₹{Math.round(coupon.discount).toLocaleString("en-IN")}</span>
+                                      </div>
+                                    );
+                                  })()}
                                   <div className="flex justify-between">
                                     <span>Shipping</span>
                                     <span>{o.shipping === 0 ? "FREE" : `₹${Math.round(o.shipping ?? 0).toLocaleString("en-IN")}`}</span>

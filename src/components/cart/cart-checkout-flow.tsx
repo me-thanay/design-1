@@ -63,14 +63,12 @@ const loadRazorpayScript = (): Promise<boolean> => {
   });
 };
 
+const COUPONS: Record<string, { type: "percentage" | "fixed"; value: number; label: string }> = {};
+
 export function CartCheckoutFlow() {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
   const { items, itemCount, subtotal, increase, decrease, removeItem, clear } = useCart();
-
-  const shipping = 0;
-  const total = subtotal + shipping;
-  const isEmpty = items.length === 0;
 
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isPlacingOrder, setIsPlacingOrder] = React.useState(false);
@@ -83,6 +81,25 @@ export function CartCheckoutFlow() {
   const [locationStatus] = React.useState<string | null>(null);
   const [paymentMethod] = React.useState<"razorpay">("razorpay");
   const [formError, setFormError] = React.useState<string | null>(null);
+
+  const [couponCode, setCouponCode] = React.useState("");
+  const [appliedCoupon, setAppliedCoupon] = React.useState<{ code: string; label: string; discount: number } | null>(null);
+  const [couponError, setCouponError] = React.useState<string | null>(null);
+
+  const shipping = 0;
+  const couponDiscount = React.useMemo(() => {
+    if (!appliedCoupon) return 0;
+    const code = appliedCoupon.code.toUpperCase();
+    const coupon = COUPONS[code];
+    if (!coupon) return 0;
+    if (coupon.type === "percentage") {
+      return Math.round((subtotal * coupon.value) / 100);
+    }
+    return coupon.value;
+  }, [appliedCoupon, subtotal]);
+
+  const total = subtotal + shipping - couponDiscount;
+  const isEmpty = items.length === 0;
 
   const [currentUser, setCurrentUser] = React.useState<any>(null);
   const [authChecking, setAuthChecking] = React.useState(true);
@@ -320,6 +337,10 @@ export function CartCheckoutFlow() {
             altPhone: altPhone.trim() || null,
             dob: dob.trim() || null,
           },
+          coupon: appliedCoupon ? {
+            code: appliedCoupon.code,
+            discount: couponDiscount,
+          } : null,
           items: items.map((i) => ({
             id: i.id,
             productId: i.productId,
@@ -808,6 +829,73 @@ export function CartCheckoutFlow() {
                     </div>
                   </div>
 
+                  {/* Coupon Code Section */}
+                  <div className="rounded-2xl border border-neutral-200/60 bg-white p-3.5 dark:border-neutral-800 dark:bg-neutral-900/40 font-sans">
+                    <div className="flex flex-col gap-2 font-sans">
+                      <Label htmlFor="coupon-input" className="text-xs font-bold uppercase tracking-wider text-neutral-500 font-sans">
+                        Promo / Coupon Code
+                      </Label>
+                      {appliedCoupon ? (
+                        <div className="flex items-center justify-between rounded-xl bg-emerald-50/50 px-3.5 py-2 text-xs text-emerald-850 dark:bg-emerald-950/20 dark:text-emerald-400 font-sans border border-emerald-100">
+                          <span className="font-semibold font-sans">
+                            Applied: <span className="font-mono bg-emerald-100 dark:bg-emerald-900/40 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wider">{appliedCoupon.code}</span> ({appliedCoupon.label})
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAppliedCoupon(null);
+                              setCouponCode("");
+                              setCouponError(null);
+                            }}
+                            className="text-[10px] font-bold uppercase tracking-wider text-red-600 hover:text-red-700 font-sans outline-none"
+                          >
+                            Remove
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <Input
+                            id="coupon-input"
+                            type="text"
+                            placeholder="Enter promo code (e.g. PRE10)"
+                            value={couponCode}
+                            onChange={(e) => {
+                              setCouponCode(e.target.value);
+                              setCouponError(null);
+                            }}
+                            className="h-9 rounded-xl text-xs uppercase tracking-wider font-mono font-sans"
+                          />
+                          <Button
+                            type="button"
+                            size="sm"
+                            onClick={() => {
+                              const code = couponCode.trim().toUpperCase();
+                              if (!code) return;
+                              const coupon = COUPONS[code];
+                              if (coupon) {
+                                setAppliedCoupon({
+                                  code,
+                                  label: coupon.label,
+                                  discount: coupon.type === "percentage" ? Math.round((subtotal * coupon.value) / 100) : coupon.value,
+                                });
+                                setCouponError(null);
+                                toast.success(`Coupon code ${code} applied successfully!`);
+                              } else {
+                                setCouponError("Invalid or expired coupon code.");
+                              }
+                            }}
+                            className="h-9 rounded-xl px-4 text-xs font-bold uppercase tracking-wider font-sans"
+                          >
+                            Apply
+                          </Button>
+                        </div>
+                      )}
+                      {couponError && (
+                        <p className="text-[10px] font-semibold text-red-600 font-sans mt-0.5">{couponError}</p>
+                      )}
+                    </div>
+                  </div>
+
                   {/* Cost breakdown - designed to be highly appealing */}
                   <div className="rounded-2xl bg-gradient-to-br from-neutral-50 to-neutral-100 p-4 dark:from-neutral-900 dark:to-neutral-950 ring-1 ring-black/[0.04] font-sans">
                     <div className="space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400 font-sans">
@@ -815,6 +903,12 @@ export function CartCheckoutFlow() {
                         <span>Items Subtotal</span>
                         <span className="font-semibold text-neutral-900 dark:text-white font-sans">{formatINR(subtotal)}</span>
                       </div>
+                      {appliedCoupon && (
+                        <div className="flex justify-between items-center text-emerald-600 dark:text-emerald-400 font-sans font-semibold">
+                          <span>Discount ({appliedCoupon.code})</span>
+                          <span>− {formatINR(couponDiscount)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center font-sans">
                         <span className="flex items-center gap-1 font-sans">
                           Shipping & Handling
