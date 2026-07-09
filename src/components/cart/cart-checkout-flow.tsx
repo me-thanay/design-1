@@ -84,8 +84,41 @@ export function CartCheckoutFlow() {
   const [paymentMethod] = React.useState<"razorpay">("razorpay");
   const [formError, setFormError] = React.useState<string | null>(null);
 
+  const [currentUser, setCurrentUser] = React.useState<any>(null);
+  const [authChecking, setAuthChecking] = React.useState(true);
+
   React.useEffect(() => {
     loadRazorpayScript();
+
+    if (!supabaseEnabled) {
+      setAuthChecking(false);
+      return;
+    }
+
+    let cancelled = false;
+    const init = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (!cancelled) {
+          setCurrentUser(data?.session?.user ?? null);
+          setAuthChecking(false);
+        }
+      } catch {
+        if (!cancelled) setAuthChecking(false);
+      }
+    };
+    init();
+
+    const { data: sub } = supabase.auth.onAuthStateChange((_event: any, session: any) => {
+      if (!cancelled) {
+        setCurrentUser(session?.user ?? null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+      sub.subscription.unsubscribe();
+    };
   }, []);
 
   const lastStep = CHECKOUT_STEPS.length - 1;
@@ -557,6 +590,11 @@ export function CartCheckoutFlow() {
                       </div>
                     </motion.div>
                   ))}
+                  {!currentUser && !authChecking && (
+                    <div className="mt-4 rounded-2xl border border-zinc-200 bg-zinc-50/50 p-4 text-center text-xs text-zinc-650 font-medium font-sans">
+                      Please log in with Google to continue and place your order.
+                    </div>
+                  )}
                 </CardContent>
               </>
             )}
@@ -831,15 +869,25 @@ export function CartCheckoutFlow() {
           </motion.div>
 
           {currentStep < lastStep ? (
-            <motion.div whileHover={reduceMotion ? undefined : { scale: 1.03 }} whileTap={reduceMotion ? undefined : { scale: 0.97 }}>
-              <Button
-                type="button"
-                onClick={nextStep}
-                disabled={!isStepValid()}
-                className="rounded-2xl"
-              >
-                Next <ChevronRight className="h-4 w-4" />
-              </Button>
+            <motion.div whileHover={reduceMotion || authChecking ? undefined : { scale: 1.03 }} whileTap={reduceMotion || authChecking ? undefined : { scale: 0.97 }}>
+              {currentStep === 0 && !currentUser && !authChecking ? (
+                <Button
+                  type="button"
+                  onClick={() => router.push("/sign-in?to=cart")}
+                  className="rounded-2xl bg-zinc-950 text-white hover:bg-zinc-850"
+                >
+                  Login to Checkout
+                </Button>
+              ) : (
+                <Button
+                  type="button"
+                  onClick={nextStep}
+                  disabled={authChecking || !isStepValid()}
+                  className="rounded-2xl"
+                >
+                  Next <ChevronRight className="h-4 w-4" />
+                </Button>
+              )}
             </motion.div>
           ) : (
             <motion.div whileHover={reduceMotion || isPlacingOrder ? undefined : { scale: 1.03 }} whileTap={reduceMotion ? undefined : { scale: 0.97 }}>
