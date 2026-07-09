@@ -457,7 +457,7 @@ export function CartCheckoutFlow() {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.45, ease: SCROLL_REVEAL_EASE }}
       >
-        <div className="flex justify-between gap-2 overflow-x-auto pb-2">
+        <div className="flex justify-between gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
           {CHECKOUT_STEPS.map((step, index) => (
             <motion.button
               key={step.id}
