@@ -82,7 +82,7 @@ function createNoopSupabase() {
 export const supabase = hasValidConfig
   ? createClient(supabaseUrl as string, supabaseAnonKey as string, {
       auth: {
-        flowType: "pkce",
+        flowType: "implicit",
         persistSession: true,
         autoRefreshToken: true,
         detectSessionInUrl: true,

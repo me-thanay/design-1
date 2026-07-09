@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState, Fragment } from "react";
 import { useRouter } from "next/navigation";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
+import { Search, Loader2, ChevronDown, ChevronUp, Trash2, RotateCcw } from "lucide-react";
 import { toast } from "sonner";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { PageShell } from "@/components/ui/page-shell";
@@ -202,6 +203,9 @@ type OrderRow = {
   created_at: string;
   customer_email: string | null;
   customer_phone: string | null;
+  customer_name?: string | null;
+  customer_phone_alt?: string | null;
+  customer_dob?: string | null;
   location_mode?: "current" | "manual" | null;
   location_manual?: string | null;
   location_coords?: string | null;
@@ -253,6 +257,25 @@ function parseOrderItems(items: any): Array<any> {
   }
 
   return [];
+}
+
+function getOrderCustomer(o: any) {
+  if (!o) return { name: null, phone: null, phone_alt: null, dob: null };
+  let items = o.items;
+  if (typeof items === "string") {
+    try {
+      items = JSON.parse(items);
+    } catch {
+      items = null;
+    }
+  }
+  const cust = items?.customer || {};
+  return {
+    name: o.customer_name || cust.name || null,
+    phone: o.customer_phone || cust.phone || null,
+    phone_alt: o.customer_phone_alt || cust.altPhone || cust.phone_alt || null,
+    dob: o.customer_dob || cust.dob || null,
+  };
 }
 
 function orderItemImage(it: any): string | null {
@@ -352,6 +375,117 @@ export default function CreatorPage() {
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
   const [ordersError, setOrdersError] = useState<string | null>(null);
+  const [updatingOrderId, setUpdatingOrderId] = useState<string | number | null>(null);
+  const [orderSearchQuery, setOrderSearchQuery] = useState("");
+  const [orderStatusFilter, setOrderStatusFilter] = useState("all");
+  const [expandedOrders, setExpandedOrders] = useState<Record<string | number, boolean>>({});
+
+  const getStatusBadgeStyles = (status: string | null) => {
+    const s = String(status || "").toLowerCase();
+    if (s === "paid" || s === "completed" || s === "success") {
+      return "bg-emerald-50 border-emerald-200 text-emerald-700 hover:bg-emerald-100";
+    }
+    if (s === "pending" || s === "processing") {
+      return "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100";
+    }
+    if (s === "cancelled" || s === "failed") {
+      return "bg-red-50 border-red-200 text-red-700 hover:bg-red-100";
+    }
+    if (s === "shipped" || s === "delivered") {
+      return "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100";
+    }
+    return "bg-zinc-50 border-zinc-200 text-zinc-600 hover:bg-zinc-100";
+  };
+
+  const handleUpdateStatus = async (orderId: string | number, newStatus: string) => {
+    setUpdatingOrderId(orderId);
+    if (!supabaseEnabled) {
+      const local = readLocalOrders();
+      const next = local.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
+      writeLocalOrders(next);
+      setOrders(next);
+      toast.success("Order status updated (Local mode)");
+      setUpdatingOrderId(null);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: newStatus })
+        .eq("id", orderId);
+
+      if (error) throw error;
+      setOrders((prev) => prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)));
+      toast.success(`Order status updated to ${newStatus}`);
+    } catch (err: any) {
+      toast.error(err.message || "Failed to update order status");
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const handleDeleteOrder = async (orderId: string | number) => {
+    const confirmDelete = window.confirm("Are you sure you want to permanently delete this order? This action cannot be undone.");
+    if (!confirmDelete) return;
+
+    setUpdatingOrderId(orderId);
+    if (!supabaseEnabled) {
+      const local = readLocalOrders();
+      const next = local.filter((o) => o.id !== orderId);
+      writeLocalOrders(next);
+      setOrders(next);
+      toast.success("Order permanently deleted (Local mode)");
+      setUpdatingOrderId(null);
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .delete()
+        .eq("id", orderId);
+
+      if (error) throw error;
+      setOrders((prev) => prev.filter((o) => o.id !== orderId));
+      toast.success("Order permanently deleted");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to delete order");
+    } finally {
+      setUpdatingOrderId(null);
+    }
+  };
+
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      // 1. Search Query Filter
+      const q = orderSearchQuery.trim().toLowerCase();
+      const customer = getOrderCustomer(o);
+      if (q) {
+        const email = (o.customer_email || "").toLowerCase();
+        const phone = (customer.phone || "").toLowerCase();
+        const name = (customer.name || "").toLowerCase();
+        const id = String(o.id).toLowerCase();
+        const matchesSearch = email.includes(q) || phone.includes(q) || id.includes(q) || name.includes(q);
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Status Filter
+      const status = orderStatusFilter.toLowerCase();
+      const orderStatus = (o.status || "pending").toLowerCase();
+
+      if (status === "trash") {
+        return orderStatus === "trash";
+      } else {
+        if (orderStatus === "trash") return false;
+        if (status !== "all") {
+          if (orderStatus !== status) return false;
+        }
+      }
+
+      return true;
+    });
+  }, [orders, orderSearchQuery, orderStatusFilter]);
   const [editing, setEditing] = useState<ClothingItem | null>(null);
   const [editForm, setEditForm] = useState({
     name: "",
@@ -410,6 +544,66 @@ export default function CreatorPage() {
     }, 12000);
     return () => window.clearTimeout(t);
   }, [loading]);
+
+  const loadItems = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    if (!supabaseEnabled) {
+      try {
+        const raw = window.localStorage.getItem(LOCAL_CLOTHES_KEY);
+        const parsed = raw ? (JSON.parse(raw) as any[]) : [];
+        const local = (Array.isArray(parsed) ? parsed : []).map((it) => normalizeClothingItem(it)).sort((a: any, b: any) => b.id - a.id);
+        setItems(local);
+      } catch {
+        setItems([]);
+      }
+      setLoading(false);
+      return;
+    }
+    try {
+      const res = (await Promise.race([
+        supabase.from("clothes").select("*").order("created_at", { ascending: false }),
+        new Promise<{ data: null; error: { message: string } }>((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                data: null,
+                error: { message: "Timed out loading items. Check your Supabase connection / RLS policies." },
+              }),
+            9000,
+          ),
+        ),
+      ])) as { data: any[] | null; error: { message: string } | null };
+
+      if (res.error && /created_at|column .*created_at/i.test(res.error.message ?? "")) {
+        const fallback = await supabase.from("clothes").select("*").order("id", { ascending: false });
+        if (!fallback.error) {
+          const normalizedFallback = ((fallback.data ?? []) as any[]).map((it) => normalizeClothingItem(it));
+          setItems(normalizedFallback);
+          try { window.localStorage.setItem(LOCAL_CLOTHES_KEY, JSON.stringify(normalizedFallback)); } catch { /* ignore */ }
+          setLoading(false);
+          return;
+        }
+      }
+
+      if (res.error) {
+        setError(res.error.message);
+        setItems([]);
+        setLoading(false);
+        return;
+      }
+
+      const normalized = ((res.data ?? []) as any[]).map((it) => normalizeClothingItem(it));
+      setItems(normalized);
+      try { window.localStorage.setItem(LOCAL_CLOTHES_KEY, JSON.stringify(normalized)); } catch { /* ignore */ }
+    } catch (e: any) {
+      setError(e?.message ?? "Could not load items.");
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     const checkAuthAndLoad = async () => {
@@ -503,7 +697,7 @@ export default function CreatorPage() {
     };
 
     checkAuthAndLoad();
-  }, [router]);
+  }, [router, loadItems]);
 
   if (authState === "checking") {
     return (
@@ -569,68 +763,14 @@ export default function CreatorPage() {
     }
   };
 
-  const loadItems = async () => {
-    setLoading(true);
-    setError(null);
-
-    if (!supabaseEnabled) {
-      const local = readLocalClothes().sort((a, b) => b.id - a.id);
-      setItems(local);
-      setLoading(false);
-      return;
-    }
+  const writeLocalOrders = (next: OrderRow[]) => {
     try {
-      // Avoid getting stuck forever on bad network/RLS; surface a useful error instead.
-      const res = (await Promise.race([
-        supabase.from("clothes").select("*").order("created_at", { ascending: false }),
-        new Promise<{ data: null; error: { message: string } }>((resolve) =>
-          setTimeout(
-            () =>
-              resolve({
-                data: null,
-                error: { message: "Timed out loading items. Check your Supabase connection / RLS policies." },
-              }),
-            9000,
-          ),
-        ),
-      ])) as { data: any[] | null; error: { message: string } | null };
-
-      if (res.error && /created_at|column .*created_at/i.test(res.error.message ?? "")) {
-        const fallback = await supabase.from("clothes").select("*").order("id", { ascending: false });
-        if (!fallback.error) {
-          const normalizedFallback = ((fallback.data ?? []) as any[]).map((it) => normalizeClothingItem(it));
-          setItems(normalizedFallback);
-          try {
-            writeLocalClothes(normalizedFallback);
-          } catch {
-            // ignore
-          }
-          return;
-        }
-      }
-
-      if (res.error) {
-        setError(res.error.message);
-        setItems([]);
-        return;
-      }
-
-      const normalized = ((res.data ?? []) as any[]).map((it) => normalizeClothingItem(it));
-      setItems(normalized);
-
-      // Keep local cache in sync so old deleted items won't reappear if the app falls back to local mode.
-      try {
-        writeLocalClothes(normalized);
-      } catch {
-        // ignore
-      }
-    } catch (e: any) {
-      setError(e?.message ?? "Could not load items.");
-      setItems([]);
-    } finally {
-      setLoading(false);
+      window.localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(next));
+    } catch {
+      // ignore
     }
   };
+
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -2134,19 +2274,54 @@ export default function CreatorPage() {
               </div>
             ) : null}
 
+            {/* Search & Filter Controls */}
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between pb-4 border-b border-zinc-100">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-zinc-400" />
+                <input
+                  type="text"
+                  placeholder="Search by Email, Phone, Name, or Order ID..."
+                  value={orderSearchQuery}
+                  onChange={(e) => setOrderSearchQuery(e.target.value)}
+                  className="w-full rounded-full border border-zinc-200 bg-white/70 pl-9 pr-4 py-2 text-xs text-zinc-800 outline-none focus:border-zinc-400 placeholder:text-zinc-400"
+                />
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold text-zinc-500 whitespace-nowrap">Filter Status:</span>
+                <select
+                  value={orderStatusFilter}
+                  onChange={(e) => setOrderStatusFilter(e.target.value)}
+                  className="rounded-full border border-zinc-200 bg-white px-3.5 py-1.5 text-xs font-semibold text-zinc-700 outline-none cursor-pointer focus:border-zinc-400"
+                >
+                  <option value="all">All Orders</option>
+                  <option value="paid">Paid</option>
+                  <option value="pending">Pending</option>
+                  <option value="shipped">Shipped</option>
+                  <option value="delivered">Delivered</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="trash">Trash Bin</option>
+                </select>
+              </div>
+            </div>
+
             {ordersLoading ? (
               <p className="mt-4 text-sm text-zinc-500">Loading orders...</p>
             ) : orders.length === 0 ? (
               <p className="mt-4 rounded-xl border border-dashed border-zinc-200 p-6 text-sm text-zinc-500">
-                No orders yet.
+                No orders received yet.
+              </p>
+            ) : filteredOrders.length === 0 ? (
+              <p className="mt-4 rounded-xl border border-dashed border-zinc-200 p-6 text-sm text-zinc-500">
+                No orders match your filter criteria.
               </p>
             ) : (
               <div className="mt-4 overflow-x-auto">
-                <table className="w-full min-w-[720px] border-separate border-spacing-0">
+                <table className="w-full min-w-[780px] border-separate border-spacing-0">
                   <thead>
                     <tr className="text-left text-xs font-semibold uppercase tracking-[0.18em] text-zinc-500">
                       <th className="border-b border-zinc-200 py-3 pr-4">
-                        Date
+                        Date / ID
                       </th>
                       <th className="border-b border-zinc-200 py-3 pr-4">
                         Customer
@@ -2160,80 +2335,185 @@ export default function CreatorPage() {
                       <th className="border-b border-zinc-200 py-3 pr-4">
                         Status
                       </th>
-                      <th className="border-b border-zinc-200 py-3">Items</th>
+                      <th className="border-b border-zinc-200 py-3 text-right">Items</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {orders.map((o) => {
+                    {filteredOrders.map((o) => {
                       const lineItems = parseOrderItems(o.items);
+                      const isExpanded = !!expandedOrders[o.id];
+                      const cust = getOrderCustomer(o);
                       return (
-                      <tr key={String(o.id)} className="text-sm">
-                        <td className="border-b border-zinc-100 py-3 pr-4 text-zinc-700">
-                          {new Date(o.created_at).toLocaleString()}
-                        </td>
-                        <td className="border-b border-zinc-100 py-3 pr-4 align-top">
-                          <div className="text-zinc-900">
-                            {o.customer_email || "—"}
-                          </div>
-                          <div className="text-xs text-zinc-500">
-                            Phone: {o.customer_phone || "—"}
-                          </div>
-                        </td>
-                        <td className="border-b border-zinc-100 py-3 pr-4 align-top text-xs text-zinc-700">
-                          <div>
-                            <span className="font-medium">Address: </span>
-                            {(() => {
-                              const manual = o.location_manual ?? null;
-                              const coords = o.location_coords ?? null;
-                              if (o.location_mode === "manual") {
+                      <Fragment key={String(o.id)}>
+                        <tr className="text-sm hover:bg-zinc-50/40 transition-colors duration-150">
+                          <td className="border-b border-zinc-100 py-4 pr-4 align-top">
+                            <div className="text-zinc-900 font-medium">
+                              {new Date(o.created_at).toLocaleDateString()}
+                            </div>
+                            <div className="text-[10px] text-zinc-400 mt-0.5">
+                              ID: {o.id}
+                            </div>
+                          </td>
+                          <td className="border-b border-zinc-100 py-4 pr-4 align-top">
+                            <div className="font-semibold text-zinc-900">
+                              {cust.name || "—"}
+                            </div>
+                            <div className="text-xs text-zinc-600">
+                              {o.customer_email || "—"}
+                            </div>
+                            <div className="text-xs text-zinc-500 mt-0.5">
+                              Phone: {cust.phone || "—"}
+                              {cust.phone_alt ? ` / ${cust.phone_alt}` : ""}
+                            </div>
+                            {cust.dob && (
+                              <div className="text-[10px] text-zinc-400 mt-0.5">
+                                DOB: {cust.dob}
+                              </div>
+                            )}
+                          </td>
+                          <td className="border-b border-zinc-100 py-4 pr-4 align-top text-xs text-zinc-700">
+                            <div className="max-w-[240px] break-words">
+                              <span className="font-semibold text-zinc-500">Address: </span>
+                              {(() => {
+                                const manual = o.location_manual ?? null;
+                                const coords = o.location_coords ?? null;
+                                if (o.location_mode === "manual") {
+                                  return manual || coords || "—";
+                                }
+                                if (o.location_mode === "current") {
+                                  return coords || manual || "—";
+                                }
                                 return manual || coords || "—";
-                              }
-                              if (o.location_mode === "current") {
-                                return coords || manual || "—";
-                              }
-                              // location_mode missing: show whichever exists
-                              return manual || coords || "—";
-                            })()}
-                          </div>
-                          <div className="mt-1">
-                            <span className="font-medium">Payment: </span>
-                            {formatPaymentMethod(o.payment_method)}
-                          </div>
-                        </td>
-                        <td className="border-b border-zinc-100 py-3 pr-4 font-medium text-zinc-900">
-                          {o.currency === "INR" || !o.currency
-                            ? `₹${Math.round(o.total ?? 0).toLocaleString("en-IN")}`
-                            : `${o.total ?? 0} ${o.currency}`}
-                        </td>
-                        <td className="border-b border-zinc-100 py-3 pr-4">
-                          <span className="rounded-full bg-zinc-100 px-3 py-1 text-xs font-medium text-zinc-700">
-                            {o.status ?? "—"}
-                          </span>
-                        </td>
-                        <td className="border-b border-zinc-100 py-3">
-                          <details className="cursor-pointer select-none">
-                            <summary className="text-sm text-zinc-700 underline underline-offset-4">
-                              View
-                            </summary>
-                            <div className="mt-2 max-h-80 overflow-auto rounded-lg bg-zinc-50 p-3 text-xs text-zinc-700">
-                              {lineItems.length ? (
-                                <div className="space-y-2">
-                                  {lineItems.map((it, idx) => (
-                                    <OrderLineItemView
-                                      key={`${o.id}-${idx}`}
-                                      it={it}
-                                    />
-                                  ))}
+                              })()}
+                            </div>
+                            <div className="mt-1 flex items-center gap-1.5">
+                              <span className="font-semibold text-zinc-500">Payment: </span>
+                              <span className="inline-flex items-center rounded-full bg-zinc-100 px-2 py-0.5 text-[10px] font-medium text-zinc-800">
+                                {formatPaymentMethod(o.payment_method)}
+                              </span>
+                            </div>
+                          </td>
+                          <td className="border-b border-zinc-100 py-4 pr-4 font-semibold text-zinc-950 align-top">
+                            {o.currency === "INR" || !o.currency
+                              ? `₹${Math.round(o.total ?? 0).toLocaleString("en-IN")}`
+                              : `${o.total ?? 0} ${o.currency}`}
+                          </td>
+                          <td className="border-b border-zinc-100 py-4 pr-4 align-top">
+                            <div className="relative inline-flex items-center">
+                              {updatingOrderId === o.id ? (
+                                <div className="flex items-center gap-2 text-xs text-zinc-500 px-3 py-1">
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin text-zinc-400" />
+                                  <span>Updating...</span>
                                 </div>
+                              ) : o.status === "trash" ? (
+                                <span className="rounded-full border border-red-200 bg-red-50 px-3 py-1 text-xs font-semibold text-red-700">
+                                  Trashed
+                                </span>
                               ) : (
-                                <pre className="max-h-64 overflow-auto rounded-lg p-2">
-                                  {JSON.stringify(o.items, null, 2)}
-                                </pre>
+                                <select
+                                  value={o.status || "pending"}
+                                  onChange={(e) => handleUpdateStatus(o.id, e.target.value)}
+                                  className={`appearance-none rounded-full border px-3 py-1.5 text-xs font-semibold cursor-pointer outline-none transition-colors pr-7 relative [background-image:url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2020%2020%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M7%209l3%203%203-3%22%20stroke%3D%22%236b7280%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%2F%3E%3C%2Fsvg%3E')] [background-position:right_6px_center] [background-repeat:no-repeat] [background-size:16px] ${getStatusBadgeStyles(o.status)}`}
+                                >
+                                  <option value="pending">Pending</option>
+                                  <option value="paid">Paid</option>
+                                  <option value="shipped">Shipped</option>
+                                  <option value="delivered">Delivered</option>
+                                  <option value="cancelled">Cancelled</option>
+                                </select>
                               )}
                             </div>
-                          </details>
-                        </td>
-                      </tr>
+                          </td>
+                          <td className="border-b border-zinc-100 py-4 align-top text-right whitespace-nowrap">
+                            <div className="inline-flex items-center gap-2">
+                              {o.status === "trash" ? (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateStatus(o.id, "pending")}
+                                    className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 hover:text-zinc-950 transition-colors duration-150 shadow-sm"
+                                    title="Restore Order"
+                                  >
+                                    <RotateCcw className="h-3 w-3 text-zinc-500" />
+                                    <span>Restore</span>
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteOrder(o.id)}
+                                    className="inline-flex items-center gap-1 rounded-full border border-red-200 bg-red-50/10 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-150 shadow-sm"
+                                    title="Delete Permanently"
+                                  >
+                                    <Trash2 className="h-3 w-3" />
+                                    <span>Delete</span>
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setExpandedOrders((prev) => ({
+                                        ...prev,
+                                        [o.id]: !prev[o.id]
+                                      }));
+                                    }}
+                                    className="inline-flex items-center gap-1 rounded-full border border-zinc-200 bg-white px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-50 hover:text-zinc-900 transition-colors duration-150 shadow-sm"
+                                  >
+                                    <span>{isExpanded ? "Hide" : `View (${lineItems.length})`}</span>
+                                    {isExpanded ? (
+                                      <ChevronUp className="h-3 w-3 text-zinc-400" />
+                                    ) : (
+                                      <ChevronDown className="h-3 w-3 text-zinc-400" />
+                                    )}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateStatus(o.id, "trash")}
+                                    className="inline-flex items-center justify-center rounded-full border border-zinc-200 bg-white p-1.5 text-zinc-500 hover:bg-red-50 hover:border-red-200 hover:text-red-600 transition-colors duration-150 shadow-sm"
+                                    title="Move to Trash"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </button>
+                                </>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                        {isExpanded && (
+                          <tr>
+                            <td colSpan={6} className="bg-zinc-50/50 p-4 border-b border-zinc-100">
+                              <div className="grid gap-6 md:grid-cols-[1fr_240px]">
+                                <div className="space-y-2">
+                                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Order Items</h4>
+                                  <div className="grid gap-2 sm:grid-cols-2">
+                                    {lineItems.map((it, idx) => (
+                                      <OrderLineItemView
+                                        key={`${o.id}-${idx}`}
+                                        it={it}
+                                      />
+                                    ))}
+                                  </div>
+                                </div>
+                                <div className="rounded-xl border border-zinc-200 bg-white p-4 space-y-2.5 text-xs text-zinc-600 h-fit">
+                                  <h4 className="text-[10px] font-bold uppercase tracking-wider text-zinc-400">Cost Summary</h4>
+                                  <div className="flex justify-between">
+                                    <span>Subtotal</span>
+                                    <span>₹{Math.round(o.subtotal ?? (o.total ?? 0) - (o.shipping ?? 0)).toLocaleString("en-IN")}</span>
+                                  </div>
+                                  <div className="flex justify-between">
+                                    <span>Shipping</span>
+                                    <span>{o.shipping === 0 ? "FREE" : `₹${Math.round(o.shipping ?? 0).toLocaleString("en-IN")}`}</span>
+                                  </div>
+                                  <div className="flex justify-between border-t border-zinc-200 pt-2 font-bold text-zinc-900">
+                                    <span>Total</span>
+                                    <span>₹{Math.round(o.total ?? 0).toLocaleString("en-IN")}</span>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                       );
                     })}
                   </tbody>

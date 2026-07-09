@@ -3,7 +3,7 @@
 import * as React from "react";
 import { useRouter } from "next/navigation";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ChevronLeft, ChevronRight, Check, Loader2, ShoppingBag } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Loader2, ShoppingBag, ShieldCheck, Truck, Lock, CreditCard } from "lucide-react";
 import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
@@ -48,6 +48,21 @@ const contentVariants = {
   exit: { opacity: 0, x: -28, transition: { duration: 0.2, ease: SCROLL_REVEAL_EASE } },
 };
 
+const loadRazorpayScript = (): Promise<boolean> => {
+  return new Promise((resolve) => {
+    if (typeof window !== "undefined" && (window as any).Razorpay) {
+      resolve(true);
+      return;
+    }
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export function CartCheckoutFlow() {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
@@ -66,12 +81,12 @@ export function CartCheckoutFlow() {
   const [locationMode] = React.useState<"manual">("manual");
   const [manualLocation, setManualLocation] = React.useState("");
   const [locationStatus] = React.useState<string | null>(null);
-  const [paymentMethod, setPaymentMethod] = React.useState<"upi" | "card">("upi");
-  const [cardName, setCardName] = React.useState("");
-  const [cardNumber, setCardNumber] = React.useState("");
-  const [cardExpiry, setCardExpiry] = React.useState("");
-  const [cardCvv, setCardCvv] = React.useState("");
+  const [paymentMethod] = React.useState<"razorpay">("razorpay");
   const [formError, setFormError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    loadRazorpayScript();
+  }, []);
 
   const lastStep = CHECKOUT_STEPS.length - 1;
   const progress =
@@ -111,10 +126,103 @@ export function CartCheckoutFlow() {
     }
   };
 
+  const saveOrder = async (payload: any) => {
+    type OrderInsertRow = Record<string, unknown>;
+    if (!supabaseEnabled) {
+      const prevRaw = window.localStorage.getItem(LOCAL_ORDERS_KEY);
+      let prev: unknown[] = [];
+      try {
+        prev = prevRaw ? (JSON.parse(prevRaw) as unknown[]) : [];
+      } catch {
+        prev = [];
+      }
+      const order = { id: Date.now(), created_at: new Date().toISOString(), ...payload };
+      window.localStorage.setItem(
+        LOCAL_ORDERS_KEY,
+        JSON.stringify([order, ...(Array.isArray(prev) ? prev : [])]),
+      );
+    } else {
+      let res = await supabase.from("orders").insert(payload as unknown as OrderInsertRow);
+      if (res.error && /Could not find the 'customer_name' column|Could not find the 'customer_phone_alt' column|Could not find the 'customer_dob' column/i.test(res.error.message ?? "")) {
+        const minimal = {
+          customer_email: payload.customer_email,
+          customer_phone: payload.customer_phone,
+          location_mode: payload.location_mode,
+          location_manual: payload.location_manual,
+          location_coords: payload.location_coords,
+          payment_method: payload.payment_method,
+          currency: payload.currency,
+          status: payload.status,
+          subtotal: payload.subtotal,
+          shipping: payload.shipping,
+          total: payload.total,
+          items: payload.items,
+        };
+        res = await supabase.from("orders").insert(minimal as unknown as OrderInsertRow);
+      }
+      if (res.error) throw res.error;
+    }
+
+    try {
+      const enabled = process.env.NEXT_PUBLIC_ENABLE_EMAIL_NOTIFICATIONS === "true";
+      if (!enabled) throw new Error("disabled");
+
+      const adminTo = process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "";
+      const itemLines = items
+        .map((i) => {
+          const extra =
+            (i as any).color || (i as any).size
+              ? ` (${[(i as any).color ? `Color: ${(i as any).color}` : null, (i as any).size ? `Size: ${(i as any).size}` : null].filter(Boolean).join(", ")})`
+              : "";
+          return `- ${i.name}${extra} × ${i.qty} = ${formatINR(i.price * i.qty)}`;
+        })
+        .join("\n");
+
+      const text = [
+        `New order placed (${payload.status === "paid" ? "Paid via Razorpay" : "Pending confirmation"})`,
+        "",
+        `Name: ${fullName.trim()}`,
+        `Phone: ${phone.trim()}`,
+        altPhone.trim() ? `Alternate: ${altPhone.trim()}` : null,
+        dob.trim() ? `DOB: ${dob.trim()}` : null,
+        "",
+        `Delivery: ${manualLocation.trim()}`,
+        "",
+        "Items:",
+        itemLines,
+        "",
+        `Total: ${formatINR(total)}`,
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+      const customerEmail = payload.customer_email;
+      const toList = [
+        ...(customerEmail ? [customerEmail] : []),
+        ...adminTo
+          .split(",")
+          .map((e) => e.trim())
+          .filter(Boolean),
+      ];
+
+      if (toList.length) {
+        await fetch("/api/notify", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            to: toList,
+            subject: `Sawbhagya order · ${fullName.trim()}`,
+            text,
+          }),
+        });
+      }
+    } catch {
+      // ignore email failures
+    }
+  };
+
   const handleBuy = async () => {
     if (isEmpty || isPlacingOrder) return;
-
-    type OrderInsertRow = Record<string, unknown>;
 
     if (supabaseEnabled) {
       const {
@@ -144,33 +252,6 @@ export function CartCheckoutFlow() {
       toast.error(msg);
       return;
     }
-    if (paymentMethod === "card") {
-      const cardNo = cardNumber.replace(/\s+/g, "");
-      if (!cardName.trim()) {
-        const msg = "Please enter the card holder name.";
-        setFormError(msg);
-        toast.error(msg);
-        return;
-      }
-      if (!/^\d{12,19}$/.test(cardNo)) {
-        const msg = "Please enter a valid card number.";
-        setFormError(msg);
-        toast.error(msg);
-        return;
-      }
-      if (!/^\d{2}\/\d{2}$/.test(cardExpiry.trim())) {
-        const msg = "Please enter expiry as MM/YY.";
-        setFormError(msg);
-        toast.error(msg);
-        return;
-      }
-      if (!/^\d{3,4}$/.test(cardCvv.trim())) {
-        const msg = "Please enter a valid CVV.";
-        setFormError(msg);
-        toast.error(msg);
-        return;
-      }
-    }
 
     setFormError(null);
     setIsPlacingOrder(true);
@@ -191,17 +272,14 @@ export function CartCheckoutFlow() {
         customer_phone_alt: altPhone.trim() || null,
         customer_dob: dob.trim() || null,
         location_mode: locationMode,
-        location_manual:
-          manualLocation.trim(),
+        location_manual: manualLocation.trim(),
         location_coords: null,
         payment_method: paymentMethod,
         currency: "INR",
-        status: paymentMethod === "card" ? "payment-requested" : "pending",
+        status: paymentMethod === "razorpay" ? "paid" : "pending",
         subtotal,
         shipping,
         total,
-        // Store as an object so we can always keep customer meta even if the DB
-        // doesn't have separate columns. Creator dashboard already handles this shape.
         items: {
           customer: {
             name: fullName.trim(),
@@ -223,110 +301,93 @@ export function CartCheckoutFlow() {
         },
       };
 
-      if (!supabaseEnabled) {
-        const prevRaw = window.localStorage.getItem(LOCAL_ORDERS_KEY);
-        let prev: unknown[] = [];
-        try {
-          prev = prevRaw ? (JSON.parse(prevRaw) as unknown[]) : [];
-        } catch {
-          prev = [];
+      if (paymentMethod === "razorpay") {
+        const loaded = await loadRazorpayScript();
+        if (!loaded) {
+          throw new Error("Razorpay SDK failed to load. Please check your internet connection.");
         }
-        const order = { id: Date.now(), created_at: new Date().toISOString(), ...payload };
-        window.localStorage.setItem(
-          LOCAL_ORDERS_KEY,
-          JSON.stringify([order, ...(Array.isArray(prev) ? prev : [])]),
-        );
+
+        const orderRes = await fetch("/api/checkout/create-order", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ amount: total }),
+        });
+
+        if (!orderRes.ok) {
+          const errData = await orderRes.json();
+          throw new Error(errData.error || "Failed to create payment order.");
+        }
+
+        const razorpayOrder = await orderRes.json();
+
+        const options = {
+          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+          amount: razorpayOrder.amount,
+          currency: razorpayOrder.currency,
+          name: "Sawbhagya",
+          description: "Order Payment",
+          order_id: razorpayOrder.id,
+          prefill: {
+            name: fullName.trim(),
+            contact: phone.trim(),
+            email: customerEmail || "",
+          },
+          theme: {
+            color: "#000000",
+          },
+          modal: {
+            ondismiss: () => {
+              setIsPlacingOrder(false);
+              toast.error("Payment was cancelled.");
+            },
+          },
+          handler: async (response: any) => {
+            setIsPlacingOrder(true);
+            try {
+              const verifyRes = await fetch("/api/checkout/verify-payment", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  razorpay_order_id: response.razorpay_order_id,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_signature: response.razorpay_signature,
+                }),
+              });
+
+              if (!verifyRes.ok) {
+                const errData = await verifyRes.json();
+                throw new Error(errData.error || "Payment signature verification failed.");
+              }
+
+              const finalPayload = {
+                ...payload,
+                items: {
+                  ...payload.items,
+                  razorpay_payment_id: response.razorpay_payment_id,
+                  razorpay_order_id: response.razorpay_order_id,
+                },
+              };
+
+              await saveOrder(finalPayload);
+              clear();
+              toast.success("Order placed successfully! Payment verified.");
+              router.push("/");
+            } catch (err: any) {
+              toast.error(err.message || "Failed to verify payment.");
+            } finally {
+              setIsPlacingOrder(false);
+            }
+          },
+        };
+
+        const rzp = new (window as any).Razorpay(options);
+        rzp.open();
       } else {
-        // Try full payload first; if columns don't exist, fall back to the minimal shape.
-        let res = await supabase.from("orders").insert(payload as unknown as OrderInsertRow);
-        if (res.error && /Could not find the 'customer_name' column|Could not find the 'customer_phone_alt' column|Could not find the 'customer_dob' column/i.test(res.error.message ?? "")) {
-          const minimal = {
-            customer_email: payload.customer_email,
-            customer_phone: payload.customer_phone,
-            location_mode: payload.location_mode,
-            location_manual: payload.location_manual,
-            location_coords: payload.location_coords,
-            payment_method: payload.payment_method,
-            currency: payload.currency,
-            status: payload.status,
-            subtotal: payload.subtotal,
-            shipping: payload.shipping,
-            total: payload.total,
-            items: payload.items,
-          };
-          res = await supabase.from("orders").insert(minimal as unknown as OrderInsertRow);
-        }
-        if (res.error) throw res.error;
+        await saveOrder(payload);
+        clear();
+        toast.success("Order placed! We’ll contact you shortly to confirm.");
+        router.push("/");
       }
-
-      // Optional email notifications (requires SMTP env vars on the server).
-      try {
-        const enabled = process.env.NEXT_PUBLIC_ENABLE_EMAIL_NOTIFICATIONS === "true";
-        if (!enabled) {
-          // skip calling the API to avoid noisy 501s in console when SMTP isn't configured
-          throw new Error("disabled");
-        }
-        const adminTo = process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "";
-        const itemLines = items
-          .map((i) => {
-            const extra =
-              (i as any).color || (i as any).size
-                ? ` (${[(i as any).color ? `Color: ${(i as any).color}` : null, (i as any).size ? `Size: ${(i as any).size}` : null].filter(Boolean).join(", ")})`
-                : "";
-            return `- ${i.name}${extra} × ${i.qty} = ${formatINR(i.price * i.qty)}`;
-          })
-          .join("\n");
-
-        const text = [
-          "New order placed",
-          "",
-          `Name: ${fullName.trim()}`,
-          `Phone: ${phone.trim()}`,
-          altPhone.trim() ? `Alternate: ${altPhone.trim()}` : null,
-          dob.trim() ? `DOB: ${dob.trim()}` : null,
-          "",
-          `Delivery: ${manualLocation.trim()}`,
-          "",
-          "Items:",
-          itemLines,
-          "",
-          `Total: ${formatINR(total)}`,
-        ]
-          .filter(Boolean)
-          .join("\n");
-
-        const toList = [
-          ...(customerEmail ? [customerEmail] : []),
-          ...adminTo
-            .split(",")
-            .map((e) => e.trim())
-            .filter(Boolean),
-        ];
-
-        if (toList.length) {
-          const resp = await fetch("/api/notify", {
-            method: "POST",
-            headers: { "content-type": "application/json" },
-            body: JSON.stringify({
-              to: toList,
-              subject: `Sawbhagya order · ${fullName.trim()}`,
-              text,
-            }),
-          });
-          // Ignore failures silently.
-          void resp;
-        }
-      } catch {
-        // ignore email failures (order already placed)
-      }
-
-      clear();
-      toast.success(
-        paymentMethod === "card"
-          ? "Card payment request sent. We’ll contact you to confirm securely."
-          : "Order placed! We’ll contact you shortly to confirm.",
-      );
-      router.push("/");
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Could not place order. Please try again.";
       toast.error(msg);
@@ -580,158 +641,174 @@ export function CartCheckoutFlow() {
 
             {currentStep === 3 && (
               <>
-                <CardHeader>
-                  <CardTitle>Payment</CardTitle>
-                  <CardDescription>Choose how you’d like to pay.</CardDescription>
+                <CardHeader className="pb-3 font-sans">
+                  <CardTitle className="text-lg font-bold tracking-tight font-sans">Payment Method</CardTitle>
+                  <CardDescription className="font-sans">All payments are securely processed and encrypted.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <RadioGroup
-                    value={paymentMethod}
-                    onValueChange={(v) => setPaymentMethod(v as "upi" | "card")}
-                    className="grid gap-2"
-                  >
-                    {[
-                      { value: "upi" as const, label: "UPI" },
-                      { value: "card" as const, label: "Card" },
-                    ].map((opt, i) => (
-                      <motion.div
-                        key={opt.value}
-                        className={cn(
-                          "flex items-center gap-3 rounded-xl border p-3 transition-colors hover:bg-accent/50",
-                          paymentMethod === opt.value ? "border-primary/40 bg-accent/25" : "",
-                        )}
-                        initial={reduceMotion ? false : { opacity: 0, x: -8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: reduceMotion ? 0 : i * 0.05, duration: 0.25 }}
-                        whileHover={reduceMotion ? undefined : { scale: 1.01 }}
-                      >
-                        <RadioGroupItem value={opt.value} id={`pay-${opt.value}`} />
-                        <Label htmlFor={`pay-${opt.value}`} className="cursor-pointer flex-1 text-sm">
-                          {opt.label}
-                        </Label>
-                      </motion.div>
-                    ))}
-                  </RadioGroup>
-
-                  {paymentMethod === "upi" ? (
-                    <div className="grid gap-3 rounded-2xl border border-black/10 bg-white/80 p-4 sm:grid-cols-[1fr_auto] sm:items-center">
-                      <div>
-                        <p className="text-sm font-semibold">Scan to pay via UPI</p>
-                        <p className="mt-1 text-xs text-muted-foreground">
-                          We’ll confirm your order on WhatsApp or call after payment.
+                <CardContent className="space-y-4 font-sans">
+                  <div className="relative overflow-hidden rounded-2xl border-2 border-primary/50 bg-gradient-to-br from-neutral-50 to-neutral-100 p-5 shadow-sm dark:from-neutral-900 dark:to-neutral-950 font-sans">
+                    <div className="flex items-start justify-between gap-4 font-sans">
+                      <div className="space-y-1.5 font-sans">
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-400 font-sans">
+                          🔒 Secure Gateway
+                        </span>
+                        <h4 className="text-sm font-bold text-neutral-900 dark:text-white font-sans">
+                          Online Payment via Razorpay
+                        </h4>
+                        <p className="text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed font-sans">
+                          Pay instantly using any UPI App (GPay, PhonePe, Paytm), Credit/Debit Cards, Netbanking, or popular wallets.
                         </p>
                       </div>
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src="/company_logo/upi_scanner.jpeg"
-                        alt="UPI QR"
-                        className="h-40 w-40 rounded-xl border border-black/10 object-contain"
-                      />
-                    </div>
-                  ) : null}
-
-                  {paymentMethod === "card" ? (
-                    <div className="space-y-2 rounded-2xl border border-black/10 bg-white/80 p-4">
-                      <Input
-                        placeholder="Card holder name"
-                        value={cardName}
-                        onChange={(e) => setCardName(e.target.value)}
-                        className="rounded-xl"
-                      />
-                      <Input
-                        placeholder="Card number"
-                        value={cardNumber}
-                        onChange={(e) =>
-                          setCardNumber(
-                            e.target.value
-                              .replace(/[^\d]/g, "")
-                              .slice(0, 19)
-                              .replace(/(\d{4})(?=\d)/g, "$1 "),
-                          )
-                        }
-                        className="rounded-xl"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          placeholder="MM/YY"
-                          value={cardExpiry}
-                          onChange={(e) => {
-                            const v = e.target.value.replace(/[^\d]/g, "").slice(0, 4);
-                            setCardExpiry(v.length > 2 ? `${v.slice(0, 2)}/${v.slice(2)}` : v);
-                          }}
-                          className="rounded-xl"
-                        />
-                        <Input
-                          type="password"
-                          placeholder="CVV"
-                          value={cardCvv}
-                          onChange={(e) =>
-                            setCardCvv(e.target.value.replace(/[^\d]/g, "").slice(0, 4))
-                          }
-                          className="rounded-xl"
-                        />
+                      <div className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary text-white">
+                        <Check className="h-3 w-3 stroke-[3]" />
                       </div>
-                      <p className="text-[11px] text-muted-foreground">
-                        Card details are not stored on our servers.
-                      </p>
                     </div>
-                  ) : null}
+
+                    <div className="mt-5 border-t border-neutral-200/60 pt-4 dark:border-neutral-800 font-sans">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-neutral-400 font-sans">
+                        Accepted Methods
+                      </p>
+                      <div className="mt-2.5 flex flex-wrap items-center gap-3 grayscale opacity-80 transition hover:grayscale-0 hover:opacity-100 duration-300 font-sans">
+                        <div className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-bold text-neutral-700 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 font-sans">
+                          <CreditCard className="h-3.5 w-3.5 text-neutral-500" />
+                          <span>Cards</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-bold text-neutral-700 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 font-sans">
+                          <span className="text-[10px] font-extrabold text-blue-600 dark:text-blue-400 font-sans">UPI</span>
+                          <span>UPI / QR</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-bold text-neutral-700 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 font-sans">
+                          <span>Net Banking</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 rounded-lg border border-neutral-200 bg-white px-2 py-1 text-xs font-bold text-neutral-700 shadow-sm dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300 font-sans">
+                          <span>Wallets</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-3 rounded-xl bg-primary/5 p-4 text-xs text-primary dark:bg-primary/10 font-sans">
+                    <ShieldCheck className="h-5 w-5 shrink-0 stroke-[2]" />
+                    <p className="leading-relaxed font-sans">
+                      Payment details are encrypted using SSL protocol. We do not store or see your card/payment credentials.
+                    </p>
+                  </div>
                 </CardContent>
               </>
             )}
 
             {currentStep === 4 && (
               <>
-                <CardHeader>
-                  <CardTitle>Review & place order</CardTitle>
-                  <CardDescription>Confirm everything looks correct.</CardDescription>
+                <CardHeader className="pb-3 font-sans">
+                  <CardTitle className="text-lg font-bold tracking-tight font-sans">Order Summary</CardTitle>
+                  <CardDescription className="font-sans">Review your items and shipping details before completing payment.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4 text-sm">
-                  <div className="rounded-xl border border-black/10 bg-white/70 p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                      Items ({itemCount})
+                <CardContent className="space-y-4 text-sm font-sans">
+                  {/* Items list with images */}
+                  <div className="space-y-2.5 font-sans">
+                    <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-455 text-muted-foreground font-sans">
+                      Bag Items ({itemCount})
                     </p>
-                    <ul className="mt-2 space-y-1.5">
+                    <div className="max-h-[180px] overflow-y-auto pr-1 space-y-2 font-sans">
                       {items.map((i) => (
-                        <li key={i.id} className="flex justify-between gap-2 text-neutral-800">
-                          <span className="line-clamp-1">
-                            {i.name} × {i.qty}
+                        <div key={i.id} className="flex items-center gap-3 rounded-xl border border-neutral-200/60 bg-white/50 p-2 dark:border-neutral-800 dark:bg-black/20 font-sans">
+                          <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-neutral-100 ring-1 ring-black/5 dark:bg-neutral-900 font-sans">
+                            {i.image ? (
+                              <img
+                                src={i.image}
+                                alt={i.name}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-full w-full items-center justify-center bg-neutral-100 text-xs font-semibold text-neutral-450 dark:bg-neutral-950 font-sans">
+                                SA
+                              </div>
+                            )}
+                            <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-neutral-900 text-[9px] font-bold text-white shadow-sm ring-1 ring-white font-sans">
+                              {i.qty}
+                            </span>
+                          </div>
+                          <div className="min-w-0 flex-1 font-sans">
+                            <h5 className="truncate text-xs font-bold text-neutral-900 dark:text-white font-sans">
+                              {i.name}
+                            </h5>
+                            <p className="mt-0.5 text-[10px] text-neutral-500 font-sans">
+                              {[i.color ? `Color: ${i.color}` : null, i.size ? `Size: ${i.size}` : null]
+                                .filter(Boolean)
+                                .join(" · ") || "Standard variation"}
+                            </p>
+                          </div>
+                          <span className="text-xs font-bold text-neutral-900 dark:text-white shrink-0 font-sans">
+                            {formatINR(i.price * i.qty)}
                           </span>
-                          <span className="shrink-0 font-medium">{formatINR(i.price * i.qty)}</span>
-                        </li>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
-                  <div className="grid gap-2 rounded-xl border border-black/10 bg-white/70 p-4 text-neutral-800">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Name</span>
-                      <span className="font-medium">{fullName || "—"}</span>
+
+                  {/* Customer details & address summary */}
+                  <div className="grid gap-2 rounded-xl border border-neutral-200/60 bg-neutral-50/50 p-3.5 text-xs text-neutral-700 dark:border-neutral-850 dark:bg-neutral-950/40 dark:text-neutral-300 font-sans">
+                    <div className="flex justify-between font-sans">
+                      <span className="text-neutral-500 font-sans">Recipient Name</span>
+                      <span className="font-semibold text-neutral-900 dark:text-white font-sans">{fullName || "—"}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Phone</span>
-                      <span className="font-medium">{phone || "—"}</span>
+                    <div className="flex justify-between font-sans">
+                      <span className="text-neutral-500 font-sans">Contact Number</span>
+                      <span className="font-semibold text-neutral-900 dark:text-white font-sans">{phone || "—"}</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Alternate</span>
-                      <span className="font-medium">{altPhone || "—"}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">DOB</span>
-                      <span className="font-medium">{dob || "—"}</span>
-                    </div>
-                    <div className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Delivery</span>
-                      <span className="max-w-[65%] text-right text-xs font-medium">
+                    <div className="flex justify-between gap-4 font-sans">
+                      <span className="text-neutral-500 shrink-0 font-sans">Delivery Address</span>
+                      <span className="text-right font-medium text-neutral-900 dark:text-white line-clamp-2 font-sans">
                         {manualLocation || "—"}
                       </span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Payment</span>
-                      <span className="font-medium uppercase">{paymentMethod}</span>
+                    <div className="flex justify-between border-t border-neutral-200/60 pt-2 dark:border-neutral-800 font-sans">
+                      <span className="text-neutral-500 font-sans">Payment Gateway</span>
+                      <span className="inline-flex items-center gap-1 font-semibold text-neutral-900 dark:text-white font-sans">
+                        <Lock className="h-3 w-3 text-emerald-600" /> Razorpay Secured
+                      </span>
                     </div>
-                    <div className="mt-2 flex justify-between border-t border-black/10 pt-2 text-base font-semibold">
-                      <span>Total</span>
-                      <span>{formatINR(total)}</span>
+                  </div>
+
+                  {/* Cost breakdown - designed to be highly appealing */}
+                  <div className="rounded-2xl bg-gradient-to-br from-neutral-50 to-neutral-100 p-4 dark:from-neutral-900 dark:to-neutral-950 ring-1 ring-black/[0.04] font-sans">
+                    <div className="space-y-1.5 text-xs text-neutral-600 dark:text-neutral-400 font-sans">
+                      <div className="flex justify-between font-sans">
+                        <span>Items Subtotal</span>
+                        <span className="font-semibold text-neutral-900 dark:text-white font-sans">{formatINR(subtotal)}</span>
+                      </div>
+                      <div className="flex justify-between items-center font-sans">
+                        <span className="flex items-center gap-1 font-sans">
+                          Shipping & Handling
+                          <span className="rounded bg-emerald-50 px-1 py-0.5 text-[9px] font-bold uppercase tracking-wider text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-400 font-sans">
+                            Free Shipping
+                          </span>
+                        </span>
+                        <span className="font-bold text-emerald-600 dark:text-emerald-400 font-sans">FREE</span>
+                      </div>
+                      <div className="flex justify-between font-sans">
+                        <span>GST / Estimated Tax</span>
+                        <span className="font-medium text-neutral-400 font-sans">Included</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-3 border-t border-neutral-200/60 pt-2.5 flex justify-between items-baseline dark:border-neutral-800 font-sans">
+                      <span className="text-sm font-bold text-neutral-900 dark:text-white font-sans">Total Amount</span>
+                      <span className="text-lg font-extrabold text-neutral-950 dark:text-white tracking-tight font-sans">
+                        {formatINR(total)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* conversion features / psychological cues */}
+                  <div className="grid grid-cols-2 gap-3 border-t border-neutral-100 pt-3 dark:border-neutral-800 font-sans">
+                    <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-sans">
+                      <Truck className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>Delivery in 3–5 Days</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] text-neutral-500 font-sans">
+                      <ShieldCheck className="h-4 w-4 text-emerald-600 shrink-0" />
+                      <span>Verified SSL Checkout</span>
                     </div>
                   </div>
                 </CardContent>

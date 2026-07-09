@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { Search, ShoppingBag, ShoppingCart, X } from "lucide-react";
+import { Search, ShoppingBag, ShoppingCart, X, ChevronDown } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
@@ -20,6 +20,19 @@ export function FloatingHeader() {
   const [searchText, setSearchText] = React.useState("");
   const [openDesktopDropdown, setOpenDesktopDropdown] = React.useState<string | null>(null);
   const [activeDesktopDropdownItem, setActiveDesktopDropdownItem] = React.useState<string | null>(null);
+  const [accountDropdownOpen, setAccountDropdownOpen] = React.useState(false);
+  const accountDropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!accountDropdownOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(e.target as Node)) {
+        setAccountDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [accountDropdownOpen]);
 
   const navIconClassName = "h-[18px] w-[18px] sm:h-5 sm:w-5 lg:h-[22px] lg:w-[22px]";
 
@@ -264,8 +277,14 @@ export function FloatingHeader() {
               Login
             </motion.a>
           ) : (
-            <div className="hidden items-center gap-2 text-xs md:flex lg:text-sm">
-              <span className="inline-flex items-center gap-2 rounded-full bg-zinc-100 px-2.5 py-1 ring-1 ring-black/5">
+            <div className="relative hidden items-center gap-2 text-xs md:flex lg:text-sm" ref={accountDropdownRef}>
+              <button
+                type="button"
+                onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-2.5 py-1 ring-1 ring-black/5 hover:bg-zinc-100 transition-colors duration-150 outline-none focus-visible:ring-black/20"
+                aria-haspopup="menu"
+                aria-expanded={accountDropdownOpen}
+              >
                 <span className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   {userAvatarUrl ? (
@@ -276,17 +295,47 @@ export function FloatingHeader() {
                     </span>
                   )}
                 </span>
-                <span className="max-w-[180px] truncate text-xs font-semibold text-zinc-800 lg:max-w-[220px]">
-                  {userEmail ?? ""}
+                <span className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-zinc-800">
+                  Your Account
                 </span>
-              </span>
-              <button
-                type="button"
-                onClick={handleSignOut}
-                className="rounded-full border border-zinc-300 bg-transparent px-3 py-1 font-semibold uppercase tracking-[0.12em] text-zinc-900 hover:bg-zinc-100"
-              >
-                Sign out
+                <ChevronDown className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-600 transition-transform duration-150" style={{ transform: accountDropdownOpen ? 'rotate(180deg)' : 'none' }} />
               </button>
+
+              <AnimatePresence>
+                {accountDropdownOpen && (
+                  <motion.div
+                    className="absolute right-0 top-full z-50 mt-2 w-48 origin-top-right rounded-xl border border-zinc-200 bg-white p-1.5 shadow-lg"
+                    initial={reduceMotion ? { opacity: 1 } : { opacity: 0, y: 4, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.95 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    role="menu"
+                  >
+                    <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 mb-1 truncate">
+                      {userEmail}
+                    </div>
+                    <Link
+                      href="/orders"
+                      className="block rounded-lg px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors w-full text-left"
+                      onClick={() => setAccountDropdownOpen(false)}
+                      role="menuitem"
+                    >
+                      Your Orders
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAccountDropdownOpen(false);
+                        handleSignOut();
+                      }}
+                      className="block rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50/50 transition-colors w-full text-left"
+                      role="menuitem"
+                    >
+                      Sign out
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
           )}
         </div>
@@ -302,6 +351,45 @@ export function FloatingHeader() {
             transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
           >
           <nav className="flex flex-col gap-2">
+            {isLoggedIn && (
+              <div className="flex flex-col gap-3 px-3 py-3 border-b border-zinc-100 mb-1">
+                <div className="flex items-center gap-3">
+                  <span className="relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-zinc-100 ring-1 ring-black/5">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {userAvatarUrl ? (
+                      <img src={userAvatarUrl} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-[12px] font-bold text-zinc-700">
+                        {(userEmail?.[0] ?? userName?.[0] ?? "U").toUpperCase()}
+                      </span>
+                    )}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-zinc-800">Your Account</p>
+                    <p className="truncate text-[10.5px] text-zinc-500">{userEmail}</p>
+                  </div>
+                </div>
+                <div className="flex gap-2.5 mt-1">
+                  <Link
+                    href="/orders"
+                    className="flex-1 text-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Your Orders
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleSignOut();
+                      setMenuOpen(false);
+                    }}
+                    className="flex-1 text-center rounded-lg border border-red-200 bg-red-50/20 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50/55 transition-colors"
+                  >
+                    Sign out
+                  </button>
+                </div>
+              </div>
+            )}
             <form
               onSubmit={(e) => {
                 submitSearch(e);
@@ -330,6 +418,7 @@ export function FloatingHeader() {
             >
               {isLoggedIn ? "Cart" : "Login to view cart"}
             </a>
+
             <div className="mt-2 space-y-1 border-t border-zinc-200 pt-3">
               {PRIMARY_NAV.filter((x) => x.name !== "Cart").map((item) =>
                 item.items && item.items.length > 0 ? (

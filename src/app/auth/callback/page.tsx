@@ -21,14 +21,24 @@ export default function AuthCallbackPage() {
         const params = new URLSearchParams(window.location.search);
         const to = (params.get("to") ?? "").toLowerCase();
 
-        // Supabase redirects back with ?code=... (PKCE). Exchange it for a session.
-        const code = params.get("code");
-        if (code) {
-          const { error } = await supabase.auth.exchangeCodeForSession(code);
-          if (error) throw error;
+        // For implicit flow: tokens are in the URL hash. Supabase detects them automatically
+        // via detectSessionInUrl. We just need to wait a moment and then check the session.
+        const hash = window.location.hash;
+        const hasHashTokens = hash.includes("access_token=");
+
+        if (hasHashTokens) {
+          // Give Supabase a moment to detect and store the session from the hash
+          await new Promise((resolve) => setTimeout(resolve, 800));
+        } else {
+          // Fallback: PKCE code exchange (legacy)
+          const code = params.get("code");
+          if (code) {
+            const { error } = await supabase.auth.exchangeCodeForSession(code);
+            if (error) throw error;
+          }
         }
 
-        // If session exists now, route; otherwise send user to sign-in.
+        // Check if session now exists
         const { data } = await supabase.auth.getSession();
         const hasSession = !!data?.session;
         if (!hasSession) {

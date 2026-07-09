@@ -99,13 +99,21 @@ export function BestSellersMotionSlider({
               const rating = Number(it.product.rating || 0);
               const price = formatINR(it.product.price);
               return (
-                <button
+                <div
                   key={`${it.product.id}-${index}`}
-                  type="button"
-                  className="group relative w-[220px] shrink-0 overflow-hidden rounded-3xl border border-black/10 bg-white/70 text-left shadow-md ring-1 ring-black/[0.03] transition hover:-translate-y-1 hover:bg-white hover:shadow-xl"
+                  role="button"
+                  tabIndex={0}
+                  className="group relative w-[220px] shrink-0 overflow-hidden rounded-3xl border border-black/10 bg-white/70 text-left shadow-md ring-1 ring-black/[0.03] transition hover:-translate-y-1 hover:bg-white hover:shadow-xl cursor-pointer"
                   onClick={() => {
                     setActiveIdx(realIndex);
                     setOpen(true);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      setActiveIdx(realIndex);
+                      setOpen(true);
+                    }
                   }}
                 >
                   <div className="relative h-44 w-full overflow-hidden bg-neutral-100">
@@ -137,14 +145,16 @@ export function BestSellersMotionSlider({
                         </span>
                       </div>
                     </div>
-                    <ProductCartControl
-                      product={it.product}
-                      image={it.imageSrc}
-                      tone="card"
-                      compact
-                    />
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <ProductCartControl
+                        product={it.product}
+                        image={it.imageSrc}
+                        tone="card"
+                        compact
+                      />
+                    </div>
                   </div>
-                </button>
+                </div>
               );
             })}
           </div>

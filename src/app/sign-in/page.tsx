@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { motion, useReducedMotion } from "framer-motion";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { PageShell } from "@/components/ui/page-shell";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
 
-export default function SignInPage() {
+function SignInInner() {
   const reduceMotion = useReducedMotion();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -15,10 +15,8 @@ export default function SignInPage() {
   const [currentEmail, setCurrentEmail] = useState<string | null>(null);
   const router = useRouter();
 
-  const to = useMemo(() => {
-    if (typeof window === "undefined") return null;
-    return new URLSearchParams(window.location.search).get("to")?.toLowerCase() ?? null;
-  }, []);
+  const searchParams = useSearchParams();
+  const to = searchParams.get("to")?.toLowerCase() ?? null;
 
   const allowedAdmins = useMemo(() => {
     const raw = process.env.NEXT_PUBLIC_CREATOR_EMAIL ?? "";
@@ -83,13 +81,7 @@ export default function SignInPage() {
 
     try {
       setLoading(true);
-      // IMPORTANT for PKCE:
-      // The OAuth flow MUST start and finish on the same origin,
-      // otherwise the PKCE code_verifier stored in web storage won't be found.
       const baseNoSlash = window.location.origin.replace(/\/$/, "");
-      const to = new URLSearchParams(window.location.search).get("to")?.toLowerCase();
-      // Supabase OAuth (PKCE) returns a `code` that must be exchanged for a session.
-      // We do that on /auth/callback and then route based on `?to=...`.
       const redirectTo = `${baseNoSlash}/auth/callback${to ? `?to=${encodeURIComponent(to)}` : ""}`;
 
       const { error } = await supabase.auth.signInWithOAuth({
@@ -242,3 +234,10 @@ export default function SignInPage() {
   );
 }
 
+export default function SignInPage() {
+  return (
+    <Suspense>
+      <SignInInner />
+    </Suspense>
+  );
+}

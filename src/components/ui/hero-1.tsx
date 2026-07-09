@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { motion, useReducedMotion } from "framer-motion";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Menu, Search, ShoppingBag, ShoppingCart, X } from "lucide-react";
+import { Menu, Search, ShoppingBag, ShoppingCart, X, ChevronDown } from "lucide-react";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { SITE_BRAND_NAME, SITE_LOGO_ALT, SITE_LOGO_SRC } from "@/lib/site-logo";
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
@@ -152,6 +152,33 @@ export function HeroLanding(props: HeroLandingProps) {
   const [authAvatarUrl, setAuthAvatarUrl] = useState<string | null>(null);
   const [authReady, setAuthReady] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [accountDropdownOpen, setAccountDropdownOpen] = useState(false);
+  const accountDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!accountDropdownOpen) return;
+    const onClickOutside = (e: MouseEvent) => {
+      if (accountDropdownRef.current && !accountDropdownRef.current.contains(e.target as Node)) {
+        setAccountDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", onClickOutside);
+    return () => document.removeEventListener("mousedown", onClickOutside);
+  }, [accountDropdownOpen]);
+
+  const handleSignOut = async () => {
+    try {
+      if (supabaseEnabled) {
+        await supabase.auth.signOut();
+      }
+    } finally {
+      setAuthEmail(null);
+      setAuthAvatarUrl(null);
+      if (typeof window !== "undefined") {
+        window.location.href = "/";
+      }
+    }
+  };
 
   const normalizedBackgroundImages = useMemo(
     () => (backgroundImages ?? []).filter(Boolean),
@@ -717,19 +744,16 @@ export function HeroLanding(props: HeroLandingProps) {
                     </motion.a>
                   ) : null}
                   {loginText && loginHref ? (
-                    <a
-                      href={authHref}
-                      className={[
-                        "inline-flex items-center gap-2 transition-colors whitespace-nowrap",
-                        authReady && authEmail ? "rounded-full bg-white/70 px-2 py-1.5 ring-1 ring-black/10 hover:bg-white" : "",
-                        `text-[11px] font-bold tracking-[0.12em] uppercase lg:text-xs xl:text-sm ${navTextClass}`,
-                      ].join(" ")}
-                      aria-label={authReady && authEmail ? `Account ${authEmail}` : loginText}
-                      title={authReady && authEmail ? authEmail ?? undefined : undefined}
-                    >
-                      {authReady && authEmail ? (
-                        <>
-                          <span className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-black/5 ring-1 ring-black/10">
+                    authReady && authEmail ? (
+                      <div className="relative" ref={accountDropdownRef}>
+                        <button
+                          type="button"
+                          onClick={() => setAccountDropdownOpen(!accountDropdownOpen)}
+                          className="inline-flex items-center gap-2 rounded-full bg-zinc-50 px-2.5 py-1 ring-1 ring-black/5 hover:bg-zinc-100 transition-colors duration-150 outline-none focus-visible:ring-black/20"
+                          aria-haspopup="menu"
+                          aria-expanded={accountDropdownOpen}
+                        >
+                          <span className="relative grid h-7 w-7 place-items-center overflow-hidden rounded-full bg-white ring-1 ring-black/10">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             {authAvatarUrl ? (
                               <img src={authAvatarUrl} alt="" className="h-full w-full object-cover" />
@@ -739,14 +763,60 @@ export function HeroLanding(props: HeroLandingProps) {
                               </span>
                             )}
                           </span>
-                          <span className="max-w-[160px] truncate normal-case tracking-normal text-neutral-900 lg:max-w-[220px]">
-                            {authEmail}
+                          <span className="text-[11.5px] font-bold uppercase tracking-[0.12em] text-zinc-800">
+                            Your Account
                           </span>
-                        </>
-                      ) : (
-                        loginText
-                      )}
-                    </a>
+                          <ChevronDown className="h-3.5 w-3.5 text-zinc-400 group-hover:text-zinc-600 transition-transform duration-150" style={{ transform: accountDropdownOpen ? 'rotate(180deg)' : 'none' }} />
+                        </button>
+
+                        <AnimatePresence>
+                          {accountDropdownOpen && (
+                            <motion.div
+                              className="absolute right-0 top-full z-50 mt-2 w-48 origin-top-right rounded-xl border border-zinc-200 bg-white p-1.5 shadow-lg"
+                              initial={reduceMotionFramer ? { opacity: 1 } : { opacity: 0, y: 4, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={reduceMotionFramer ? { opacity: 0 } : { opacity: 0, y: 4, scale: 0.95 }}
+                              transition={{ duration: 0.15, ease: "easeOut" }}
+                              role="menu"
+                            >
+                              <div className="px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-zinc-400 border-b border-zinc-100 mb-1 truncate">
+                                {authEmail}
+                              </div>
+                              <a
+                                href="/orders"
+                                className="block rounded-lg px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors w-full text-left"
+                                onClick={() => setAccountDropdownOpen(false)}
+                                role="menuitem"
+                              >
+                                Your Orders
+                              </a>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setAccountDropdownOpen(false);
+                                  handleSignOut();
+                                }}
+                                className="block rounded-lg px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50/50 transition-colors w-full text-left"
+                                role="menuitem"
+                              >
+                                Sign out
+                              </button>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    ) : (
+                      <a
+                        href={authHref}
+                        className={[
+                          "inline-flex items-center gap-2 transition-colors whitespace-nowrap",
+                          `text-[11px] font-bold tracking-[0.12em] uppercase lg:text-xs xl:text-sm ${navTextClass}`,
+                        ].join(" ")}
+                        aria-label={loginText}
+                      >
+                        {loginText}
+                      </a>
+                    )
                   ) : null}
                 </div>
               ) : null}
@@ -770,8 +840,49 @@ export function HeroLanding(props: HeroLandingProps) {
                     <X aria-hidden="true" className="size-6" />
                   </button>
                 </div>
-                <div className="mt-8 flow-root">
+                 <div className="mt-8 flow-root">
                   <div className="-my-6 divide-y divide-black/10">
+                    {authReady && authEmail && (
+                      <div className="py-6">
+                        <div className="flex flex-col gap-3 px-3 py-3 border-b border-black/5">
+                          <div className="flex items-center gap-3">
+                            <span className="relative grid h-8 w-8 shrink-0 place-items-center overflow-hidden rounded-full bg-zinc-100 ring-1 ring-black/5">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              {authAvatarUrl ? (
+                                <img src={authAvatarUrl} alt="" className="h-full w-full object-cover" />
+                              ) : (
+                                <span className="text-[12px] font-bold text-zinc-700">
+                                  {(authEmail?.[0] ?? "U").toUpperCase()}
+                                </span>
+                              )}
+                            </span>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[11.5px] font-bold uppercase tracking-[0.06em] text-zinc-800">Your Account</p>
+                              <p className="truncate text-[10.5px] text-zinc-500">{authEmail}</p>
+                            </div>
+                          </div>
+                          <div className="flex gap-2.5 mt-1">
+                            <a
+                              href="/orders"
+                              className="flex-1 text-center rounded-lg border border-zinc-200 bg-white px-3 py-2 text-xs font-semibold text-zinc-800 hover:bg-zinc-50 transition-colors"
+                              onClick={() => setMobileMenuOpen(false)}
+                            >
+                              Your Orders
+                            </a>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleSignOut();
+                                setMobileMenuOpen(false);
+                              }}
+                              className="flex-1 text-center rounded-lg border border-red-200 bg-red-50/20 px-3 py-2 text-xs font-semibold text-red-600 hover:bg-red-50/55 transition-colors"
+                            >
+                              Sign out
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     <div className="py-6">
                       <form
                         action="/"
@@ -836,33 +947,16 @@ export function HeroLanding(props: HeroLandingProps) {
                             </a>
                           ),
                         )}
+
                       </div>
                     )}
-                    {loginText && loginHref && (
+                    {loginText && loginHref && !(authReady && authEmail) && (
                       <div className="py-6">
                         <a
                           href={authHref}
                           className="flex w-full items-center justify-center rounded-full bg-neutral-900 px-4 py-3 text-sm font-bold text-white transition-colors hover:bg-neutral-800"
                         >
-                          {authReady && authEmail ? (
-                            <span className="flex items-center gap-3">
-                              <span className="relative grid h-6 w-6 shrink-0 place-items-center overflow-hidden rounded-full bg-white/20">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                {authAvatarUrl ? (
-                                  <img src={authAvatarUrl} alt="" className="h-full w-full object-cover" />
-                                ) : (
-                                  <span className="text-[10px] font-bold text-white">
-                                    {(authEmail?.[0] ?? "U").toUpperCase()}
-                                  </span>
-                                )}
-                              </span>
-                              <span className="truncate">
-                                {authEmail}
-                              </span>
-                            </span>
-                          ) : (
-                            loginText
-                          )}
+                          {loginText}
                         </a>
                       </div>
                     )}
