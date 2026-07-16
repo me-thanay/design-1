@@ -42,6 +42,7 @@ type ClothingItem = {
   category?: ClothingCategory;
   subcategory?: string;
   rating?: number;
+  created_at?: string;
 };
 
 function parseCommaList(value: string) {
@@ -354,6 +355,8 @@ export default function CreatorPage() {
   const [activeTab, setActiveTab] = useState<"products" | "orders">("products");
   const [categoryFilter, setCategoryFilter] =
     useState<ClothingCategory>("sarees");
+  const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [form, setForm] = useState({
     name: "",
     description: "",
@@ -649,10 +652,11 @@ export default function CreatorPage() {
       ])) as { data: { user: any | null }; error: { message: string } | null };
 
       if (authRes.error) {
-        setAuthState("authorized");
+        setAuthState("unauthorized");
         setError(authRes.error.message);
         setCurrentUserEmail(null);
         setLoading(false);
+        router.replace("/sign-in?to=creator");
         return;
       }
 
@@ -1380,10 +1384,20 @@ export default function CreatorPage() {
     router.push("/");
   };
 
-  const visibleItems = items.filter((it) => {
-    const cat = it.category ?? inferCategoryFromText(it.description ?? it.name);
-    return cat === categoryFilter;
-  });
+  const visibleItems = items
+    .filter((it) => {
+      const cat = it.category ?? inferCategoryFromText(it.description ?? it.name);
+      if (cat !== categoryFilter) return false;
+      if (subcategoryFilter !== "all" && it.subcategory !== subcategoryFilter) {
+        return false;
+      }
+      return true;
+    })
+    .sort((a, b) => {
+      const timeA = a.created_at ? new Date(a.created_at).getTime() : a.id;
+      const timeB = b.created_at ? new Date(b.created_at).getTime() : b.id;
+      return sortOrder === "newest" ? timeB - timeA : timeA - timeB;
+    });
 
   return (
     <PageShell
@@ -1783,11 +1797,11 @@ export default function CreatorPage() {
             </section>
 
             <section className="w-full md:w-2/3">
-              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <h2 className="text-base font-semibold text-zinc-900">
                   Existing items
                 </h2>
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                     <button
                       type="button"
                       onClick={async () => {
@@ -1807,6 +1821,7 @@ export default function CreatorPage() {
                       onChange={(e) => {
                         const next = e.target.value as ClothingCategory;
                         setCategoryFilter(next);
+                        setSubcategoryFilter("all");
                         setForm((prev) => ({
                           ...prev,
                           category: next,
@@ -1822,6 +1837,39 @@ export default function CreatorPage() {
                       ))}
                     </select>
                   </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-zinc-500">
+                      Subcategory
+                    </span>
+                    <select
+                      value={subcategoryFilter}
+                      onChange={(e) => setSubcategoryFilter(e.target.value)}
+                      className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-700 focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                    >
+                      <option value="all">All</option>
+                      {SUBCATEGORIES[categoryFilter].map((s) => (
+                        <option key={s} value={s}>
+                          {s}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-medium text-zinc-500">
+                      Sort
+                    </span>
+                    <select
+                      value={sortOrder}
+                      onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
+                      className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-xs text-zinc-700 focus:border-zinc-900 focus:outline-none focus:ring-2 focus:ring-zinc-900/5"
+                    >
+                      <option value="newest">Newest first</option>
+                      <option value="oldest">Oldest first</option>
+                    </select>
+                  </div>
+
                   {loading && (
                     <span className="text-xs text-zinc-500">Loading items...</span>
                   )}
@@ -2638,6 +2686,16 @@ function CreatorItemCard({
               ({normalizeRating(item.rating ?? 4).toFixed(1)})
             </span>
           </p>
+          {item.created_at ? (
+            <p className="mt-1 text-[10px] text-zinc-400">
+              Uploaded: {new Date(item.created_at).toLocaleString("en-IN", {
+                dateStyle: "medium",
+                timeStyle: "short",
+              })}
+            </p>
+          ) : (
+            <p className="mt-1 text-[10px] text-zinc-400">Uploaded: (Local Storage)</p>
+          )}
           {item.description && (
             <p className="mt-1 text-sm text-zinc-600 line-clamp-2">
               {item.description}
