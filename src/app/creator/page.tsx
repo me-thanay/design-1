@@ -43,6 +43,7 @@ type ClothingItem = {
   subcategory?: string;
   rating?: number;
   created_at?: string;
+  is_deleted?: boolean;
 };
 
 function parseCommaList(value: string) {
@@ -186,6 +187,7 @@ function normalizeClothingItem(raw: any): ClothingItem {
     : Array.isArray((variantsFromMeta as any)?.sizes)
       ? (variantsFromMeta as any).sizes
       : [];
+  const is_deleted = !!(raw?.description ?? "").includes("__deleted__");
   return {
     ...raw,
     description: cleanedDescription,
@@ -196,6 +198,7 @@ function normalizeClothingItem(raw: any): ClothingItem {
     image_urls,
     colors,
     sizes,
+    is_deleted,
   } as ClothingItem;
 }
 
@@ -352,7 +355,7 @@ export default function CreatorPage() {
   const [authState, setAuthState] = useState<
     "checking" | "authorized" | "unauthorized"
   >("checking");
-  const [activeTab, setActiveTab] = useState<"products" | "orders">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "removed">("products");
   const [categoryFilter, setCategoryFilter] =
     useState<ClothingCategory>("sarees");
   const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
@@ -1301,29 +1304,150 @@ export default function CreatorPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!supabaseEnabled) {
-      const prev = readLocalClothes();
-      const next = prev.filter((it) => it.id !== id);
-      writeLocalClothes(next);
-      setItems(next);
-      return;
-    }
-    const { error } = await supabase.from("clothes").delete().eq("id", id);
-    if (error) {
-      setError(error.message);
-    } else {
-      setItems((prev) => prev.filter((item) => item.id !== id));
-      // Also purge any stale local cache so deleted items don't reappear if the app
-      // falls back to local mode (missing env vars / offline).
-      try {
-        const prevLocal = readLocalClothes();
-        if (prevLocal.length) {
-          const nextLocal = prevLocal.filter((it) => it.id !== id);
-          if (nextLocal.length !== prevLocal.length) writeLocalClothes(nextLocal);
-        }
-      } catch {
-        // ignore
+    if (!confirm("Are you sure you want to remove this item? It will be moved to Removed Items.")) return;
+    setLoading(true);
+    try {
+      if (!supabaseEnabled) {
+        const prev = readLocalClothes();
+        const next = prev.map((it) =>
+          it.id === id
+            ? {
+                ...it,
+                in_stock: false,
+                description: (it.description || "") + " __deleted__",
+              }
+            : it,
+        );
+        writeLocalClothes(next);
+        setItems(next.map((it) => normalizeClothingItem(it)));
+        toast.success("Product moved to Removed Items");
+        setLoading(false);
+        return;
       }
+
+      // Fetch current raw description from database
+      const { data: itemData, error: fetchError } = await supabase
+        .from("clothes")
+        .select("description")
+        .eq("id", id)
+        .single();
+
+      if (fetchError || !itemData) {
+        throw new Error(fetchError?.message ?? "Could not find item description");
+      }
+
+      const rawDescription = itemData.description || "";
+      const newDescription = rawDescription.includes("__deleted__")
+        ? rawDescription
+        : rawDescription + " __deleted__";
+
+      const { error: updateError } = await supabase
+        .from("clothes")
+        .update({
+          in_stock: false,
+          description: newDescription,
+        })
+        .eq("id", id);
+
+      if (updateError) throw updateError;
+
+      toast.success("Product moved to Removed Items");
+      await loadItems();
+    } catch (err: any) {
+      setError(err?.message ?? "Could not remove item");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleRestore = async (id: number) => {
+    if (!confirm("Are you sure you want to restore this item?")) return;
+    setLoading(true);
+    try {
+      if (!supabaseEnabled) {
+        const prev = readLocalClothes();
+        const next = prev.map((it) => {
+          if (it.id === id) {
+            const cleanDesc = (it.description || "")
+              .replace(" __deleted__", "")
+              .replace("__deleted__", "");
+            return {
+              ...it,
+              in_stock: true,
+              description: cleanDesc,
+            };
+          }
+          return it;
+        });
+        writeLocalClothes(next);
+        setItems(next.map((it) => normalizeClothingItem(it)));
+        toast.success("Product restored successfully");
+        setLoading(false);
+        return;
+      }
+
+      // Fetch current raw description from database
+      const { data: itemData, error: fetchError } = await supabase
+        .from("clothes")
+        .select("description")
+        .eq("id", id)
+        .single();
+
+      if (fetchError || !itemData) {
+        throw new Error(fetchError?.message ?? "Could not find item description");
+      }
+
+      const rawDescription = itemData.description || "";
+      const newDescription = rawDescription
+        .replace(" __deleted__", "")
+        .replace("__deleted__", "");
+
+      const { error: updateError } = await supabase
+        .from("clothes")
+        .update({
+          in_stock: true,
+          description: newDescription,
+        })
+        .eq("id", id);
+
+      if (updateError) throw updateError;
+
+      toast.success("Product restored successfully");
+      await loadItems();
+    } catch (err: any) {
+      setError(err?.message ?? "Could not restore item");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeletePermanent = async (id: number) => {
+    if (!confirm("WARNING: Are you sure you want to permanently delete this item? This action CANNOT be undone.")) return;
+    setLoading(true);
+    try {
+      if (!supabaseEnabled) {
+        const prev = readLocalClothes();
+        const next = prev.filter((p) => p.id !== id);
+        writeLocalClothes(next);
+        setItems(next.map((it) => normalizeClothingItem(it)));
+        toast.success("Product permanently deleted");
+        setLoading(false);
+        return;
+      }
+
+      const { error: deleteError } = await supabase
+        .from("clothes")
+        .delete()
+        .eq("id", id);
+
+      if (deleteError) throw deleteError;
+
+      toast.success("Product permanently deleted");
+      await loadItems();
+    } catch (err: any) {
+      setError(err?.message ?? "Could not permanently delete item");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -1444,6 +1568,16 @@ export default function CreatorPage() {
             >
               Orders
             </button>
+            <button
+              onClick={() => setActiveTab("removed")}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                activeTab === "removed"
+                  ? "bg-white text-neutral-900 shadow-sm ring-1 ring-black/10"
+                  : "text-neutral-600 hover:text-neutral-900"
+              }`}
+            >
+              Removed Items
+            </button>
           </div>
         </div>
 
@@ -1464,10 +1598,11 @@ export default function CreatorPage() {
       </div>
       </ScrollReveal>
 
-        {activeTab === "products" ? (
+        {activeTab === "products" || activeTab === "removed" ? (
           <ScrollReveal delay={0.05} variant="fade-up" y={28}>
           <div className="flex flex-col gap-8 md:flex-row">
-            <section className="w-full md:w-1/3">
+            {activeTab === "products" && (
+              <section className="w-full md:w-1/3">
               <h2 className="mb-4 text-base font-semibold text-zinc-900">
                 Add new clothing item
               </h2>
@@ -1795,11 +1930,12 @@ export default function CreatorPage() {
                 </button>
               </form>
             </section>
+            )}
 
-            <section className="w-full md:w-2/3">
+            <section className={activeTab === "products" ? "w-full md:w-2/3" : "w-full"}>
               <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                 <h2 className="text-base font-semibold text-zinc-900">
-                  Existing items
+                  {activeTab === "removed" ? "Removed items (Trash)" : "Existing items"}
                 </h2>
                 <div className="flex flex-wrap items-center gap-3">
                     <button
@@ -1884,10 +2020,12 @@ export default function CreatorPage() {
 
               {visibleItems.length === 0 && !loading ? (
                 <p className="rounded-xl border border-dashed border-zinc-300 p-6 text-sm text-zinc-500">
-                  No clothes yet. Add your first item using the form on the left.
+                  {activeTab === "removed"
+                    ? "Trash is empty. No removed items found."
+                    : "No clothes yet. Add your first item using the form on the left."}
                 </p>
               ) : (
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className={activeTab === "products" ? "grid gap-4 md:grid-cols-2" : "grid gap-4 md:grid-cols-3"}>
                   {visibleItems.map((item) => (
                     <CreatorItemCard
                       key={item.id}
@@ -1896,6 +2034,8 @@ export default function CreatorPage() {
                       onToggleStock={handleToggleStock}
                       onPriceChange={handlePriceChange}
                       onEdit={openEdit}
+                      onRestore={handleRestore}
+                      onDeletePermanent={handleDeletePermanent}
                     />
                   ))}
                 </div>
@@ -2599,6 +2739,8 @@ type CreatorItemCardProps = {
   onToggleStock: (item: ClothingItem) => void;
   onPriceChange: (item: ClothingItem, newPrice: number) => void;
   onEdit: (item: ClothingItem) => void;
+  onRestore?: (id: number) => void;
+  onDeletePermanent?: (id: number) => void;
 };
 
 function CreatorItemCard({
@@ -2607,6 +2749,8 @@ function CreatorItemCard({
   onToggleStock,
   onPriceChange,
   onEdit,
+  onRestore,
+  onDeletePermanent,
 }: CreatorItemCardProps) {
   const reduceMotion = useReducedMotion();
   const [priceInput, setPriceInput] = useState(item.price.toString());
@@ -2704,45 +2848,67 @@ function CreatorItemCard({
         </div>
       </div>
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-zinc-500">Price:</span>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={priceInput}
-            onChange={(e) => setPriceInput(e.target.value)}
-            onBlur={handleBlur}
-            className="w-24 rounded-md border border-zinc-200 px-2 py-1 text-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900/5"
-          />
-          {isUpdatingPrice && (
-            <span className="text-xs text-zinc-500">Saving...</span>
-          )}
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => onEdit(item)}
-            className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
-          >
-            Edit
-          </button>
-          <button
-            onClick={() => onToggleStock(item)}
-            className={`rounded-full px-3 py-1 text-xs font-medium ${
-              item.in_stock
-                ? "bg-emerald-50 text-emerald-700"
-                : "bg-zinc-100 text-zinc-600"
-            }`}
-          >
-            {item.in_stock ? "In stock" : "Out of stock"}
-          </button>
-          <button
-            onClick={() => onDelete(item.id)}
-            className="rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
-          >
-            Remove
-          </button>
-        </div>
+        {item.is_deleted ? (
+          <>
+            <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-50 border border-red-100 rounded-full px-2.5 py-0.5">Removed</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onRestore?.(item.id)}
+                className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-600 hover:bg-emerald-100"
+              >
+                Restore
+              </button>
+              <button
+                onClick={() => onDeletePermanent?.(item.id)}
+                className="rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
+              >
+                Delete Permanently
+              </button>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-zinc-500">Price:</span>
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                value={priceInput}
+                onChange={(e) => setPriceInput(e.target.value)}
+                onBlur={handleBlur}
+                className="w-24 rounded-md border border-zinc-200 px-2 py-1 text-sm focus:border-zinc-900 focus:outline-none focus:ring-1 focus:ring-zinc-900/5"
+              />
+              {isUpdatingPrice && (
+                <span className="text-xs text-zinc-500">Saving...</span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => onEdit(item)}
+                className="rounded-full border border-zinc-200 px-3 py-1 text-xs font-medium text-zinc-700 hover:bg-zinc-100"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => onToggleStock(item)}
+                className={`rounded-full px-3 py-1 text-xs font-medium ${
+                  item.in_stock
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-zinc-100 text-zinc-600"
+                }`}
+              >
+                {item.in_stock ? "In stock" : "Out of stock"}
+              </button>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="rounded-full bg-red-50 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
+              >
+                Remove
+              </button>
+            </div>
+          </>
+        )}
       </div>
     </motion.div>
   );

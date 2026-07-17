@@ -87,17 +87,23 @@ export function normalizeRating(value?: number | string | null) {
 
 export function stripMeta(description: string | null | undefined) {
   if (!description) return null;
-  const withMeta = description.match(
+  let cleanDesc = description;
+  if (cleanDesc.includes(" __deleted__")) {
+    cleanDesc = cleanDesc.replace(" __deleted__", "");
+  } else if (cleanDesc.includes("__deleted__")) {
+    cleanDesc = cleanDesc.replace("__deleted__", "");
+  }
+  const withMeta = cleanDesc.match(
     new RegExp(`^__meta__:${CATEGORY_META_PATTERN}\\|([^|_]+)(?:\\|([0-9.]+))?(?:\\|([0-9.]+))?__([\\s\\S]*)$`, "i"),
   );
   if (withMeta) {
     const cleaned = stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(withMeta[5])))?.trim();
     return cleaned ? cleaned : null;
   }
-  const match = description.match(
+  const match = cleanDesc.match(
     new RegExp(`^__category__:${CATEGORY_META_PATTERN}__([\\s\\S]*)$`, "i"),
   );
-  if (!match) return stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(description)));
+  if (!match) return stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(cleanDesc)));
   const cleaned = stripColorImagesMeta(stripVariantsMeta(stripImagesMeta(match[2])))?.trim();
   return cleaned ? cleaned : null;
 }
