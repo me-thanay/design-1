@@ -7,7 +7,6 @@ import { SlidersHorizontal, X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { CLOTHING_SUBCATEGORIES, normalizeProductRow, type ClothingCategory, type Product } from "@/lib/products";
 import { PRIMARY_NAV } from "@/lib/navigation";
-import { subAnchorId } from "@/components/categories/category-subcategory-shops";
 import { useSearchParams } from "next/navigation";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { cn, publicAssetUrl } from "@/lib/utils";
@@ -239,16 +238,36 @@ function SidebarInner({
     gowns: "GOWNS",
     coord_sets: "COORD SET",
   };
+  const categoryDisplayName: Record<ClothingCategory, string> = {
+    sarees: "All Sarees",
+    kurtis: "All Kurtis",
+    blouses: "All Blouses",
+    gowns: "All Gowns",
+    coord_sets: "All Coord Sets",
+  };
+
   const nav = PRIMARY_NAV.find((n) => n.name === navName[category]);
+  const hasActiveFilters = Boolean(selectedSub || selectedColor || selectedSize);
+
+  const allCard = {
+    name: categoryDisplayName[category] ?? "All Styles",
+    href: buildHref(basePath, { sub: null, color: selectedColor, size: selectedSize }),
+    imageSrc: nav?.featuredImageSrc ?? (category === "sarees" ? "/stock_images/banarasi%20silk.jpeg" : null),
+    isActive: !selectedSub,
+  };
+
   const subCards = (subs ?? []).map((s) => {
     const hit = nav?.items?.find((x) => x.name.toLowerCase() === s.toLowerCase());
+    const isSelected = selectedSub?.toLowerCase() === s.toLowerCase();
     return {
       name: s,
+      // If already selected, clicking it toggles off back to all styles
       href: buildHref(
         basePath,
-        { sub: s, color: selectedColor, size: selectedSize },
+        { sub: isSelected ? null : s, color: selectedColor, size: selectedSize },
       ),
       imageSrc: hit?.imageSrc ?? nav?.featuredImageSrc ?? null,
+      isSelected,
     };
   });
 
@@ -265,25 +284,38 @@ function SidebarInner({
   return (
     <div className="space-y-6">
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
-          Filters
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
+            Filters
+          </p>
+          {hasActiveFilters ? (
+            <Link
+              href={basePath}
+              scroll={false}
+              onClick={() => handleFilterClick("best-sellers")}
+              className="text-xs font-semibold text-neutral-900 underline underline-offset-4 hover:text-amber-800 transition"
+            >
+              Reset all
+            </Link>
+          ) : null}
+        </div>
         <div className="mt-3 grid gap-2">
           <Link
             href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize })}
             scroll={false}
             onClick={() => handleFilterClick("best-sellers")}
-            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition"
+            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition shadow-sm"
           >
             Best sellers
           </Link>
           <Link
-            href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize })}
+            href={buildHref(basePath, { sub: null, color: selectedColor, size: selectedSize })}
             scroll={false}
             onClick={() => handleFilterClick("all-products")}
-            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition"
+            className="rounded-2xl border border-black/10 bg-white px-4 py-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition shadow-sm flex items-center justify-between"
           >
-            All products
+            <span>{categoryDisplayName[category] ?? "All products"}</span>
+            <span className="text-xs text-neutral-500 font-normal">Show full collection</span>
           </Link>
         </div>
       </div>
@@ -304,7 +336,7 @@ function SidebarInner({
                     onClick={() => handleFilterClick("best-sellers")}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-                      !selectedColor ? "border-neutral-900 bg-neutral-900 text-white" : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
+                      !selectedColor ? "border-neutral-900 bg-neutral-900 text-white shadow-sm" : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
                     )}
                   >
                     All
@@ -312,13 +344,13 @@ function SidebarInner({
                   {variantFacets.colors.map((c) => (
                     <Link
                       key={c}
-                      href={buildHref(basePath, { sub: selectedSub, color: c, size: selectedSize })}
+                      href={buildHref(basePath, { sub: selectedSub, color: selectedColor?.toLowerCase() === c.toLowerCase() ? null : c, size: selectedSize })}
                       scroll={false}
                       onClick={() => handleFilterClick("best-sellers")}
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                         selectedColor?.toLowerCase() === c.toLowerCase()
-                          ? "border-neutral-900 bg-neutral-900 text-white"
+                          ? "border-neutral-900 bg-neutral-900 text-white shadow-sm"
                           : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
                       )}
                     >
@@ -339,7 +371,7 @@ function SidebarInner({
                     onClick={() => handleFilterClick("best-sellers")}
                     className={cn(
                       "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
-                      !selectedSize ? "border-neutral-900 bg-neutral-900 text-white" : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
+                      !selectedSize ? "border-neutral-900 bg-neutral-900 text-white shadow-sm" : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
                     )}
                   >
                     All
@@ -347,13 +379,13 @@ function SidebarInner({
                   {variantFacets.sizes.map((s) => (
                     <Link
                       key={s}
-                      href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: s })}
+                      href={buildHref(basePath, { sub: selectedSub, color: selectedColor, size: selectedSize?.toLowerCase() === s.toLowerCase() ? null : s })}
                       scroll={false}
                       onClick={() => handleFilterClick("best-sellers")}
                       className={cn(
                         "rounded-full border px-3 py-1.5 text-xs font-semibold transition",
                         selectedSize?.toLowerCase() === s.toLowerCase()
-                          ? "border-neutral-900 bg-neutral-900 text-white"
+                          ? "border-neutral-900 bg-neutral-900 text-white shadow-sm"
                           : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
                       )}
                     >
@@ -368,21 +400,92 @@ function SidebarInner({
       ) : null}
 
       <div>
-        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
-          Subcategories
-        </p>
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-neutral-500">
+            Subcategories
+          </p>
+          {selectedSub ? (
+            <Link
+              href={buildHref(basePath, { sub: null, color: selectedColor, size: selectedSize })}
+              scroll={false}
+              onClick={() => handleFilterClick("best-sellers")}
+              className="text-xs font-semibold text-neutral-900 underline underline-offset-4 hover:text-amber-800 transition"
+            >
+              Show all
+            </Link>
+          ) : null}
+        </div>
         <div className="mt-3 grid gap-2">
+          {/* All Subcategories Card */}
+          <Link
+            href={allCard.href}
+            scroll={false}
+            onClick={() => handleFilterClick("best-sellers")}
+            className={cn(
+              "group flex items-center gap-3 rounded-2xl border p-3 text-sm font-medium transition active:scale-[0.99]",
+              allCard.isActive
+                ? "border-neutral-900 bg-neutral-900 text-white shadow-md ring-1 ring-black/10"
+                : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50 shadow-sm",
+            )}
+          >
+            <span
+              className={cn(
+                "relative shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1",
+                allCard.isActive ? "ring-white/20" : "ring-black/5",
+                category === "coord_sets" ? "h-14 w-24" : "h-14 w-20",
+              )}
+            >
+              {allCard.imageSrc ? (
+                <img
+                  src={publicAssetUrl(allCard.imageSrc)}
+                  alt=""
+                  className={cn(
+                    "h-full w-full",
+                    category === "coord_sets" ? "object-contain object-center" : "object-cover",
+                  )}
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : null}
+            </span>
+            <span className="min-w-0 flex-1">
+              <span className="block truncate font-bold text-sm">
+                {allCard.name}
+              </span>
+              <span
+                className={cn(
+                  "mt-0.5 block text-[11px] font-medium",
+                  allCard.isActive ? "text-neutral-300" : "text-neutral-500",
+                )}
+              >
+                {allCard.isActive ? "Viewing all · Active" : "Tap to view all"}
+              </span>
+            </span>
+            {allCard.isActive ? (
+              <span className="shrink-0 rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                Active
+              </span>
+            ) : null}
+          </Link>
+
+          {/* Individual Subcategory Cards */}
           {subCards.map((s) => (
             <Link
               key={s.name}
               href={s.href}
               scroll={false}
               onClick={() => handleFilterClick("best-sellers")}
-              className="group flex items-center gap-3 rounded-2xl border border-black/10 bg-white p-3 text-sm font-medium text-neutral-900 hover:bg-neutral-50 transition"
+              className={cn(
+                "group flex items-center gap-3 rounded-2xl border p-3 text-sm font-medium transition active:scale-[0.99]",
+                s.isSelected
+                  ? "border-neutral-900 bg-neutral-900 text-white shadow-md ring-1 ring-black/10"
+                  : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50 shadow-sm",
+              )}
             >
               <span
                 className={cn(
-                  "relative shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1 ring-black/5",
+                  "relative shrink-0 overflow-hidden rounded-xl bg-neutral-100 ring-1",
+                  s.isSelected ? "ring-white/20" : "ring-black/5",
                   category === "coord_sets" ? "h-14 w-24" : "h-14 w-20",
                 )}
               >
@@ -400,12 +503,22 @@ function SidebarInner({
                   />
                 ) : null}
               </span>
-              <span className="min-w-0">
-                <span className="block truncate font-semibold">{s.name}</span>
-                <span className="mt-0.5 block text-[11px] font-medium text-neutral-500">
-                  Tap to view
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-semibold capitalize">{s.name}</span>
+                <span
+                  className={cn(
+                    "mt-0.5 block text-[11px] font-medium",
+                    s.isSelected ? "text-neutral-300" : "text-neutral-500",
+                  )}
+                >
+                  {s.isSelected ? "Filtered · Tap to reset" : "Tap to view"}
                 </span>
               </span>
+              {s.isSelected ? (
+                <span className="shrink-0 rounded-full bg-white/20 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">
+                  Active
+                </span>
+              ) : null}
             </Link>
           ))}
         </div>
