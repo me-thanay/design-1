@@ -164,20 +164,16 @@ export function ProductDetailsDialog({
                 </span>
               </div>
 
-              <div className="mt-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
-                  Description
-                </p>
-                {product.description ? (
+              {product.description ? (
+                <div className="mt-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                    Description
+                  </p>
                   <p className="mt-2 text-sm leading-relaxed text-neutral-700">
                     {product.description}
                   </p>
-                ) : (
-                  <p className="mt-2 text-sm text-neutral-600">
-                    Add a description in the Creator dashboard to show it here.
-                  </p>
-                )}
-              </div>
+                </div>
+              ) : null}
 
               {(product.colors?.length || (product.category !== "sarees" && product.sizes?.length)) ? (
                 <div className="mt-5 space-y-4">

@@ -176,11 +176,7 @@ export default function ReelsSection({
                         <p className="mt-3 text-sm text-neutral-700 line-clamp-4">
                           {activeProduct.description}
                         </p>
-                      ) : (
-                        <p className="mt-3 text-sm text-neutral-600">
-                          Premium fabric and finishing — curated for this edit.
-                        </p>
-                      )}
+                      ) : null}
 
                       <div className="mt-4 flex flex-col gap-2">
                         <motion.div

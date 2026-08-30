@@ -51,7 +51,7 @@ export type BestSellerCardCarouselProps = {
 function blurbFromProduct(p: Product) {
   const d = p.description?.trim();
   if (d) return d.length > 160 ? `${d.slice(0, 160)}…` : d;
-  return `${p.subcategory ?? "Premium"} · curated in-store quality.`;
+  return null;
 }
 
 function formatInr(amount: number) {
@@ -248,9 +248,11 @@ export function BestSellerCardCarousel({
                             <h4 className="inline-flex max-w-full rounded-lg bg-[#c9a227]/35 px-2.5 py-1 text-sm font-bold leading-snug text-white ring-1 ring-[#c9a227]/55 sm:text-base">
                               {slide.product.name}
                             </h4>
-                            <p className="line-clamp-2 text-xs leading-relaxed text-white/85 sm:text-sm">
-                              {blurbFromProduct(slide.product)}
-                            </p>
+                            {blurbFromProduct(slide.product) ? (
+                              <p className="line-clamp-2 text-xs leading-relaxed text-white/85 sm:text-sm">
+                                {blurbFromProduct(slide.product)}
+                              </p>
+                            ) : null}
                             <div className="flex flex-wrap items-center gap-2 text-xs sm:text-sm">
                               <span className="inline-flex items-center gap-2 rounded-md bg-white px-2 py-1 text-sm font-bold tabular-nums text-neutral-900 shadow sm:text-base">
                                 {formatInr(slide.product.price)}
