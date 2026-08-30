@@ -156,7 +156,6 @@ export default async function Home({ searchParams }: HomeProps) {
                 <ProductsGrid
                   category={activeCategory}
                   filterQuery={effectiveFilter}
-                  limit={12}
                   variant="gallery"
                 />
               </ScrollRevealGroup>

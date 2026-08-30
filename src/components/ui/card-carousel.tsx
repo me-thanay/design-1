@@ -13,6 +13,7 @@ import "swiper/css/navigation";
 
 import { Badge } from "@/components/ui/badge";
 import { ProductCartControl } from "@/components/cart/product-cart-control";
+import { ProductDetailsDialog } from "@/components/products/product-details-dialog";
 import type { Product } from "@/lib/products";
 import { cn } from "@/lib/utils";
 
@@ -81,6 +82,8 @@ export function BestSellerCardCarousel({
   showNavigation = true,
   className,
 }: BestSellerCardCarouselProps) {
+  const [detailsProduct, setDetailsProduct] = React.useState<Product | null>(null);
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
   const loopSlides = React.useMemo(() => expandSlidesForLoop(slides), [slides]);
   const loopEnabled = loopSlides.length >= 3;
 
@@ -272,6 +275,10 @@ export function BestSellerCardCarousel({
                                 product={slide.product}
                                 image={slide.imageSrc}
                                 tone="onImage"
+                                onSelectOptions={() => {
+                                  setDetailsProduct(slide.product);
+                                  setDetailsOpen(true);
+                                }}
                               />
                             </div>
                           </>
@@ -303,6 +310,13 @@ export function BestSellerCardCarousel({
             </Swiper>
         </div>
       </div>
+
+      <ProductDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        product={detailsProduct}
+        fallbackImage="/stock_images/banarasi%20silk.jpeg"
+      />
     </section>
   );
 }

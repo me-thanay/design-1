@@ -8,6 +8,7 @@ import { toast } from "sonner";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { PageShell } from "@/components/ui/page-shell";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
+import { CartReminderAdminTester } from "@/components/cart/cart-reminder-admin-tester";
 import {
   CLOTHING_CATEGORIES,
   CLOTHING_SUBCATEGORIES as SUBCATEGORIES,
@@ -355,7 +356,7 @@ export default function CreatorPage() {
   const [authState, setAuthState] = useState<
     "checking" | "authorized" | "unauthorized"
   >("checking");
-  const [activeTab, setActiveTab] = useState<"products" | "orders" | "removed">("products");
+  const [activeTab, setActiveTab] = useState<"products" | "orders" | "removed" | "reminders">("products");
   const [categoryFilter, setCategoryFilter] =
     useState<ClothingCategory>("sarees");
   const [subcategoryFilter, setSubcategoryFilter] = useState<string>("all");
@@ -1578,6 +1579,16 @@ export default function CreatorPage() {
             >
               Removed Items
             </button>
+            <button
+              onClick={() => setActiveTab("reminders")}
+              className={`rounded-full px-3 py-1.5 text-xs font-semibold transition ${
+                activeTab === "reminders"
+                  ? "bg-white text-neutral-900 shadow-sm ring-1 ring-black/10"
+                  : "text-neutral-600 hover:text-neutral-900"
+              }`}
+            >
+              Cart Reminders
+            </button>
           </div>
         </div>
 
@@ -2727,6 +2738,12 @@ export default function CreatorPage() {
               </div>
             )}
           </section>
+          </ScrollReveal>
+        )}
+
+        {activeTab === "reminders" && (
+          <ScrollReveal delay={0.05} variant="fade-up" y={28}>
+            <CartReminderAdminTester />
           </ScrollReveal>
         )}
     </PageShell>

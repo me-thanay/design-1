@@ -45,6 +45,8 @@ export function BestSellersMotionSlider({
   const [activeIdx, setActiveIdx] = React.useState<number | null>(null);
   const active = activeIdx == null ? null : base[activeIdx] ?? null;
   const [activeImageIdx, setActiveImageIdx] = React.useState(0);
+  const [selectedColor, setSelectedColor] = React.useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = React.useState<string | null>(null);
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
   const scrollLeft = () => {
@@ -60,8 +62,20 @@ export function BestSellersMotionSlider({
   };
 
   React.useEffect(() => {
-    if (!open) return;
+    if (!open || !active?.product) return;
     setActiveImageIdx(0);
+    const p = active.product;
+    const firstColor = (() => {
+      const fromList = (p?.colors ?? []).find((c) => {
+        const key = String(c ?? "").trim().toLowerCase();
+        return key && (p?.colorImages?.[key]?.length ?? 0) > 0;
+      });
+      if (fromList) return fromList;
+      const fromMap = Object.keys(p?.colorImages ?? {})[0];
+      return fromMap ? fromMap : p?.colors?.[0] ?? null;
+    })();
+    setSelectedColor(firstColor);
+    setSelectedSize(null);
   }, [open, active?.product?.id]);
 
   if (base.length === 0) return null;
@@ -151,6 +165,10 @@ export function BestSellersMotionSlider({
                         image={it.imageSrc}
                         tone="card"
                         compact
+                        onSelectOptions={() => {
+                          setActiveIdx(realIndex);
+                          setOpen(true);
+                        }}
                       />
                     </div>
                   </div>
@@ -287,6 +305,60 @@ export function BestSellersMotionSlider({
                   )}
                 </div>
 
+                {(active.product.colors?.length || (active.product.category !== "sarees" && active.product.sizes?.length)) ? (
+                  <div className="mt-5 space-y-4">
+                    {active.product.colors?.length ? (
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                          Color
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {active.product.colors.map((c) => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => setSelectedColor(c)}
+                              className={[
+                                "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition",
+                                selectedColor?.toLowerCase() === c.toLowerCase()
+                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                  : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
+                              ].join(" ")}
+                            >
+                              {c}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+
+                    {active.product.category !== "sarees" && active.product.sizes?.length ? (
+                      <div>
+                        <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-neutral-500">
+                          Size
+                        </p>
+                        <div className="mt-2 flex flex-wrap gap-2">
+                          {active.product.sizes.map((s) => (
+                            <button
+                              key={s}
+                              type="button"
+                              onClick={() => setSelectedSize(s)}
+                              className={[
+                                "rounded-full border px-3.5 py-1.5 text-xs font-semibold transition",
+                                selectedSize?.toLowerCase() === s.toLowerCase()
+                                  ? "border-neutral-900 bg-neutral-900 text-white"
+                                  : "border-black/10 bg-white text-neutral-900 hover:bg-neutral-50",
+                              ].join(" ")}
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
+
                 <div className="mt-6">
                   <ProductCartControl
                     product={active.product}
@@ -304,6 +376,8 @@ export function BestSellersMotionSlider({
                       })()
                     }
                     tone="card"
+                    selectedColor={selectedColor}
+                    selectedSize={selectedSize}
                   />
                 </div>
               </div>

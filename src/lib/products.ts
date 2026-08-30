@@ -167,11 +167,29 @@ function stripImagesMeta(description: string | null | undefined) {
 type VariantsMeta = { colors?: string[]; sizes?: string[] };
 
 function sanitizeList(values: unknown): string[] {
-  if (!Array.isArray(values)) return [];
-  return values
-    .map((v) => String(v ?? "").trim())
-    .filter(Boolean)
-    .filter((v, i, arr) => arr.indexOf(v) === i);
+  if (!values) return [];
+  if (Array.isArray(values)) {
+    return values
+      .map((v) => String(v ?? "").trim())
+      .filter(Boolean)
+      .filter((v, i, arr) => arr.indexOf(v) === i);
+  }
+  if (typeof values === "string") {
+    const trimmed = values.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith("[") && trimmed.endsWith("]")) {
+      try {
+        const parsed = JSON.parse(trimmed);
+        if (Array.isArray(parsed)) return sanitizeList(parsed);
+      } catch {}
+    }
+    return trimmed
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean)
+      .filter((v, i, arr) => arr.indexOf(v) === i);
+  }
+  return [];
 }
 
 function uniqSorted(values: string[]) {

@@ -266,17 +266,23 @@ export function FloatingHeader() {
         <div className="flex items-center justify-end lg:flex-1 lg:gap-4">
           <NavSearchBar navIconClassName={navIconClassName} />
           <motion.a
-            href={isLoggedIn ? "/cart" : "/sign-in"}
-            className="relative inline-flex items-center gap-2 rounded-full px-1.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-zinc-800 hover:text-zinc-900 sm:px-2 lg:px-3 lg:text-sm"
+            href="/cart"
+            className="relative inline-flex items-center gap-1.5 rounded-full px-1.5 py-1 text-xs font-bold uppercase tracking-[0.12em] text-zinc-800 hover:text-zinc-900 sm:px-2 lg:px-3 lg:text-sm"
             whileHover={reduceMotion ? undefined : { y: -1 }}
             aria-label="Cart"
           >
             <ShoppingCart className={navIconClassName} aria-hidden="true" />
             <span className="sr-only">Cart</span>
             {itemCount > 0 ? (
-              <span className="ml-2 inline-flex min-w-5 items-center justify-center rounded-full bg-zinc-900 px-1.5 py-0.5 text-xs font-bold text-white">
+              <motion.span
+                key={itemCount}
+                initial={reduceMotion ? false : { scale: 0.5, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ type: "spring", stiffness: 600, damping: 14 }}
+                className="inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-amber-400 px-1.5 text-[11px] font-extrabold text-neutral-950 shadow-sm"
+              >
                 {itemCount}
-              </span>
+              </motion.span>
             ) : null}
           </motion.a>
           {!isLoggedIn ? (
@@ -445,11 +451,16 @@ export function FloatingHeader() {
               </button>
             </form>
             <a
-              href={isLoggedIn ? "/cart" : "/sign-in"}
-              className="mt-1 rounded-full px-3 py-1.5 uppercase tracking-[0.16em] text-zinc-700 hover:bg-zinc-100"
+              href="/cart"
+              className="mt-1 flex items-center justify-between rounded-full px-3 py-1.5 uppercase tracking-[0.16em] text-zinc-700 hover:bg-zinc-100"
               onClick={() => setMenuOpen(false)}
             >
-              {isLoggedIn ? "Cart" : "Login to view cart"}
+              <span>Cart</span>
+              {itemCount > 0 ? (
+                <span className="inline-flex min-w-5 h-5 items-center justify-center rounded-full bg-amber-400 px-1.5 text-[11px] font-extrabold text-neutral-950">
+                  {itemCount}
+                </span>
+              ) : null}
             </a>
 
             <div className="mt-2 space-y-1 border-t border-zinc-200 pt-3">

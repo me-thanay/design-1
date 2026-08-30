@@ -373,7 +373,7 @@ export default async function CategoryPage({
   searchParams,
 }: {
   params: Promise<{ slug: string }>;
-  searchParams?: Promise<{ sub?: string; color?: string; size?: string }>;
+  searchParams?: Promise<{ sub?: string; color?: string; size?: string; q?: string }>;
 }) {
   const { slug } = await params;
   const sp = (await searchParams) ?? {};
@@ -381,9 +381,12 @@ export default async function CategoryPage({
   if (!cfg) notFound();
 
   const category = slug as ClothingCategory;
-  const selectedSubcategory = (sp.sub ?? "").trim() || null;
+  const queryParam = (sp.q ?? "").trim() || null;
+  const subParam = (sp.sub ?? "").trim() || null;
+  const selectedSubcategory = subParam || queryParam || null;
   const selectedColor = (sp.color ?? "").trim() || null;
   const selectedSize = category === "sarees" ? null : (sp.size ?? "").trim() || null;
+  const filterQuery = queryParam && queryParam.toLowerCase() !== selectedSubcategory?.toLowerCase() ? queryParam : undefined;
   const heroImages = heroImagesForCategory(category);
   const heroPositions =
     category === "kurtis"
@@ -465,16 +468,17 @@ export default async function CategoryPage({
                   title={`Best sellers · ${cfg.title}`}
                   subtitle={
                     selectedSubcategory
-                      ? `Filtered to “${selectedSubcategory}”.`
-                      : "Top-rated pieces in this category — price and rating included."
+                      ? `Top curated pieces filtered to “${selectedSubcategory}”.`
+                      : "Curated best-selling highlights from this collection."
                   }
                   category={category}
                   subcategory={selectedSubcategory ?? undefined}
+                  filterQuery={filterQuery}
                   color={selectedColor ?? undefined}
                   size={selectedSize ?? undefined}
-                  limit={12}
+                  limit={6}
                   variant="gallery"
-                  sortMode="best"
+                  sortMode="random"
                 />
               </div>
             </div>
@@ -485,14 +489,14 @@ export default async function CategoryPage({
                   title={`All ${cfg.title}`}
                   subtitle={
                     selectedSubcategory
-                      ? `Filtered to “${selectedSubcategory}”.`
-                      : "Newest additions from the Creator dashboard — every product shows here."
+                      ? `Filtered to “${selectedSubcategory}”. Showing all available pieces.`
+                      : `Complete collection of ${cfg.title} — every piece shows here.`
                   }
                   category={category}
                   subcategory={selectedSubcategory ?? undefined}
+                  filterQuery={filterQuery}
                   color={selectedColor ?? undefined}
                   size={selectedSize ?? undefined}
-                  limit={24}
                   variant="gallery"
                   sortMode="latest"
                 />

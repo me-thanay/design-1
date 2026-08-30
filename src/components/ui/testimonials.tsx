@@ -1,8 +1,10 @@
 "use client";
 
+import * as React from "react";
 import { motion } from "framer-motion";
 import { Quote } from "lucide-react";
 import { ProductCartControl } from "@/components/cart/product-cart-control";
+import { ProductDetailsDialog } from "@/components/products/product-details-dialog";
 import type { Product } from "@/lib/products";
 
 export interface Testimonial {
@@ -48,6 +50,9 @@ const itemVariants = {
  * Responsive grid of cards (testimonials or repurposed for best-seller products).
  */
 export function TestimonialSection({ title, subtitle, testimonials }: TestimonialSectionProps) {
+  const [detailsProduct, setDetailsProduct] = React.useState<Product | null>(null);
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
+
   return (
     <section className="w-full bg-background py-12 sm:py-20">
       <div className="container mx-auto max-w-7xl px-4 text-center">
@@ -115,6 +120,10 @@ export function TestimonialSection({ title, subtitle, testimonials }: Testimonia
                           product={testimonial.product}
                           image={testimonial.imageSrc}
                           tone="onImage"
+                          onSelectOptions={() => {
+                            setDetailsProduct(testimonial.product ?? null);
+                            setDetailsOpen(true);
+                          }}
                         />
                       </div>
                     </>
@@ -130,6 +139,13 @@ export function TestimonialSection({ title, subtitle, testimonials }: Testimonia
           ))}
         </motion.div>
       </div>
+
+      <ProductDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        product={detailsProduct}
+        fallbackImage="/stock_images/banarasi%20silk.jpeg"
+      />
     </section>
   );
 }

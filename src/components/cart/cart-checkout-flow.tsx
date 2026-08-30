@@ -68,14 +68,21 @@ const COUPONS: Record<string, { type: "percentage" | "fixed"; value: number; lab
 export function CartCheckoutFlow() {
   const router = useRouter();
   const reduceMotion = useReducedMotion();
-  const { items, itemCount, subtotal, increase, decrease, removeItem, clear } = useCart();
+  const { items, itemCount, subtotal, increase, decrease, removeItem, clear, userEmail, setUserEmail } = useCart();
 
   const [currentStep, setCurrentStep] = React.useState(0);
   const [isPlacingOrder, setIsPlacingOrder] = React.useState(false);
   const [fullName, setFullName] = React.useState("");
+  const [emailInput, setEmailInput] = React.useState(userEmail || "");
   const [phone, setPhone] = React.useState("");
   const [altPhone, setAltPhone] = React.useState("");
   const [dob, setDob] = React.useState("");
+
+  React.useEffect(() => {
+    if (userEmail && !emailInput) {
+      setEmailInput(userEmail);
+    }
+  }, [userEmail, emailInput]);
   const [locationMode] = React.useState<"manual">("manual");
   const [manualLocation, setManualLocation] = React.useState("");
   const [locationStatus] = React.useState<string | null>(null);
@@ -307,8 +314,8 @@ export function CartCheckoutFlow() {
     setIsPlacingOrder(true);
 
     try {
-      let customerEmail: string | null = null;
-      if (supabaseEnabled) {
+      let customerEmail: string | null = emailInput.trim() || userEmail || null;
+      if (!customerEmail && supabaseEnabled) {
         const {
           data: { user },
         } = await supabase.auth.getUser();
@@ -635,6 +642,20 @@ export function CartCheckoutFlow() {
                       placeholder="Your name"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
+                      className="rounded-xl"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="cart-email">Email address (for receipt & order tracking)</Label>
+                    <Input
+                      id="cart-email"
+                      type="email"
+                      placeholder="your-email@example.com"
+                      value={emailInput}
+                      onChange={(e) => {
+                        setEmailInput(e.target.value);
+                        setUserEmail(e.target.value);
+                      }}
                       className="rounded-xl"
                     />
                   </div>

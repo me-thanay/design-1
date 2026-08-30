@@ -48,7 +48,7 @@ export function ImageGallery({
   onItemClick,
   containerClassName = "mx-auto max-w-6xl px-4",
   headerAlign = "center",
-  maxItems = 10,
+  maxItems,
 }: ImageGalleryProps) {
   const resolvedTitle =
     title === undefined ? "Best sellers in detail" : title;
@@ -92,11 +92,15 @@ export function ImageGallery({
     return () => mq.removeEventListener?.("change", update);
   }, []);
 
+  const displayItems =
+    typeof maxItems === "number" && maxItems > 0
+      ? items.slice(0, maxItems)
+      : items;
+
   // Auto-cycle images for a lively gallery feel.
   // Pauses briefly after user interaction, and while a card is hovered (desktop).
   React.useEffect(() => {
-    const slice = items.slice(0, Math.max(1, maxItems));
-    if (slice.length === 0) return;
+    if (displayItems.length === 0) return;
 
     const intervalMs = 2800;
     const pauseAfterInteractionMs = 7000;
@@ -105,8 +109,8 @@ export function ImageGallery({
       const now = Date.now();
       setActiveImageIndexes((prev) => {
         let next = prev;
-        for (let idx = 0; idx < slice.length; idx++) {
-          const it = slice[idx];
+        for (let idx = 0; idx < displayItems.length; idx++) {
+          const it = displayItems[idx];
           const imageSources = [
             ...(it.imageSources ?? []),
             it.src,
@@ -176,7 +180,7 @@ export function ImageGallery({
             overscrollBehaviorX: "contain",
           }}
         >
-          {items.slice(0, Math.max(1, maxItems)).map((it, idx) => (
+          {displayItems.map((it, idx) => (
             (() => {
               const clickable = Boolean(onItemClick && it.product);
               const imageSources = [

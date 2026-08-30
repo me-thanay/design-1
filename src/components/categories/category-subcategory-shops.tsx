@@ -300,7 +300,6 @@ export function CategorySubcategoryProductSections({
               <ProductsGrid
                 category={category}
                 subcategory={sub}
-                limit={12}
                 variant="gallery"
               />
             </div>

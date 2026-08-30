@@ -6,6 +6,7 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { HeroSection } from "@/components/ui/feature-carousel";
 import { SCROLL_REVEAL_EASE } from "@/components/motion/scroll-reveal";
 import { ProductCartControl } from "@/components/cart/product-cart-control";
+import { ProductDetailsDialog } from "@/components/products/product-details-dialog";
 import { supabase, supabaseEnabled } from "@/lib/supabaseClient";
 import { normalizeProductRow, type Product } from "@/lib/products";
 
@@ -22,6 +23,8 @@ export default function ReelsSection({
 }) {
   const reduceMotion = useReducedMotion();
   const [activeIndex, setActiveIndex] = React.useState(0);
+  const [detailsProduct, setDetailsProduct] = React.useState<Product | null>(null);
+  const [detailsOpen, setDetailsOpen] = React.useState(false);
 
   const stockImages = React.useMemo(
     () => [
@@ -188,6 +191,10 @@ export default function ReelsSection({
                             product={activeProduct}
                             image={activeProductImage}
                             tone="heroDark"
+                            onSelectOptions={() => {
+                              setDetailsProduct(activeProduct);
+                              setDetailsOpen(true);
+                            }}
                           />
                         </motion.div>
                         <motion.a
@@ -242,7 +249,16 @@ export default function ReelsSection({
                     </p>
                   </div>
                   <div className="w-full min-w-[200px] shrink-0 sm:w-auto sm:max-w-[280px]">
-                    <ProductCartControl product={p} image={stripImage} tone="card" compact />
+                    <ProductCartControl
+                      product={p}
+                      image={stripImage}
+                      tone="card"
+                      compact
+                      onSelectOptions={() => {
+                        setDetailsProduct(p);
+                        setDetailsOpen(true);
+                      }}
+                    />
                   </div>
                 </div>
               </div>
@@ -253,6 +269,13 @@ export default function ReelsSection({
           <div className="pointer-events-none h-10 bg-gradient-to-b from-transparent to-black/5" />
         </div>
       </div>
+
+      <ProductDetailsDialog
+        open={detailsOpen}
+        onOpenChange={setDetailsOpen}
+        product={detailsProduct}
+        fallbackImage="/stock_images/banarasi%20silk.jpeg"
+      />
     </section>
   );
 }

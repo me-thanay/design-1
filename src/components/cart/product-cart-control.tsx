@@ -59,21 +59,30 @@ export function ProductCartControl({
   );
 
   const handleFirstAdd = () => {
-    const needsChoice = (product.colors?.length || product.sizes?.length) && !selectedColor && !selectedSize;
-    if (needsChoice) {
+    const hasColorChoice = (product.colors?.length ?? 0) > 0;
+    const hasSizeChoice = product.category !== "sarees" && (product.sizes?.length ?? 0) > 0;
+
+    const missingColor = hasColorChoice && !selectedColor;
+    const missingSize = hasSizeChoice && !selectedSize;
+
+    if (missingColor || missingSize) {
       if (onSelectOptions) {
         onSelectOptions();
         return;
       }
-      toast.error("Select color/size first", {
-        description: "Open the product details and choose the correct options before adding to cart.",
-      });
+      toast.error(
+        missingColor && missingSize
+          ? "Please select color & size"
+          : missingColor
+            ? "Please select a color"
+            : "Please select a size",
+        {
+          description: "Choose your preferred options before adding to cart.",
+        },
+      );
       return;
     }
     addItem(cartPayload, 1);
-    toast.success("Successfully added to cart", {
-      description: `${cartPayload.name} is in your cart.`,
-    });
   };
 
   const onMinus = (e: React.MouseEvent) => {

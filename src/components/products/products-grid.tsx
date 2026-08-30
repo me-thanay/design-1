@@ -27,7 +27,7 @@ type ProductsGridProps = {
   /** Size filter is ignored for sarees. */
   size?: string;
   /** Sorting mode (defaults to latest). */
-  sortMode?: "latest" | "best";
+  sortMode?: "latest" | "best" | "random";
   limit?: number;
   variant?: "grid" | "row" | "gallery";
   className?: string;
@@ -113,7 +113,7 @@ export function ProductsGrid({
   color,
   size,
   sortMode = "latest",
-  limit = 6,
+  limit,
   variant = "grid",
   className,
 }: ProductsGridProps) {
@@ -189,7 +189,9 @@ export function ProductsGrid({
           .filter((p) => matchesSize(p, size))
           .filter((p) => (filterQuery ? matchesFilter(p, filterQuery) : true));
 
-        if (sortMode === "best") {
+        if (sortMode === "random") {
+          normalized = [...normalized].sort(() => Math.random() - 0.5);
+        } else if (sortMode === "best") {
           normalized = [...normalized].sort((a, b) => {
             const rd = (Number(b.rating) || 0) - (Number(a.rating) || 0);
             if (Math.abs(rd) > 0.001) return rd;
@@ -207,7 +209,7 @@ export function ProductsGrid({
           if (perCategory.length > 0) {
             normalized = perCategory;
           }
-        } else {
+        } else if (typeof limit === "number" && limit > 0) {
           normalized = normalized.slice(0, Math.max(0, limit));
         }
 
@@ -299,6 +301,7 @@ export function ProductsGrid({
           className="py-0"
           containerClassName="w-full px-0"
           headerAlign="left"
+          maxItems={limit}
           onItemClick={(it) => {
             if (it.product) openDetails(it.product);
           }}
@@ -425,7 +428,13 @@ export function ProductsGrid({
                     <span className="text-[11px] text-neutral-500">Free delivery</span>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
-                    <ProductCartControl product={p} image={img} tone="card" compact />
+                    <ProductCartControl
+                      product={p}
+                      image={img}
+                      tone="card"
+                      compact
+                      onSelectOptions={() => openDetails(p)}
+                    />
                   </div>
                 </div>
               </article>
@@ -511,7 +520,12 @@ export function ProductsGrid({
                     </Link>
                   </div>
                   <div onClick={(e) => e.stopPropagation()}>
-                    <ProductCartControl product={p} image={img} tone="card" />
+                    <ProductCartControl
+                      product={p}
+                      image={img}
+                      tone="card"
+                      onSelectOptions={() => openDetails(p)}
+                    />
                   </div>
                 </div>
               </article>
