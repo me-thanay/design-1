@@ -75,17 +75,42 @@ export async function POST(req: Request) {
   }
 
   try {
+    const isSsl = smtpPort === 465;
     const transporter = nodemailer.createTransport({
       host: smtpHost,
       port: smtpPort,
-      secure: smtpPort === 465,
+      secure: isSsl,
       auth: { user: smtpUser, pass: smtpPass },
+      tls: {
+        rejectUnauthorized: false,
+      },
+      connectionTimeout: 15000,
+      greetingTimeout: 10000,
+      socketTimeout: 20000,
     });
+
+    const plainText = [
+      customerName ? `Hello ${customerName},` : "Hello,",
+      "",
+      "You left beautiful pieces waiting in your Sawbhagya shopping bag:",
+      ...items.map(
+        (i) =>
+          `• ${i.name} (Qty: ${i.qty}) - ₹${Math.round(i.price * i.qty).toLocaleString("en-IN")}`,
+      ),
+      "",
+      `Total Value: ₹${Math.round(calculatedSubtotal).toLocaleString("en-IN")}`,
+      "",
+      `Complete your order here: ${cartUrl}`,
+      "",
+      "Warm regards,",
+      "Sawbhagya Luxury Edit",
+    ].join("\n");
 
     await transporter.sendMail({
       from: fromEmail,
       to,
       subject,
+      text: plainText,
       html,
     });
 
