@@ -8,6 +8,8 @@ import {
 } from "./added-to-cart-notification";
 import { SoftSignInModal } from "./soft-sign-in-modal";
 
+import { type CartReminderStage } from "@/lib/cart-reminder-email";
+
 export type CartItem = {
   id: string;
   productId: string;
@@ -19,10 +21,16 @@ export type CartItem = {
   size?: string | null;
 };
 
+export const REMINDER_TIERS: Array<{ stage: CartReminderStage; delayMs: number; label: string }> = [
+  { stage: 1, delayMs: 3 * 60 * 60 * 1000, label: "3 Hours · Gentle Bag Reservation" },
+  { stage: 2, delayMs: 12 * 60 * 60 * 1000, label: "12 Hours · High Demand & Urgency Alert" },
+  { stage: 3, delayMs: 18 * 60 * 60 * 1000, label: "18 Hours · Final Call Before Release" },
+];
+
 type CartState = {
   items: CartItem[];
   lastUpdated?: number;
-  reminderSentForHash?: string | null;
+  sentStagesByHash?: Record<string, number[]>;
 };
 
 type CartContextValue = {
@@ -42,15 +50,14 @@ type CartContextValue = {
   clear: () => void;
   /** Trigger luxury add to cart popup manually if needed */
   showAddedNotification: (item: CartItem) => void;
-  /** Test trigger cart reminder email immediately */
-  sendTestReminder: (targetEmail?: string) => Promise<{ ok: boolean; message?: string }>;
+  /** Test trigger cart reminder email immediately with optional stage 1, 2, or 3 */
+  sendTestReminder: (targetEmail?: string, stage?: CartReminderStage) => Promise<{ ok: boolean; message?: string }>;
 };
 
 const CartContext = React.createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "freelance-1.cart.v1";
 const EMAIL_STORAGE_KEY = "sawbhagya.cart.email.v1";
-const REMINDER_DELAY_MS = 5 * 60 * 1000; // 5 minutes delay
 
 function safeParse(json: string | null): CartState | null {
   if (!json) return null;
@@ -76,7 +83,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [userEmail, setUserEmailState] = React.useState<string | null>(null);
   const [userName, setUserName] = React.useState<string | null>(null);
   const [lastUpdated, setLastUpdated] = React.useState<number>(Date.now());
-  const [reminderSentForHash, setReminderSentForHash] = React.useState<string | null>(null);
+  const [sentStagesByHash, setSentStagesByHash] = React.useState<Record<string, number[]>>({});
 
   const [addedNotification, setAddedNotification] = React.useState<AddedNotificationData | null>(null);
   const [pendingAuthItem, setPendingAuthItem] = React.useState<CartItem | null>(null);
@@ -87,7 +94,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     if (stored?.items?.length) {
       setItems(stored.items);
       if (stored.lastUpdated) setLastUpdated(stored.lastUpdated);
-      if (stored.reminderSentForHash) setReminderSentForHash(stored.reminderSentForHash);
+      if (stored.sentStagesByHash) setSentStagesByHash(stored.sentStagesByHash);
     }
 
     const savedEmail = window.localStorage.getItem(EMAIL_STORAGE_KEY);
@@ -114,10 +121,10 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     const state: CartState = {
       items,
       lastUpdated,
-      reminderSentForHash,
+      sentStagesByHash,
     };
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [items, lastUpdated, reminderSentForHash]);
+  }, [items, lastUpdated, sentStagesByHash]);
 
   const setUserEmail = React.useCallback((email: string) => {
     const clean = email.trim().toLowerCase();
@@ -258,7 +265,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
 
   const clear: CartContextValue["clear"] = () => {
     setItems([]);
-    setReminderSentForHash(null);
+    setSentStagesByHash({});
     if (userEmail) {
       fetch("/api/cart-reminder/cancel", {
         method: "POST",
@@ -269,7 +276,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   };
 
   const sendTestReminder = React.useCallback(
-    async (targetEmail?: string) => {
+    async (targetEmail?: string, stage: CartReminderStage = 1) => {
       const recipient = targetEmail || userEmail;
       if (!recipient || !recipient.includes("@")) {
         return { ok: false, message: "Please provide a valid email address." };
@@ -299,6 +306,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
             customerName: userName,
             items: testItems,
             subtotal: testSubtotal,
+            stage,
           }),
         });
         const data = await res.json();
@@ -313,44 +321,54 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     [items, userEmail, userName],
   );
 
-  // 3. Automated 5-Minute Cart Waiting Email Reminder Scheduler
+  // 3. Automated 3-Tier Multi-Stage Cart Waiting Email Reminder Scheduler (3h, 12h, 18h)
   React.useEffect(() => {
     if (items.length === 0 || !userEmail) return;
 
     const currentHash = getCartHash(items);
-    if (reminderSentForHash === currentHash) return;
+    if (!currentHash) return;
 
-    const checkAndTriggerReminder = async () => {
+    const checkAndTriggerReminders = async () => {
       const timeSinceUpdate = Date.now() - lastUpdated;
+      const sentStages = sentStagesByHash[currentHash] || [];
 
-      if (timeSinceUpdate >= REMINDER_DELAY_MS && reminderSentForHash !== currentHash) {
-        try {
-          const subtotalCalc = items.reduce((sum, i) => sum + i.price * i.qty, 0);
-          const res = await fetch("/api/cart-reminder/send", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              to: userEmail,
-              customerName: userName,
-              items,
-              subtotal: subtotalCalc,
-            }),
-          });
+      for (const tier of REMINDER_TIERS) {
+        if (timeSinceUpdate >= tier.delayMs && !sentStages.includes(tier.stage)) {
+          try {
+            const subtotalCalc = items.reduce((sum, i) => sum + i.price * i.qty, 0);
+            const res = await fetch("/api/cart-reminder/send", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                to: userEmail,
+                customerName: userName,
+                items,
+                subtotal: subtotalCalc,
+                stage: tier.stage,
+              }),
+            });
 
-          const data = await res.json();
-          if (data.ok) {
-            setReminderSentForHash(currentHash);
+            const data = await res.json();
+            if (data.ok) {
+              setSentStagesByHash((prev) => ({
+                ...prev,
+                [currentHash]: [...(prev[currentHash] || []), tier.stage],
+              }));
+            }
+          } catch {
+            // Silently retry on next check interval
           }
-        } catch {
-          // silently handle network error, retry next interval
         }
       }
     };
 
-    // Check periodically every 20 seconds
-    const interval = setInterval(checkAndTriggerReminder, 20000);
+    // Check periodically every 30 seconds
+    const interval = setInterval(checkAndTriggerReminders, 30000);
+    // Also run immediate check
+    void checkAndTriggerReminders();
+
     return () => clearInterval(interval);
-  }, [items, userEmail, userName, lastUpdated, reminderSentForHash]);
+  }, [items, userEmail, userName, lastUpdated, sentStagesByHash]);
 
   const value = React.useMemo<CartContextValue>(() => {
     const itemCount = items.reduce((sum, i) => sum + i.qty, 0);

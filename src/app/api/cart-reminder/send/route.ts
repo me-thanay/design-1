@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
-import { generateCartReminderHtml, generateCartReminderSubject } from "@/lib/cart-reminder-email";
+import { generateCartReminderHtml, generateCartReminderSubject, type CartReminderStage } from "@/lib/cart-reminder-email";
 import type { CartItem } from "@/components/cart/CartProvider";
 
 type CartReminderPayload = {
@@ -9,6 +9,7 @@ type CartReminderPayload = {
   items: CartItem[];
   subtotal?: number;
   cartUrl?: string;
+  stage?: CartReminderStage;
 };
 
 function env(name: string) {
@@ -23,7 +24,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ ok: false, error: "Invalid JSON body." }, { status: 400 });
   }
 
-  const { to, customerName, items } = body;
+  const { to, customerName, items, stage = 1 } = body;
 
   if (!to || !to.includes("@")) {
     return NextResponse.json({ ok: false, error: "Valid email address is required." }, { status: 400 });
@@ -42,12 +43,13 @@ export async function POST(req: Request) {
       ? body.subtotal
       : items.reduce((sum, item) => sum + (item.price || 0) * (item.qty || 1), 0);
 
-  const subject = generateCartReminderSubject(items);
+  const subject = generateCartReminderSubject(items, stage);
   const html = generateCartReminderHtml({
     customerName,
     items,
     subtotal: calculatedSubtotal,
     cartUrl,
+    stage,
   });
 
   const smtpHost = env("SMTP_HOST");

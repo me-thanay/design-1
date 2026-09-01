@@ -1,5 +1,7 @@
 import type { CartItem } from "@/components/cart/CartProvider";
 
+export type CartReminderStage = 1 | 2 | 3;
+
 function formatINR(amount: number) {
   return new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -8,21 +10,42 @@ function formatINR(amount: number) {
   }).format(amount);
 }
 
-export function generateCartReminderSubject(items: CartItem[]): string {
+export function generateCartReminderSubject(
+  items: CartItem[],
+  stage: CartReminderStage = 1,
+): string {
   if (!items || items.length === 0) {
-    return "✨ You left items waiting in your Sawbhagya bag";
+    if (stage === 2) return "⏳ Still thinking about it? Your Sawbhagya bag is in high demand";
+    if (stage === 3) return "⚠️ Final call: Last chance to complete your Sawbhagya order";
+    return "✨ You left something exquisite waiting in your Sawbhagya bag";
   }
 
   const cleanNames = items.map((i) => i.name.split("·")[0].trim());
+  const firstName = cleanNames[0];
 
+  if (stage === 2) {
+    if (cleanNames.length === 1) {
+      return `⏳ Still thinking? ${firstName} is in high demand in your bag`;
+    }
+    return `⏳ High demand alert: ${firstName} and your reserved pieces may sell out`;
+  }
+
+  if (stage === 3) {
+    if (cleanNames.length === 1) {
+      return `⚠️ Final call: Last chance to claim ${firstName} before cart release`;
+    }
+    return `⚠️ Final notice: We are releasing your reserved pieces soon`;
+  }
+
+  // Default Stage 1 (3 hrs)
   if (cleanNames.length === 1) {
-    return `✨ Don't forget: ${cleanNames[0]} is waiting in your cart!`;
+    return `✨ Don't forget: ${firstName} is waiting in your Sawbhagya bag!`;
   }
   if (cleanNames.length === 2) {
-    return `✨ ${cleanNames[0]} and ${cleanNames[1]} are waiting in your cart`;
+    return `✨ ${cleanNames[0]} and ${cleanNames[1]} are waiting in your bag`;
   }
   const remaining = cleanNames.length - 2;
-  return `✨ ${cleanNames[0]}, ${cleanNames[1]} and ${remaining} more item${remaining > 1 ? "s are" : " is"} waiting in your cart`;
+  return `✨ ${cleanNames[0]}, ${cleanNames[1]} and ${remaining} more item${remaining > 1 ? "s are" : " is"} waiting in your bag`;
 }
 
 export function generateCartReminderHtml(options: {
@@ -30,9 +53,36 @@ export function generateCartReminderHtml(options: {
   items: CartItem[];
   subtotal: number;
   cartUrl: string;
+  stage?: CartReminderStage;
 }): string {
-  const { customerName, items, subtotal, cartUrl } = options;
+  const { customerName, items, subtotal, cartUrl, stage = 1 } = options;
   const greeting = customerName ? `Hello ${customerName},` : "Hello,";
+
+  let badgeText = "3-Hour Bag Reservation";
+  let badgeColor = "#92400e";
+  let badgeBorder = "#fde68a";
+  let badgeBg = "#fef3c7";
+  let heading = "You left something exquisite in your bag";
+  let bodyText = `${greeting} We noticed you were exploring our handcrafted pieces earlier today. Because our artisan editions are created in small, limited batches, we have safely reserved them in your shopping bag so you won't lose your selection!`;
+  let ctaText = "Complete Your Order Now →";
+
+  if (stage === 2) {
+    badgeText = "12-Hour Priority Alert";
+    badgeColor = "#c2410c";
+    badgeBorder = "#fed7aa";
+    badgeBg = "#fff7ed";
+    heading = "Your reserved pieces are in high demand";
+    bodyText = `${greeting} Just checking in on your shopping bag! Our handcrafted sarees and silhouettes are produced in limited boutique quantities and are seeing high interest today. Your pieces are reserved and ready for swift door delivery whenever you're ready.`;
+    ctaText = "Claim Your Reserved Pieces →";
+  } else if (stage === 3) {
+    badgeText = "Final Reservation Notice (18 Hours)";
+    badgeColor = "#b91c1c";
+    badgeBorder = "#fecaca";
+    badgeBg = "#fef2f2";
+    heading = "Final notice before your bag is released";
+    bodyText = `${greeting} This is our final reminder before your reserved items are returned to general boutique stock for other customers. If you still wish to make them yours with complimentary express delivery, please finalize your order now.`;
+    ctaText = "Finalize Order Before Release →";
+  }
 
   const itemsHtml = items
     .map((item) => {
@@ -110,14 +160,14 @@ export function generateCartReminderHtml(options: {
           <!-- Hero Message -->
           <tr>
             <td style="padding: 32px 32px 16px 32px; text-align: left;">
-              <div style="font-size: 13px; font-weight: 700; color: #b45309; text-transform: uppercase; letter-spacing: 0.15em; margin-bottom: 8px;">
-                Shopping Bag Reminder
+              <div style="display: inline-block; font-size: 11px; font-weight: 700; color: ${badgeColor}; background-color: ${badgeBg}; border: 1px solid ${badgeBorder}; padding: 4px 12px; border-radius: 50px; text-transform: uppercase; letter-spacing: 0.14em; margin-bottom: 12px;">
+                ${badgeText}
               </div>
               <h1 style="font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 700; color: #1c1917; margin: 0 0 14px 0; line-height: 1.3;">
-                You left something exquisite in your bag
+                ${heading}
               </h1>
               <p style="font-size: 15px; line-height: 1.6; color: #44403c; margin: 0 0 16px 0;">
-                ${greeting} We noticed you were eyeing some handcrafted pieces. Handcrafted editions are created in small, limited batches and can sell out quickly. We have reserved them in your shopping bag so you won't miss out!
+                ${bodyText}
               </p>
             </td>
           </tr>
@@ -155,7 +205,7 @@ export function generateCartReminderHtml(options: {
                 <tr>
                   <td align="center" style="border-radius: 50px; background-color: #1c1917; box-shadow: 0 4px 14px rgba(0,0,0,0.15);">
                     <a href="${cartUrl}" target="_blank" style="display: inline-block; padding: 15px 36px; font-size: 15px; font-weight: 700; color: #ffffff; text-decoration: none; border-radius: 50px; letter-spacing: 0.04em; font-family: -apple-system, BlinkMacSystemFont, sans-serif;">
-                      Complete Your Order Now →
+                      ${ctaText}
                     </a>
                   </td>
                 </tr>
