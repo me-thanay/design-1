@@ -74,6 +74,9 @@ export function generateCartReminderHtml(options: {
     })
     .join("");
 
+  const baseUrl = cartUrl.replace(/\/cart.*$/, "").replace(/\/$/, "");
+  const logoUrl = `${baseUrl}/logo/logo.png`;
+
   return `
 <!DOCTYPE html>
 <html lang="en">
@@ -91,12 +94,15 @@ export function generateCartReminderHtml(options: {
           
           <!-- Header Branding -->
           <tr>
-            <td align="center" style="padding: 32px 24px 20px 24px; background: linear-gradient(180deg, #fdfbf7 0%, #ffffff 100%); border-bottom: 1px solid #f4efe8;">
-              <div style="font-family: 'Playfair Display', Georgia, serif; font-size: 26px; font-weight: 700; letter-spacing: 0.08em; color: #1c1917; text-transform: uppercase;">
+            <td align="center" style="padding: 32px 24px 24px 24px; background: linear-gradient(180deg, #fdfbf7 0%, #ffffff 100%); border-bottom: 1px solid #f4efe8;">
+              <a href="${baseUrl}" target="_blank" style="text-decoration: none; display: inline-block;">
+                <img src="${logoUrl}" alt="Sawbhagya" width="68" height="68" style="width: 68px; height: 68px; object-fit: contain; display: block; margin: 0 auto 12px auto; border-radius: 50%; box-shadow: 0 2px 8px rgba(0,0,0,0.06);" />
+              </a>
+              <div style="font-family: 'Playfair Display', Georgia, serif; font-size: 24px; font-weight: 700; letter-spacing: 0.08em; color: #1c1917; text-transform: uppercase;">
                 SAWBHAGYA
               </div>
               <div style="font-size: 11px; letter-spacing: 0.22em; text-transform: uppercase; color: #92400e; margin-top: 4px; font-weight: 600;">
-                Premium Ethnic Wear & Handcrafted Silhouettes
+                Handcrafted Luxury & Timeless Silhouettes
               </div>
             </td>
           </tr>

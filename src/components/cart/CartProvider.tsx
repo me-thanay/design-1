@@ -6,6 +6,7 @@ import {
   AddedToCartNotification,
   type AddedNotificationData,
 } from "./added-to-cart-notification";
+import { SoftSignInModal } from "./soft-sign-in-modal";
 
 export type CartItem = {
   id: string;
@@ -78,6 +79,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   const [reminderSentForHash, setReminderSentForHash] = React.useState<string | null>(null);
 
   const [addedNotification, setAddedNotification] = React.useState<AddedNotificationData | null>(null);
+  const [pendingAuthItem, setPendingAuthItem] = React.useState<CartItem | null>(null);
 
   // 1. Load initial cart and email from storage and Supabase auth
   React.useEffect(() => {
@@ -125,24 +127,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const showAddedNotification = React.useCallback(
-    (item: CartItem) => {
-      const currentItems = items.some((i) => i.id === item.id)
-        ? items.map((i) => (i.id === item.id ? { ...i, qty: i.qty + item.qty } : i))
-        : [...items, item];
-      const count = currentItems.reduce((sum, i) => sum + i.qty, 0);
-      const total = currentItems.reduce((sum, i) => sum + i.price * i.qty, 0);
-
-      setAddedNotification({
-        item,
-        itemCount: count,
-        subtotal: total,
-      });
-    },
-    [items],
-  );
-
-  const addItem: CartContextValue["addItem"] = (item, qty = 1) => {
+  const doAddItem = React.useCallback((item: Omit<CartItem, "qty">, qty = 1) => {
     const safeQty = Math.max(1, Math.floor(qty));
     const fullItem: CartItem = { ...item, qty: safeQty };
 
@@ -184,7 +169,63 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         }),
       }).catch(() => {});
     }
+  }, [items, userEmail]);
+
+  // Check for pending item saved before Google OAuth redirect
+  React.useEffect(() => {
+    if (typeof window === "undefined") return;
+    const raw = window.localStorage.getItem("sawbhagya.pending.cart_add");
+    if (raw) {
+      try {
+        const item = JSON.parse(raw) as CartItem;
+        if (item && item.id) {
+          window.localStorage.removeItem("sawbhagya.pending.cart_add");
+          doAddItem(item, item.qty || 1);
+        }
+      } catch {}
+    }
+  }, [doAddItem]);
+
+  const addItem: CartContextValue["addItem"] = (item, qty = 1) => {
+    const isGuestSession =
+      typeof window !== "undefined" &&
+      window.sessionStorage.getItem("sawbhagya.guest_session") === "true";
+
+    // If not logged in and has not selected guest mode in this session, softly prompt Google sign-in
+    if (!userEmail && !isGuestSession && items.length === 0) {
+      setPendingAuthItem({ ...item, qty: Math.max(1, Math.floor(qty)) });
+      return;
+    }
+
+    doAddItem(item, qty);
   };
+
+  const handleContinueAsGuest = React.useCallback(() => {
+    if (typeof window !== "undefined") {
+      window.sessionStorage.setItem("sawbhagya.guest_session", "true");
+    }
+    if (pendingAuthItem) {
+      doAddItem(pendingAuthItem, pendingAuthItem.qty);
+      setPendingAuthItem(null);
+    }
+  }, [pendingAuthItem, doAddItem]);
+
+  const showAddedNotification = React.useCallback(
+    (item: CartItem) => {
+      const currentItems = items.some((i) => i.id === item.id)
+        ? items.map((i) => (i.id === item.id ? { ...i, qty: i.qty + item.qty } : i))
+        : [...items, item];
+      const count = currentItems.reduce((sum, i) => sum + i.qty, 0);
+      const total = currentItems.reduce((sum, i) => sum + i.price * i.qty, 0);
+
+      setAddedNotification({
+        item,
+        itemCount: count,
+        subtotal: total,
+      });
+    },
+    [items],
+  );
 
   const removeItem: CartContextValue["removeItem"] = (id) => {
     setItems((prev) => prev.filter((p) => p.id !== id));
@@ -340,6 +381,12 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       <AddedToCartNotification
         data={addedNotification}
         onClose={() => setAddedNotification(null)}
+      />
+      <SoftSignInModal
+        open={Boolean(pendingAuthItem)}
+        item={pendingAuthItem}
+        onContinueAsGuest={handleContinueAsGuest}
+        onClose={handleContinueAsGuest}
       />
     </CartContext.Provider>
   );
